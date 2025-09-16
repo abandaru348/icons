@@ -1,0 +1,35 @@
+<template>
+    <template if:true={open}>
+        <div class="slds-backdrop slds-backdrop_open" onclick={handleBackdropClick}></div>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <lightning-button-icon class="slds-modal__close" icon-name="utility:close" variant="bare-inverse" alternative-text="Close" onclick={handleClose}></lightning-button-icon>
+
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading" class="slds-text-heading_small slds-truncate" title={title}>{title}</h2>
+                    <p class="date slds-text-color_weak">{when}</p>
+                    <div class="badges">
+                        <span class="badge badge_featured">{featuredLabel}</span>
+                        <span class="badge badge_cat">{categoryLabel}</span>
+                    </div>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium custom-content" id="modal-content-id-1">
+                    <div class="grid">
+                        <img src={imageUrl} alt="Event cover" class="cover" />
+                        <div class="descriptions">
+                            <div class="desc"><span class="label">Description:</span> {description1}</div>
+                            <div class="desc"><span class="label">Description:</span> {description2}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={handleClose}>Close</button>
+                    <button class="slds-button slds-button_brand" onclick={handleEnroll}>Enroll Me</button>
+                </footer>
+            </div>
+        </section>
+    </template>
+</template>
+
