@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Event Modal - Match Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="page">
+      <button class="open-modal-btn" id="openModalBtn">Open Example Modal</button>
+    </div>
+
+    <div class="modal" id="eventModal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal__backdrop" id="modalBackdrop"></div>
+      <div class="modal__dialog" role="document" aria-labelledby="modalTitle">
+        <button class="modal__close" id="closeModalBtn" aria-label="Close">×</button>
+
+        <h2 class="modal__title" id="modalTitle">Deployment sleep strategies to cope with mental health and wellbeing</h2>
+        <div class="modal__subtitle">Tuesday, June 17, 2025, 2:00 PM PST</div>
+
+        <div class="modal__badges">
+          <span class="badge badge--featured">Featured</span>
+          <span class="badge badge--cat">Mental Well-Being</span>
+        </div>
+
+        <div class="modal__content">
+          <img class="modal__image" src="./gnalfam.jpg" alt="Event cover" />
+
+          <div class="modal__description">
+            <div class="desc">
+              <span class="desc__label">Description:</span>
+              <span>
+                Are you sailing the high seas and concerned about sleeping well? Do you want to learn sleep fundamentals to enhance your operational readiness? Healthy sleep powers the mind, restores the body, and is essential for cognitive processes. This webinar explores important tips for getting great sleep at sea — how to stay comfortable, get to sleep in a sea environment, and develop a sleep routine. (45 minutes)
+              </span>
+            </div>
+
+            <div class="desc">
+              <span class="desc__label">Description:</span>
+              <span>
+                Are you sailing the high seas and concerned about sleeping well? Do you want to learn sleep fundamentals to enhance your operational readiness? Healthy sleep powers the mind, restores the body, and is essential for cognitive processes. This webinar explores important tips for getting great sleep at sea — how to stay comfortable, get to sleep in a sea environment, and develop a sleep routine. (45 minutes)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn btn--ghost" id="closeFooterBtn">Close</button>
+          <button class="btn btn--primary">Enroll Me</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+  </html>
+
