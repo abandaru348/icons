@@ -4,7 +4,7 @@
 import { api, LightningElement } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
-export default class GnalPatientInfoComponent extends NavigationMixin(LightningElement) {
+export default class GNALPatientInfoComponent extends NavigationMixin(LightningElement) {
   @api cardTitle = 'Patient';
   @api name = 'Melanie Robinson';
   @api dob = '03/25/1980';

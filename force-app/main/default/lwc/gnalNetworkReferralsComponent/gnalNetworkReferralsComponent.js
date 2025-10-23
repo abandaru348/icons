@@ -1,2 +1,2 @@
 import { LightningElement } from 'lwc';
-export default class GnalNetworkReferralsComponent extends LightningElement {}
+export default class GNALNetworkReferralsComponent extends LightningElement {}

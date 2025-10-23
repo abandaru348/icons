@@ -4,7 +4,7 @@
  */
 import { api, LightningElement } from 'lwc';
 
-export default class GnalBannerComponent extends LightningElement {
+export default class GNALBannerComponent extends LightningElement {
   @api backgroundImageUrl;
   @api altText = 'Banner background';
   @api headline = 'Available Anytime, Anywhere – Always!';

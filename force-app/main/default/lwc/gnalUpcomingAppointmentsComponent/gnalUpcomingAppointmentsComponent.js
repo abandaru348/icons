@@ -1,2 +1,2 @@
 import { LightningElement } from 'lwc';
-export default class GnalUpcomingAppointmentsComponent extends LightningElement {}
+export default class GNALUpcomingAppointmentsComponent extends LightningElement {}

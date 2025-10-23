@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
-export default class GnalTelehealthServicesComponent extends NavigationMixin(LightningElement) {
+export default class GNALTelehealthServicesComponent extends NavigationMixin(LightningElement) {
   handleNav(event){
     const url = event.currentTarget?.dataset?.url;
     if(!url){ return; }
