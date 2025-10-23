@@ -1,6 +1,4 @@
-.header{ display:flex; align-items:center; }
-.avatar{ width:40px; height:40px; background-color: var(--gnal-color-accent); border-radius:9999px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:1.125rem; margin-right:.75rem; }
 .name{ color: var(--gnal-color-link); font-weight:600; font-size:1.25rem; }
-.grid{ display:grid; grid-template-columns: 1fr 1fr; gap:.75rem 3rem; color: var(--gnal-color-muted); }
+.slds-text-color_muted{ color: var(--gnal-color-muted); }
 .label{ font-size:.75rem; margin-bottom:.25rem; }
 .value{ font-weight:500; font-size:.875rem; }

@@ -1,39 +1,43 @@
 <template>
   <c-gnal-card title={cardTitle}>
-    <div class="header slds-m-bottom_medium">
-      <div class="avatar" aria-hidden="true">{initials}</div>
-      <h3 class="name">{name}</h3>
-    </div>
+    <lightning-layout class="slds-m-bottom_medium" vertical-align="center">
+      <lightning-layout-item flexibility="shrink">
+        <lightning-avatar alternative-text="Patient" initials={initials} size="medium" fallback-icon-name="standard:user"></lightning-avatar>
+      </lightning-layout-item>
+      <lightning-layout-item class="slds-p-left_small">
+        <h3 class="name">{name}</h3>
+      </lightning-layout-item>
+    </lightning-layout>
 
-    <div class="grid">
-      <div>
+    <lightning-layout multiple-rows="true" pull-to-boundary="small">
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>Date of Birth</strong></p>
         <p class="value">{dob}</p>
-      </div>
-      <div>
+      </lightning-layout-item>
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>Gender</strong></p>
         <p class="value">{gender}</p>
-      </div>
-      <div>
+      </lightning-layout-item>
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>DBN</strong></p>
         <p class="value">{dbn}</p>
-      </div>
-      <div>
+      </lightning-layout-item>
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>DoD ID #</strong></p>
         <p class="value">{dodId}</p>
-      </div>
-      <div>
+      </lightning-layout-item>
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>PCM Clinic</strong></p>
         <p class="value">{pcmClinic}</p>
-      </div>
-      <div>
+      </lightning-layout-item>
+      <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
         <p class="label"><strong>PCM</strong></p>
         <p class="value">{pcm}</p>
-      </div>
-    </div>
+      </lightning-layout-item>
+    </lightning-layout>
 
-    <div slot="footer" class="slds-text-align_center">
+    <lightning-layout-item slot="footer" class="slds-text-align_center">
       <a class="slds-text-link GNAL-clickable" data-url="#" onclick={handleNav}>Click here to modify DEERS</a>
-    </div>
+    </lightning-layout-item>
   </c-gnal-card>
 </template>

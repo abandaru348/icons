@@ -1,12 +1,12 @@
 /**
  * GNALBannerComponent
- * Accessible hero banner with image background and gradient overlay.
+ * Branded banner with image background and gradient overlay.
  */
 import { api, LightningElement } from 'lwc';
 
 export default class GnalBannerComponent extends LightningElement {
   @api backgroundImageUrl;
-  @api altText = 'Hero banner';
+  @api altText = 'Banner background';
   @api headline = 'Available Anytime, Anywhere – Always!';
   @api subtitle = '24/7 self-help capabilities, on-demand telehealth registered nurses, and care coordination.';
 

@@ -1,21 +1,27 @@
 <template>
   <c-gnal-card title="Upcoming Appointments">
-    <div class="item slds-m-bottom_medium">
-      <div class="info">
+    <lightning-layout class="slds-m-bottom_medium" vertical-align="center">
+      <lightning-layout-item class="info" flexibility="grow">
         <p class="title"><strong>Dr. Ragu Patel</strong></p>
         <p class="muted">Dermatology</p>
         <p class="muted">WHN Dept. of Dermatology</p>
-      </div>
-      <div class="date"><span>01/23/2025</span> <lightning-icon icon-name="utility:chevrondown" size="x-small"></lightning-icon></div>
-    </div>
+      </lightning-layout-item>
+      <lightning-layout-item class="date" flexibility="shrink">
+        <span>01/23/2025</span>
+        <lightning-icon icon-name="utility:chevrondown" size="x-small"></lightning-icon>
+      </lightning-layout-item>
+    </lightning-layout>
 
-    <div class="item">
-      <div class="info">
+    <lightning-layout vertical-align="center">
+      <lightning-layout-item class="info" flexibility="grow">
         <p class="title"><strong>Dr. Kristen Jones</strong></p>
         <p class="muted">Internal Medicine</p>
         <p class="muted">Dr. Jones &amp; Associates</p>
-      </div>
-      <div class="date"><span>04/28/2025</span> <lightning-icon icon-name="utility:chevrondown" size="x-small"></lightning-icon></div>
-    </div>
+      </lightning-layout-item>
+      <lightning-layout-item class="date" flexibility="shrink">
+        <span>04/28/2025</span>
+        <lightning-icon icon-name="utility:chevrondown" size="x-small"></lightning-icon>
+      </lightning-layout-item>
+    </lightning-layout>
   </c-gnal-card>
 </template>

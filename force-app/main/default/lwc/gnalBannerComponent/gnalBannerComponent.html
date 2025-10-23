@@ -1,8 +1,8 @@
 <template>
-  <div class="banner" style={computedBackground} role="img" aria-label={altText}>
-    <div class="overlay">
+  <lightning-layout class="banner" style={computedBackground} multiple-rows="true" role="img" aria-label={altText}>
+    <lightning-layout-item size="12" class="overlay">
       <h1 class="title">{headline}</h1>
       <p class="subtitle">{subtitle}</p>
-    </div>
-  </div>
+    </lightning-layout-item>
+  </lightning-layout>
 </template>
