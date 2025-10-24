@@ -17,25 +17,6 @@
 .headline { font-size: 1.4rem; font-weight: 700; margin: 0 0 6px; }
 .sub { font-size: 0.95rem; margin: 0; }
 
-.pause {
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid #e5e7eb;
-    width: 28px; height: 28px; border-radius: 50%;
-    display: grid; place-items: center; cursor: pointer;
-}
-
-.dots {
-    position: absolute;
-    left: 50%;
-    bottom: 8px;
-    transform: translateX(-50%);
-    display: flex; gap: 6px;
-}
-.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.7); border: none; }
-.dot[aria-current="true"], .dot.active { background: #fff; }
 
 @media (max-width: 768px) {
     .overlay { right: 16px; }
