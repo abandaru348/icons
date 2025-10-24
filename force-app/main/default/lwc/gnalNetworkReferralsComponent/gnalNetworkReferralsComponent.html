@@ -1,0 +1,49 @@
+<!--
+/****************************************************************************************************
+Methods Used : [handleItemClick, handleViewAll]
+Created Date : [10-22-2025]
+@description : Displays Network Referrals tile similar to mock with items and dates.
+               Clickable for authenticated users only.
+@author : [Pratyusha Mungamuri]
+Modification Log:
+Date            Author                     Modification
+10-23-2025      [Assistant]                Initial creation
+******************************************************************************************************/
+-->
+
+<template>
+    <div class="tile-container">
+        <h3 class="tile-title">Network Referrals</h3>
+
+        <div class="list-container" role="list">
+            <template for:each={referrals} for:item="ref">
+                <div key={ref.id} class="list-item" role="listitem">
+                    <template if:true={isAuthenticated}>
+                        <a class="item-link active" data-id={ref.id} onclick={handleItemClick}>
+                            <span class="item-icon" aria-hidden="true">📄</span>
+                            <div class="item-content">
+                                <div class="item-title">{ref.title}</div>
+                                <div class="item-sub">{ref.subTitle}</div>
+                            </div>
+                            <span class="item-date">{ref.dateLabel}</span>
+                        </a>
+                    </template>
+                    <template if:false={isAuthenticated}>
+                        <div class="item-link disabled">
+                            <span class="item-icon" aria-hidden="true">📄</span>
+                            <div class="item-content">
+                                <div class="item-title">{ref.title}</div>
+                                <div class="item-sub">{ref.subTitle}</div>
+                            </div>
+                            <span class="item-date">{ref.dateLabel}</span>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <div class="tile-footer">
+            <a class="view-all" href="javascript:void(0)" onclick={handleViewAll}>View All</a>
+        </div>
+    </div>
+</template>

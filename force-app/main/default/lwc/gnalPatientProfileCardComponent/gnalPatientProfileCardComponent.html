@@ -1,0 +1,38 @@
+<!--
+/****************************************************************************************************
+Created Date : [10-22-2025]
+@description : Patient mini profile card shown on the right in mock.
+               Kept independent to drop into any page layout. Header/footer ignored.
+******************************************************************************************************/
+-->
+<template>
+    <div class="card-container">
+        <div class="header">
+            <div class="avatar">{initials}</div>
+            <div class="name">{fullName}</div>
+        </div>
+        <div class="grid">
+            <div class="row">
+                <span class="label">Date of Birth</span>
+                <span class="value">{dob}</span>
+                <span class="label">Gender</span>
+                <span class="value">{gender}</span>
+            </div>
+            <div class="row">
+                <span class="label">DBN</span>
+                <span class="value">{dbn}</span>
+                <span class="label">DoD ID #</span>
+                <span class="value">{dodId}</span>
+            </div>
+            <div class="row">
+                <span class="label">PCM Clinic</span>
+                <span class="value">{pcmClinic}</span>
+                <span class="label">PMC</span>
+                <span class="value">{pmc}</span>
+            </div>
+        </div>
+        <div class="footer">
+            <a href="javascript:void(0)" onclick={handleViewProfile}>View Profile</a>
+        </div>
+    </div>
+</template>

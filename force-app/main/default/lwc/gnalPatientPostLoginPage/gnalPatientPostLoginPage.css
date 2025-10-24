@@ -1,0 +1,3 @@
+.page-container { padding: 8px; }
+.tiles-section { max-width: 1280px; margin: 0 auto; }
+:host { display: block; }

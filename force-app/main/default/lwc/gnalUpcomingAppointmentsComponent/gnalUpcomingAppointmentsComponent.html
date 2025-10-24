@@ -1,0 +1,49 @@
+<!--
+/****************************************************************************************************
+Methods Used : [handleItemClick, handleViewAll]
+Created Date : [10-22-2025]
+@description : Displays Upcoming Appointments list tile. Items are clickable
+               for authenticated users and non-clickable for guests.
+@author : [Pratyusha Mungamuri]
+Modification Log:
+Date            Author                     Modification
+10-23-2025      [Assistant]                Initial creation
+******************************************************************************************************/
+-->
+
+<template>
+    <div class="tile-container">
+        <h3 class="tile-title">Upcoming Appointments</h3>
+
+        <div class="list-container" role="list">
+            <template for:each={appointments} for:item="appt">
+                <div key={appt.id} class="list-item" role="listitem">
+                    <template if:true={isAuthenticated}>
+                        <a class="item-link active" data-id={appt.id} onclick={handleItemClick}>
+                            <span class="item-icon" aria-hidden="true">🗓️</span>
+                            <div class="item-content">
+                                <div class="item-title">{appt.title}</div>
+                                <div class="item-sub">{appt.subTitle}</div>
+                            </div>
+                            <span class="item-date">{appt.dateLabel}</span>
+                        </a>
+                    </template>
+                    <template if:false={isAuthenticated}>
+                        <div class="item-link disabled">
+                            <span class="item-icon" aria-hidden="true">🗓️</span>
+                            <div class="item-content">
+                                <div class="item-title">{appt.title}</div>
+                                <div class="item-sub">{appt.subTitle}</div>
+                            </div>
+                            <span class="item-date">{appt.dateLabel}</span>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <div class="tile-footer">
+            <a class="view-all" href="javascript:void(0)" onclick={handleViewAll}>View All</a>
+        </div>
+    </div>
+</template>

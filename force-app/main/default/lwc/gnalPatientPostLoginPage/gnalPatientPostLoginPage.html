@@ -1,0 +1,29 @@
+<template>
+    <div class="page-container">
+        <div class="tiles-section">
+            <lightning-layout multiple-rows horizontal-align="center" pull-to-boundary="small">
+                <!-- Row 1 -->
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-self-health-capabilities-component></c-gnal-self-health-capabilities-component>
+                </lightning-layout-item>
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-tele-health-component></c-gnal-tele-health-component>
+                </lightning-layout-item>
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
+                </lightning-layout-item>
+
+                <!-- Row 2 -->
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-upcoming-appointments-component></c-gnal-upcoming-appointments-component>
+                </lightning-layout-item>
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-network-referrals-component></c-gnal-network-referrals-component>
+                </lightning-layout-item>
+                <lightning-layout-item size="4" padding="around-small">
+                    <c-gnal-patient-profile-card-component></c-gnal-patient-profile-card-component>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+    </div>
+</template>
