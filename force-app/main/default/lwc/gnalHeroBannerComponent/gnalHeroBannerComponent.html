@@ -1,0 +1,29 @@
+<!--
+/****************************************************************************************************
+Created Date : [10-24-2025]
+@description : Hero banner carousel matching mock. Includes pause/play, bullets,
+               and responsive sizing. Header/footer intentionally excluded.
+******************************************************************************************************/
+-->
+<template>
+    <div class="banner" style={bannerStyle}>
+        <div class="overlay">
+            <h2 class="headline">Available Anytime, Anywhere – Always!</h2>
+            <p class="sub">24/7 self-help capabilities, on-demand telehealth registered nurses, and care coordination.</p>
+        </div>
+
+        <button class="pause" onclick={togglePause} title={pauseTitle} aria-pressed={isPaused}>
+            <span if:true={isPaused}>▶</span>
+            <span if:false={isPaused}>⏸</span>
+        </button>
+
+        <div class="dots">
+            <template for:each={images} for:item="img" for:index="index">
+                <button key={img.src}
+                        class={dotClass}
+                        data-index={index}
+                        onclick={handleDot} aria-label={img.alt}></button>
+            </template>
+        </div>
+    </div>
+</template>

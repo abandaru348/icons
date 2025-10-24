@@ -1,5 +1,5 @@
 .page-container { padding: 8px; }
-.tiles-section { max-width: 1280px; margin: 0 auto; }
+.tiles-section, .hero-section { max-width: 1280px; margin: 0 auto; }
 :host { display: block; }
 
 .right-column {
