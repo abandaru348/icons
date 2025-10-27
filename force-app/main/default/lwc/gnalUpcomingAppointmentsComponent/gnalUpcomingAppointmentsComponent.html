@@ -22,7 +22,7 @@ Date            Author                     Modification
                         <div key={appt.id} class="list-item" role="listitem">
                             <template if:true={isAuthenticated}>
                                 <a class="item-link active" data-id={appt.id} onclick={handleItemClick}>
-                                    <span class="item-icon" aria-hidden="true">🗓️</span>
+                                    <lightning-icon icon-name="utility:event" size="x-small" class="item-icon" alternative-text="Appointment"></lightning-icon>
                                     <div class="item-content">
                                         <div class="item-title">{appt.title}</div>
                                         <div class="item-sub">{appt.subTitle}</div>
@@ -32,7 +32,7 @@ Date            Author                     Modification
                             </template>
                             <template if:false={isAuthenticated}>
                                 <div class="item-link disabled">
-                                    <span class="item-icon" aria-hidden="true">🗓️</span>
+                                    <lightning-icon icon-name="utility:event" size="x-small" class="item-icon" alternative-text="Appointment"></lightning-icon>
                                     <div class="item-content">
                                         <div class="item-title">{appt.title}</div>
                                         <div class="item-sub">{appt.subTitle}</div>
@@ -45,7 +45,7 @@ Date            Author                     Modification
                 </div>
 
                 <div class="tile-footer">
-                    <a class="view-all" href="javascript:void(0)" onclick={handleViewAll}>View All</a>
+                    <lightning-button variant="base" class="view-all" label="View All" onclick={handleViewAll}></lightning-button>
                 </div>
             </div>
         </lightning-layout-item>

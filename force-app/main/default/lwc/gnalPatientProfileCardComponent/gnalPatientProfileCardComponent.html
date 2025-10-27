@@ -6,33 +6,45 @@ Created Date : [10-22-2025]
 ******************************************************************************************************/
 -->
 <template>
-    <div class="card-container">
-        <div class="header">
-            <div class="avatar">{initials}</div>
-            <div class="name">{fullName}</div>
-        </div>
-        <div class="grid">
-            <div class="row">
+    <lightning-card class="card-container">
+        <lightning-layout class="header" vertical-align="center">
+            <lightning-layout-item flexibility="shrink">
+                <lightning-avatar initials={initials} size="medium" alternative-text="Patient"></lightning-avatar>
+            </lightning-layout-item>
+            <lightning-layout-item class="slds-p-left_small">
+                <div class="name">{fullName}</div>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <lightning-layout class="grid" multiple-rows="true">
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Date of Birth</span>
                 <span class="value">{dob}</span>
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Gender</span>
                 <span class="value">{gender}</span>
-            </div>
-            <div class="row">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">DBN</span>
                 <span class="value">{dbn}</span>
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">DoD ID #</span>
                 <span class="value">{dodId}</span>
-            </div>
-            <div class="row">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">PCM Clinic</span>
                 <span class="value">{pcmClinic}</span>
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">PMC</span>
                 <span class="value">{pmc}</span>
-            </div>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <div slot="footer" class="footer">
+            <lightning-button variant="base" label="View Profile" onclick={handleViewProfile}></lightning-button>
         </div>
-        <div class="footer">
-            <a href="javascript:void(0)" onclick={handleViewProfile}>View Profile</a>
-        </div>
-    </div>
+    </lightning-card>
 </template>
