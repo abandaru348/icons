@@ -9,6 +9,7 @@
     max-width: 420px;
     font-family: 'Inter', Arial, sans-serif;
     box-sizing: border-box;
+    height: 100%;
 }
 
 .tile-title {

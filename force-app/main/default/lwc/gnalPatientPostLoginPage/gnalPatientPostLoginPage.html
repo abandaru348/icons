@@ -16,17 +16,17 @@
             <lightning-layout horizontal-align="spread" pull-to-boundary="small" vertical-align="start">
                 <!-- Left column (3 tiles across) -->
                 <lightning-layout-item size="12" medium-device-size="8" large-device-size="8" padding="around-small">
-                    <lightning-layout horizontal-align="spread">
-                        <lightning-layout-item size="12" medium-device-size="4" large-device-size="4" padding="around-small">
+                    <div class="left-tiles-grid">
+                        <div class="tile-wrapper">
                             <c-gnal-self-health-capabilities-component></c-gnal-self-health-capabilities-component>
-                        </lightning-layout-item>
-                        <lightning-layout-item size="12" medium-device-size="4" large-device-size="4" padding="around-small">
+                        </div>
+                        <div class="tile-wrapper">
                             <c-gnal-tele-health-component></c-gnal-tele-health-component>
-                        </lightning-layout-item>
-                        <lightning-layout-item size="12" medium-device-size="4" large-device-size="4" padding="around-small">
+                        </div>
+                        <div class="tile-wrapper">
                             <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
-                        </lightning-layout-item>
-                    </lightning-layout>
+                        </div>
+                    </div>
                 </lightning-layout-item>
 
                 <!-- Right column (stacked vertically) -->
