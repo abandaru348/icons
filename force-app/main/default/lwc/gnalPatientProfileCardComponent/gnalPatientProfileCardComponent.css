@@ -6,9 +6,10 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     padding: 16px;
     width: 100%;
-    /* Fill the layout column width; avoid capping the width */
+    /* Constrain to a readable width similar to mock */
+    max-width: 420px;
     box-sizing: border-box;
-    height: 100%;
+    height: auto;
     font-family: 'Inter', Arial, sans-serif;
 }
 .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }

@@ -2,10 +2,8 @@
 .tiles-section, .hero-section { max-width: 1200px; margin: 0 auto; }
 :host { display: block; }
 
-/* Ensure hero banner and profile card are equal height and never overlap */
-.hero-section .slds-grid { align-items: stretch; }
-.hero-section .slds-col { display: flex; }
-.hero-section .slds-col > * { flex: 1 1 auto; min-height: 260px; }
+/* Keep natural heights; avoid forced stretching to prevent overlap */
+.hero-section .slds-grid { align-items: start; }
 
 /* Left tiles area: strict 3-column grid with equal gaps */
 .left-tiles-grid {
