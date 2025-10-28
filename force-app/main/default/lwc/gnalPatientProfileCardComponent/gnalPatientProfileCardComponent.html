@@ -17,14 +17,17 @@ Created Date : [10-22-2025]
         </lightning-layout>
 
         <lightning-layout class="grid" multiple-rows="true">
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
+            <!-- Make DOB and Gender take full width on their own rows -->
+            <lightning-layout-item size="12" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Date of Birth</span>
                 <span class="value">{dob}</span>
             </lightning-layout-item>
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
+            <lightning-layout-item size="12" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Gender</span>
                 <span class="value">{gender}</span>
             </lightning-layout-item>
+
+            <!-- Remaining 4 data points in 2 columns over 2 rows -->
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">DBN</span>
                 <span class="value">{dbn}</span>
