@@ -16,37 +16,37 @@ Created Date : [10-22-2025]
             </lightning-layout-item>
         </lightning-layout>
 
-        <div class="fields-grid">
+        <lightning-layout class="fields" multiple-rows="true">
             <!-- Row 1: DOB (left) and Gender (right) -->
-            <div class="field">
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Date of Birth</span>
                 <span class="value">{dob}</span>
-            </div>
-            <div class="field">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">Gender</span>
                 <span class="value">{gender}</span>
-            </div>
+            </lightning-layout-item>
 
             <!-- Row 2: DBN and DoD ID -->
-            <div class="field">
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">DBN</span>
                 <span class="value">{dbn}</span>
-            </div>
-            <div class="field">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">DoD ID #</span>
                 <span class="value">{dodId}</span>
-            </div>
+            </lightning-layout-item>
 
             <!-- Row 3: PCM Clinic and PMC -->
-            <div class="field">
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">PCM Clinic</span>
                 <span class="value">{pcmClinic}</span>
-            </div>
-            <div class="field">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
                 <span class="label">PMC</span>
                 <span class="value">{pmc}</span>
-            </div>
-        </div>
+            </lightning-layout-item>
+        </lightning-layout>
 
         <div slot="footer" class="footer">
             <lightning-button variant="base" label="View Profile" onclick={handleViewProfile}></lightning-button>
