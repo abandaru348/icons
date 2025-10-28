@@ -3,7 +3,7 @@
 :host { display: block; }
 
 /* Keep natural heights; avoid forced stretching to prevent overlap */
-.hero-section .slds-grid { align-items: start; }
+.hero-section .slds-grid { align-items: flex-start; }
 
 /* Left tiles area: strict 3-column grid with equal gaps */
 .left-tiles-grid {
