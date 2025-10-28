@@ -19,32 +19,68 @@ Created Date : [10-22-2025]
         <lightning-layout class="fields" multiple-rows="true">
             <!-- Row 1: DOB (left) and Gender (right) -->
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="Date of Birth" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={dob} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="Date of Birth" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={dob} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="Gender" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={gender} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="Gender" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={gender} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
 
             <!-- Row 2: DBN and DoD ID -->
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="DBN" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={dbn} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="DBN" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={dbn} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="DoD ID #" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={dodId} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="DoD ID #" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={dodId} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
 
             <!-- Row 3: PCM Clinic and PMC -->
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="PCM Clinic" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={pcmClinic} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="PCM Clinic" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={pcmClinic} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
             <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-formatted-text value="PMC" class="label"></lightning-formatted-text>
-                <lightning-formatted-text value={pmc} class="value"></lightning-formatted-text>
+                <lightning-layout class="field" multiple-rows="true">
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value="PMC" class="label-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-formatted-text value={pmc} class="value-text"></lightning-formatted-text>
+                    </lightning-layout-item>
+                </lightning-layout>
             </lightning-layout-item>
         </lightning-layout>
 
