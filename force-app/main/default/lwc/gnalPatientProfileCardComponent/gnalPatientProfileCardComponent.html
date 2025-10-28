@@ -12,7 +12,7 @@ Created Date : [10-22-2025]
                 <lightning-avatar initials={initials} size="medium" alternative-text="Patient"></lightning-avatar>
             </lightning-layout-item>
             <lightning-layout-item class="slds-p-left_small">
-                <div class="name">{fullName}</div>
+                <lightning-formatted-text value={fullName} class="name"></lightning-formatted-text>
             </lightning-layout-item>
         </lightning-layout>
 
@@ -48,8 +48,10 @@ Created Date : [10-22-2025]
             </lightning-layout-item>
         </lightning-layout>
 
-        <div slot="footer" class="footer">
-            <lightning-button variant="base" label="View Profile" onclick={handleViewProfile}></lightning-button>
-        </div>
+        <lightning-layout slot="footer" horizontal-align="end">
+            <lightning-layout-item>
+                <lightning-button variant="base" label="View Profile" onclick={handleViewProfile}></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
     </lightning-card>
 </template>
