@@ -2,8 +2,14 @@
 .tiles-section, .hero-section { max-width: 1200px; margin: 0 auto; }
 :host { display: block; }
 
-/* Keep natural heights; avoid forced stretching to prevent overlap */
-.hero-section .slds-grid { align-items: flex-start; }
+/* Hero area: two columns (8/4) with top alignment */
+.hero-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+.hero-left, .hero-right { min-width: 0; }
 
 /* Left tiles area: strict 3-column grid with equal gaps */
 .left-tiles-grid {
@@ -28,6 +34,9 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
     .left-tiles-grid { grid-template-columns: 1fr 1fr; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-right { order: 2; }
+    .hero-left { order: 1; }
     .right-column { margin-top: 8px; }
 }
 @media (max-width: 640px) {
