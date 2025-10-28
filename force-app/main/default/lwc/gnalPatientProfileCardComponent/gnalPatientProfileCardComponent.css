@@ -1,15 +1,15 @@
 /* Compact profile card following the visual style */
-.card-container {
+.card-container,
+.tile-container {
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px; /* ensure same radius as banner */
+    border: 1px solid #ccc; /* match other tiles */
+    border-radius: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     padding: 16px;
     width: 100%;
-    /* Constrain to a readable width similar to mock */
-    max-width: 420px;
+    max-width: none; /* allow full column width like tiles */
     box-sizing: border-box;
-    height: auto;
+    height: 100%;
     font-family: 'Inter', Arial, sans-serif;
 }
 .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -24,6 +24,6 @@
 .field { display: flex; flex-direction: column; }
 .fields .label-text { display: block; color: #6b7280; font-size: 0.8rem; margin-bottom: 2px; }
 .fields .value-text { display: block; color: #111827; font-size: 0.9rem; }
-.footer { text-align: right; margin-top: 8px; }
-.footer a { color: #0070d2; font-size: 0.85rem; text-decoration: none; }
-.footer a:hover { text-decoration: underline; }
+.tile-footer { text-align: center; margin-top: 12px; }
+.view-all { font-size: 0.85rem; color: #0070d2; text-decoration: none; }
+.view-all:hover { text-decoration: underline; }
