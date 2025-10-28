@@ -5,6 +5,8 @@
     background-size: cover;
     background-position: center;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border-radius: 12px; /* match card corners */
+    overflow: hidden; /* prevent overlay overflow */
 }
 .overlay {
     position: absolute;

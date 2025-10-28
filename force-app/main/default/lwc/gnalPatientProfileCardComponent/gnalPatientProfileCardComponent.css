@@ -2,7 +2,7 @@
 .card-container {
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 12px; /* ensure same radius as banner */
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     padding: 16px;
     width: 100%;
