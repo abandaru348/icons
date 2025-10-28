@@ -22,8 +22,8 @@
     row-gap: 8px;
 }
 .field { display: flex; flex-direction: column; }
-.label { color: #6b7280; font-size: 0.8rem; }
-.value { color: #111827; font-size: 0.9rem; }
+.fields .label { display: block; color: #6b7280; font-size: 0.8rem; margin-bottom: 2px; }
+.fields .value { display: block; color: #111827; font-size: 0.9rem; }
 .footer { text-align: right; margin-top: 8px; }
 .footer a { color: #0070d2; font-size: 0.85rem; text-decoration: none; }
 .footer a:hover { text-decoration: underline; }
