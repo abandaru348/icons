@@ -1,0 +1,15 @@
+<template>
+    <lightning-button label="Open Example Modal" variant="brand" onclick={openModal}></lightning-button>
+
+    <c-event-modal
+        open={isOpen}
+        title="Deployment sleep strategies to cope with mental health and wellbeing"
+        when="Tuesday, June 17, 2025, 2:00 PM PST"
+        image-url={image}
+        description1={desc}
+        description2={desc}
+        onclose={handleClose}
+        onenroll={handleEnroll}
+    ></c-event-modal>
+</template>
+
