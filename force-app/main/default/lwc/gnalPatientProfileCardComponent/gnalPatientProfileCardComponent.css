@@ -15,8 +15,13 @@
 .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; background: #1a3d8f; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
 .name { font-weight: 600; }
-.grid { display: grid; gap: 8px; }
-.row { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; row-gap: 2px; }
+.fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+    row-gap: 8px;
+}
+.field { display: flex; flex-direction: column; }
 .label { color: #6b7280; font-size: 0.8rem; }
 .value { color: #111827; font-size: 0.9rem; }
 .footer { text-align: right; margin-top: 8px; }
