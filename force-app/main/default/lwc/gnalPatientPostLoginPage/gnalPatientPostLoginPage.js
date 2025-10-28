@@ -1,3 +1,8 @@
 import { LightningElement } from 'lwc';
-
-export default class GnalPatientPostLoginPage extends LightningElement {}
+import { loadStyle } from 'lightning/platformResourceLoader';
+import ASSETS from '@salesforce/resourceUrl/mymh_assets';
+export default class GnalPatientPostLoginPage extends LightningElement {
+    connectedCallback() {
+        loadStyle(this, `${ASSETS}/css/mymh_global.css`);
+    }
+}

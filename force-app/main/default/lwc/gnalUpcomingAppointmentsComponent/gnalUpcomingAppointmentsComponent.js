@@ -1,6 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import ASSETS from '@salesforce/resourceUrl/mymh_assets';
 
 /**
  * Component: gnalUpcomingAppointmentsComponent
@@ -34,6 +36,17 @@ export default class GnalUpcomingAppointmentsComponent extends NavigationMixin(L
             url: '#'
         }
     ];
+
+    connectedCallback() {
+        loadStyle(this, `${ASSETS}/css/mymh_global.css`);
+    }
+
+    get viewAppointments() {
+        return this.appointments.map((a) => ({
+            ...a,
+            ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
+        }));
+    }
 
     handleItemClick(event) {
         if (!this.isAuthenticated) return;

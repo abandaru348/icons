@@ -1,6 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import ASSETS from '@salesforce/resourceUrl/mymh_assets';
 
 /**
  * Component: gnalNetworkReferralsComponent
@@ -33,6 +35,17 @@ export default class GnalNetworkReferralsComponent extends NavigationMixin(Light
             url: '#'
         }
     ];
+
+    connectedCallback() {
+        loadStyle(this, `${ASSETS}/css/mymh_global.css`);
+    }
+
+    get viewReferrals() {
+        return this.referrals.map((r) => ({
+            ...r,
+            ariaLabel: `Open referral ${r.title} dated ${r.dateLabel}`
+        }));
+    }
 
     handleItemClick(event) {
         if (!this.isAuthenticated) return;

@@ -12,42 +12,44 @@ Date            Author                     Modification
 -->
 
 <template>
-    <lightning-layout multiple-rows>
-        <lightning-layout-item size="12">
-            <div class="tile-container">
-                <h3 class="tile-title">Telehealth Registered Nurse Services</h3>
+    <lightning-card title="Telehealth Registered Nurse Services" icon-name="utility:description" class="mh-card">
+        <div class="slds-p-horizontal_small" role="region" aria-labelledby="refHeading">
+            <h3 id="refHeading" class="slds-assistive-text">Telehealth Registered Nurse Services</h3>
 
-                <div class="list-container" role="list">
-                    <template for:each={referrals} for:item="ref">
-                        <div key={ref.id} class="list-item" role="listitem">
-                            <template if:true={isAuthenticated}>
-                                <a class="item-link active" data-id={ref.id} onclick={handleItemClick}>
-                                    <lightning-icon icon-name="utility:description" size="x-small" class="item-icon" alternative-text="Referral"></lightning-icon>
-                                    <div class="item-content">
-                                        <div class="item-title">{ref.title}</div>
-                                        <div class="item-sub">{ref.subTitle}</div>
-                                    </div>
-                                    <span class="item-date">{ref.dateLabel}</span>
-                                </a>
-                            </template>
-                            <template if:false={isAuthenticated}>
-                                <div class="item-link disabled">
-                                    <lightning-icon icon-name="utility:description" size="x-small" class="item-icon" alternative-text="Referral"></lightning-icon>
-                                    <div class="item-content">
-                                        <div class="item-title">{ref.title}</div>
-                                        <div class="item-sub">{ref.subTitle}</div>
-                                    </div>
-                                    <span class="item-date">{ref.dateLabel}</span>
+            <ul class="slds-has-dividers_around-space" role="list">
+                <template for:each={viewReferrals} for:item="ref">
+                    <li key={ref.id} class="slds-item" role="listitem">
+                        <template if:true={isAuthenticated}>
+                            <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item"
+                               data-id={ref.id}
+                               aria-label={ref.ariaLabel}
+                               title={ref.ariaLabel}
+                               onclick={handleItemClick}>
+                                <lightning-icon icon-name="utility:description" size="x-small" alternative-text="Referral"></lightning-icon>
+                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
+                                    <div class="slds-text-title_bold slds-truncate">{ref.title}</div>
+                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{ref.subTitle}</div>
                                 </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+                                <span class="mh-badge">{ref.dateLabel}</span>
+                            </a>
+                        </template>
+                        <template if:false={isAuthenticated}>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item" aria-disabled="true" tabindex="-1">
+                                <lightning-icon icon-name="utility:description" size="x-small" alternative-text="Referral"></lightning-icon>
+                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
+                                    <div class="slds-text-title_bold slds-truncate">{ref.title}</div>
+                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{ref.subTitle}</div>
+                                </div>
+                                <span class="mh-badge">{ref.dateLabel}</span>
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
 
-                <div class="tile-footer">
-                    <lightning-button variant="base" class="view-all" label="View All" onclick={handleViewAll}></lightning-button>
-                </div>
+            <div class="slds-align_absolute-center slds-m-top_small">
+                <lightning-button variant="base" label="View All" aria-label="View all Telehealth Registered Nurse Services" onclick={handleViewAll}></lightning-button>
             </div>
-        </lightning-layout-item>
-    </lightning-layout>
+        </div>
+    </lightning-card>
 </template>
