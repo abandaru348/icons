@@ -6,7 +6,7 @@ Created Date : [10-22-2025]
 ******************************************************************************************************/
 -->
 <template>
-    <lightning-card class="card-container">
+    <div class="tile-container">
         <lightning-layout class="header" vertical-align="center">
             <lightning-layout-item flexibility="shrink">
                 <lightning-avatar initials={initials} size="medium" variant="circle" alternative-text="Patient"></lightning-avatar>
@@ -84,10 +84,8 @@ Created Date : [10-22-2025]
             </lightning-layout-item>
         </lightning-layout>
 
-        <lightning-layout slot="footer" horizontal-align="center">
-            <lightning-layout-item>
-                <lightning-button variant="base" label="View Profile" onclick={handleViewProfile}></lightning-button>
-            </lightning-layout-item>
-        </lightning-layout>
-    </lightning-card>
+        <div class="tile-footer">
+            <lightning-button variant="base" class="view-all" label="View Profile" onclick={handleViewProfile}></lightning-button>
+        </div>
+    </div>
 </template>
