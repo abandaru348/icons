@@ -1,0 +1,10 @@
+<template>
+  <lightning-card title={title} icon-name={iconName} class="gnal-card">
+    <slot></slot>
+    <template if:true={showFooter}>
+      <div slot="footer">
+        <slot name="footer"></slot>
+      </div>
+    </template>
+  </lightning-card>
+</template>

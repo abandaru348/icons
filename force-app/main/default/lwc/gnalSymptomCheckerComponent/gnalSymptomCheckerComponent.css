@@ -1,0 +1,4 @@
+.link-list{ list-style:none; padding-left:0; }
+.link-list li{ padding:8px 0; border-top:1px solid #e0e0e0; }
+.link-list li:first-child{ border-top:1px solid #e0e0e0; }
+.link-list a{ color: var(--gnal-color-text); text-decoration:none; }

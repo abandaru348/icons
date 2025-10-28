@@ -1,0 +1,38 @@
+<template>
+  <c-gnal-card title="Symptom Checker &amp; Self-Help Capabilities">
+    <p class="slds-text-body_small slds-m-bottom_medium">
+      Self-Help Capabilities include an online symptom checker to explore causes and get guidance on next steps.
+    </p>
+
+    <ul class="link-list" role="list">
+      <li>
+        <a class="GNAL-clickable" data-url="https://www.google.com/" onclick={handleNav}>
+          <lightning-icon icon-name="utility:search" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+          Symptom Checker
+        </a>
+      </li>
+      <li>
+        <a class="GNAL-clickable" data-url="#" onclick={handleNav}>
+          <lightning-icon icon-name="utility:resource_capacity" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+          Other Resources
+        </a>
+      </li>
+      <li>
+        <a class="GNAL-clickable" data-url="#" onclick={handleNav}>
+          <lightning-icon icon-name="utility:location" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+          Location Services
+        </a>
+      </li>
+      <li>
+        <a class="GNAL-clickable" data-url="#" onclick={handleNav}>
+          <lightning-icon icon-name="utility:knowledge_base" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+          Patient Education
+        </a>
+      </li>
+    </ul>
+
+    <div slot="footer" class="slds-text-align_center">
+      <a class="GNAL-clickable slds-text-link" data-url="#" onclick={handleNav}>Learn More</a>
+    </div>
+  </c-gnal-card>
+</template>

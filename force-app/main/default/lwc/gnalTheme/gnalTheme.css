@@ -1,0 +1,11 @@
+:root{
+  --gnal-color-primary:#1a3d8f;
+  --gnal-color-accent:#30CBD9;
+  --gnal-color-link:#0070d2;
+  --gnal-color-text:#1f2937;
+  --gnal-color-muted:#4b5563;
+  --gnal-border-radius:12px;
+}
+
+.GNAL-clickable{ cursor:pointer; }
+.GNAL-card-title{ color:var(--gnal-color-primary); }

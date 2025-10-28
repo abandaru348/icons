@@ -1,0 +1,18 @@
+<template>
+  <c-gnal-card title="Telehealth Registered Nurse Services">
+    <p class="slds-text-body_small slds-m-bottom_medium">
+      24/7 healthcare support through Nurse Advice Line for TRICARE beneficiaries. Keep your DBN ready.
+    </p>
+
+    <ul class="link-list" role="list">
+      <li><a class="GNAL-clickable" data-url="#" onclick={handleNav}><lightning-icon icon-name="utility:chat" size="x-small" class="slds-m-right_x-small"></lightning-icon>Chat</a></li>
+      <li><a class="GNAL-clickable" data-url="#" onclick={handleNav}><lightning-icon icon-name="utility:video" size="x-small" class="slds-m-right_x-small"></lightning-icon>Video</a></li>
+      <li><a class="GNAL-clickable" data-url="#" onclick={handleNav}><lightning-icon icon-name="utility:call" size="x-small" class="slds-m-right_x-small"></lightning-icon>Phone</a></li>
+      <li><a class="GNAL-clickable" data-url="#" onclick={handleNav}><lightning-icon icon-name="utility:email" size="x-small" class="slds-m-right_x-small"></lightning-icon>Email</a></li>
+    </ul>
+
+    <div slot="footer" class="slds-text-align_center">
+      <a class="GNAL-clickable slds-text-link" data-url="#" onclick={handleNav}>Learn More</a>
+    </div>
+  </c-gnal-card>
+</template>

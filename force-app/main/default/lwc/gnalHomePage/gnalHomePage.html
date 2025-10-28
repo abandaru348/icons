@@ -1,0 +1,45 @@
+<template>
+  <div class="slds-p-horizontal_medium slds-p-vertical_small">
+    <!-- Page Header -->
+    <lightning-layout horizontal-align="center">
+      <lightning-layout-item>
+        <h1 class="slds-text-heading_large slds-text-align_center slds-var-m-bottom_medium slds-var-m-top_large">
+          MyMilitaryHealth
+        </h1>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <!-- Banner Row -->
+    <lightning-layout class="slds-var-m-top_medium">
+      <lightning-layout-item size="12" padding="around-small">
+        <c-gnal-banner-component></c-gnal-banner-component>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <!-- Row 1 -->
+    <lightning-layout class="slds-var-m-top_medium" multiple-rows="true">
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-symptom-checker-component></c-gnal-symptom-checker-component>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-telehealth-services-component></c-gnal-telehealth-services-component>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-patient-info-component card-title="Patient"></c-gnal-patient-info-component>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <!-- Row 2 -->
+    <lightning-layout class="slds-var-m-top_medium" multiple-rows="true">
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-upcoming-appointments-component></c-gnal-upcoming-appointments-component>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+        <c-gnal-network-referrals-component></c-gnal-network-referrals-component>
+      </lightning-layout-item>
+    </lightning-layout>
+  </div>
+</template>

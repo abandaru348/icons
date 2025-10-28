@@ -1,0 +1,4 @@
+.name{ color: var(--gnal-color-link); font-weight:600; font-size:1.25rem; }
+.slds-text-color_muted{ color: var(--gnal-color-muted); }
+.label{ font-size:.75rem; margin-bottom:.25rem; }
+.value{ font-weight:500; font-size:.875rem; }
