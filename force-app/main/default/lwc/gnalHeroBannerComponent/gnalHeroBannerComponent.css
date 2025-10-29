@@ -16,6 +16,7 @@
     color: #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
+.banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .headline { font-size: 1.4rem; font-weight: 700; margin: 0 0 6px; }
 .sub { font-size: 0.95rem; margin: 0; }
 
