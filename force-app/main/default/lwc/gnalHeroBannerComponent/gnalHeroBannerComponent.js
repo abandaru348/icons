@@ -10,4 +10,17 @@ export default class GnalHeroBannerComponent extends LightningElement {
     get bannerStyle() {
         return `height:${this.height};border-radius:${this.radius};background-image:url(${this.imagePath});`;
     }
+
+    handleImgError(event) {
+        const fallback = `${ASSETS}/images/gnalfam.jpg`;
+        if (event && event.target) {
+            // Prevent infinite loop
+            event.target.onerror = null;
+            if (event.target.src !== fallback) {
+                event.target.src = fallback;
+            }
+        }
+        // Also update background-image style
+        this.imagePath = fallback;
+    }
 }
