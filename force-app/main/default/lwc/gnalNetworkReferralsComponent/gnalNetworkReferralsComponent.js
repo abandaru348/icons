@@ -2,7 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import ASSETS from '@salesforce/resourceUrl/mymh_assets';
+import ASSETS from '@salesforce/resourceUrl/GNAL_icons';
 
 /**
  * Component: gnalNetworkReferralsComponent

@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import ASSETS from '@salesforce/resourceUrl/mymh_assets';
+import ASSETS from '@salesforce/resourceUrl/GNAL_icons';
 
 export default class GnalHeroBannerComponent extends LightningElement {
     @api height = '260px';
