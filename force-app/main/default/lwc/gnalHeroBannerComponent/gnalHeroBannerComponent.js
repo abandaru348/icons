@@ -4,7 +4,7 @@ import ASSETS from '@salesforce/resourceUrl/GNAL_icons';
 export default class GnalHeroBannerComponent extends LightningElement {
     @api height = '260px';
     @api radius = '12px';
-    @api imagePath = `${ASSETS}/images/gnalfam.jpg`;
+    @api imagePath = `${ASSETS}/images/gnalfam.jpg?v=1`;
     @api heroAriaLabel = 'Family smiling outside; My Military Health hero banner';
 
     get bannerStyle() {
