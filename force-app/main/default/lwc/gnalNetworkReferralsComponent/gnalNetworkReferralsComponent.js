@@ -37,7 +37,11 @@ export default class GnalNetworkReferralsComponent extends NavigationMixin(Light
     ];
 
     connectedCallback() {
-        loadStyle(this, `${ASSETS}/css/mymh_global.css`);
+        // Load shared global css; fail gracefully if not available
+        loadStyle(this, `${ASSETS}/css/mymh_global.css`).catch(() => {
+            // eslint-disable-next-line no-console
+            console.warn('GNAL_icons: failed to load global CSS');
+        });
     }
 
     get viewReferrals() {
