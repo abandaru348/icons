@@ -36,6 +36,7 @@ export default class GnalNetworkReferralsComponent extends LightningElement {
             key: r.id,
             label: r.title,
             url: r.url,
+            subText: r.subTitle,
             rightText: r.dateLabel,
             ariaLabel: `Open referral ${r.title} dated ${r.dateLabel}`
         }));

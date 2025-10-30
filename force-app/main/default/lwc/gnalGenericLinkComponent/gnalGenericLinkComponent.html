@@ -15,14 +15,20 @@
                  aria-label={l.ariaLabel}
                  title={l.ariaLabel}>
                 <img if:true={l.icon} src={l.icon} alt="" class="mh-icon" />
-                <span class="slds-p-horizontal_small slds-truncate" style="flex:1">{l.label}</span>
+                <div class="slds-p-horizontal_small" style="flex:1">
+                  <div class="slds-truncate">{l.label}</div>
+                  <div if:true={l.subText} class="slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+                </div>
                 <span if:true={l.rightText} class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
               </a>
             </template>
             <template if:false={isAuthenticated}>
               <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item-disabled" aria-disabled="true">
                 <img if:true={l.icon} src={l.icon} alt="" class="mh-icon mh-icon--disabled" />
-                <span class="slds-p-horizontal_small slds-truncate" style="flex:1">{l.label}</span>
+                <div class="slds-p-horizontal_small" style="flex:1">
+                  <div class="slds-truncate">{l.label}</div>
+                  <div if:true={l.subText} class="slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+                </div>
                 <span if:true={l.rightText} class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
               </div>
             </template>
@@ -30,17 +36,10 @@
         </template>
       </ul>
 
-      <template if:true={footerUrl}>
-        <div class="slds-align_absolute-center slds-m-top_small">
-          <lightning-button variant="base" label={footerLabel} data-url={footerUrl} onclick={handleLearnMore}></lightning-button>
+      <template if:true={footerUrlResolved}>
+        <div class="slds-m-top_small slds-text-align_right">
+          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>{footerLabelResolved}</a>
         </div>
-      </template>
-      <template if:false={footerUrl}>
-        <template if:true={learnMoreUrl}>
-          <div class="slds-align_absolute-center slds-m-top_small">
-            <lightning-button variant="base" label={footerLabel} data-url={learnMoreUrl} onclick={handleLearnMore}></lightning-button>
-          </div>
-        </template>
       </template>
     </div>
   </lightning-card>
