@@ -1,8 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
-import { loadStyle } from 'lightning/platformResourceLoader';
-import ASSETS from '@salesforce/resourceUrl/GNAL_Icons';
+// No external CSS resource to load per latest direction
 
 /**
  * Component: gnalNetworkReferralsComponent
@@ -36,13 +35,7 @@ export default class GnalNetworkReferralsComponent extends NavigationMixin(Light
         }
     ];
 
-    connectedCallback() {
-        // Load shared global css; fail gracefully if not available
-        loadStyle(this, `${ASSETS}/css/mymh_global.css`).catch(() => {
-            // eslint-disable-next-line no-console
-            console.warn('GNAL_icons: failed to load global CSS');
-        });
-    }
+    // No-op: global css not used
 
     get viewReferrals() {
         return this.referrals.map((r) => ({
