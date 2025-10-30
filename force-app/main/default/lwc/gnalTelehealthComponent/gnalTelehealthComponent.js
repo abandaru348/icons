@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
 
-export default class GnalTelehealthTile extends LightningElement {
+export default class GnalTelehealthComponent extends LightningElement {
   @api links = [
     { label: 'Chat',  url: '#', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Chat.png' },
     { label: 'Video', url: '#', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Video.png' },
