@@ -1,3 +1,8 @@
-.mh-icon { width: 20px; height: 20px; margin-right: 10px; display: inline-block; }
+.mh-row { padding: 0.5rem 0; }
+.mh-icon { width: 16px; height: 16px; margin-right: 0.5rem; display: inline-block; }
 .mh-icon--disabled { filter: grayscale(100%); }
 .mh-item-disabled { cursor: not-allowed; pointer-events: none; }
+
+/* Tighten card section spacing to mirror mock */
+:host ::slotted(.slds-card__body),
+lightning-card .slds-card__body { padding-top: 0.25rem; }

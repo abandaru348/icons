@@ -9,7 +9,7 @@
         <template for:each={normalizedLinks} for:item="l">
           <li key={l.key} class="slds-item" role="listitem">
             <template if:true={isAuthenticated}>
-              <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link"
+              <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset mh-row"
                  data-url={l.url}
                  onclick={handleNavigate}
                  aria-label={l.ariaLabel}
@@ -23,7 +23,7 @@
               </a>
             </template>
             <template if:false={isAuthenticated}>
-              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item-disabled" aria-disabled="true">
+              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item-disabled mh-row" aria-disabled="true">
                 <img if:true={l.icon} src={l.icon} alt="" class="mh-icon mh-icon--disabled" />
                 <div class="slds-p-horizontal_small" style="flex:1">
                   <div class="slds-truncate">{l.label}</div>
