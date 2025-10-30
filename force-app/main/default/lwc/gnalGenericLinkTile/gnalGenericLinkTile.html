@@ -1,0 +1,40 @@
+<template>
+  <lightning-card title={title}>
+    <div class="slds-p-horizontal_small">
+      <template if:true={description}>
+        <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
+      </template>
+
+      <ul class="slds-has-dividers_around-space" role="list">
+        <template for:each={normalizedLinks} for:item="l">
+          <li key={l.key} class="slds-item" role="listitem">
+            <template if:true={isAuthenticated}>
+              <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link"
+                 data-url={l.url}
+                 onclick={handleNavigate}
+                 aria-label={l.ariaLabel}
+                 title={l.ariaLabel}>
+                <img if:true={l.icon} src={l.icon} alt="" class="mh-icon" />
+                <span class="slds-p-horizontal_small slds-truncate" style="flex:1">{l.label}</span>
+                <span if:true={l.rightText} class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+              </a>
+            </template>
+            <template if:false={isAuthenticated}>
+              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item-disabled" aria-disabled="true">
+                <img if:true={l.icon} src={l.icon} alt="" class="mh-icon mh-icon--disabled" />
+                <span class="slds-p-horizontal_small slds-truncate" style="flex:1">{l.label}</span>
+                <span if:true={l.rightText} class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+              </div>
+            </template>
+          </li>
+        </template>
+      </ul>
+
+      <template if:true={learnMoreUrl}>
+        <div class="slds-align_absolute-center slds-m-top_small">
+          <lightning-button variant="base" label="Learn More" data-url={learnMoreUrl} onclick={handleLearnMore}></lightning-button>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+  </template>
