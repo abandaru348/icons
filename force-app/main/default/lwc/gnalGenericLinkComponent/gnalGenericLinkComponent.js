@@ -6,9 +6,9 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }]
-  @api learnMoreUrl;      // DEPRECATED: use footerUrl
-  @api footerUrl;         // optional footer link
-  @api footerLabel = 'Learn More';
+  @api learnMoreUrl;      // legacy: optional footer link
+  @api footerUrl;         // new: footer link URL
+  @api footerLabel = 'Learn More'; // new: footer link label, default like mock
   @api authenticated;     // optional override
 
   get isAuthenticated() {
@@ -21,9 +21,18 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       label: l.label,
       url: l.url,
       icon: l.icon,
+      subText: l.subText || l.subtitle || l.subLabel,
       rightText: l.rightText,
       ariaLabel: l.ariaLabel || `Open ${l.label}`
     }));
+  }
+
+  get footerUrlResolved() {
+    return this.footerUrl || this.learnMoreUrl;
+  }
+
+  get footerLabelResolved() {
+    return this.footerLabel || 'Learn More';
   }
 
   handleNavigate(event) {
@@ -34,7 +43,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   handleLearnMore(event) {
-    const url = event.currentTarget.dataset.url || this.footerUrl || this.learnMoreUrl;
+    const url = event.currentTarget.dataset.url || this.footerUrlResolved;
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
   }
