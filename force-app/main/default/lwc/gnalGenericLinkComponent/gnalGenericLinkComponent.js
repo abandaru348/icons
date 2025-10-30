@@ -2,7 +2,7 @@ import { LightningElement, api } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 
-export default class GnalGenericLinkTile extends NavigationMixin(LightningElement) {
+export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }]
