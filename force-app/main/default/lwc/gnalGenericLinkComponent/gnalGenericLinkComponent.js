@@ -6,7 +6,9 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }]
-  @api learnMoreUrl;      // optional footer link
+  @api learnMoreUrl;      // DEPRECATED: use footerUrl
+  @api footerUrl;         // optional footer link
+  @api footerLabel = 'Learn More';
   @api authenticated;     // optional override
 
   get isAuthenticated() {
@@ -32,7 +34,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   handleLearnMore(event) {
-    const url = event.currentTarget.dataset.url || this.learnMoreUrl;
+    const url = event.currentTarget.dataset.url || this.footerUrl || this.learnMoreUrl;
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
   }
