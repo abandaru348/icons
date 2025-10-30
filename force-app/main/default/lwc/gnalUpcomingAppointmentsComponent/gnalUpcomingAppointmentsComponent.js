@@ -1,15 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
-// No external CSS resource to load per latest direction
-
 /**
  * Component: gnalUpcomingAppointmentsComponent
- * -------------------------------------------
- * Renders a list of upcoming appointments similar to the UI mock.
- * Items are clickable only for authenticated users.
+ * Now delegates rendering and navigation to gnalGenericLinkComponent
  */
-export default class GnalUpcomingAppointmentsComponent extends NavigationMixin(LightningElement) {
+export default class GnalUpcomingAppointmentsComponent extends LightningElement {
     @track isAuthenticated = !isGuest;
 
     @api appointments = [
@@ -36,30 +31,13 @@ export default class GnalUpcomingAppointmentsComponent extends NavigationMixin(L
         }
     ];
 
-    // No-op: global css not used
-
-    get viewAppointments() {
+    get links() {
         return this.appointments.map((a) => ({
-            ...a,
+            key: a.id,
+            label: a.title,
+            url: a.url,
+            rightText: a.dateLabel,
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
         }));
-    }
-
-    handleItemClick(event) {
-        if (!this.isAuthenticated) return;
-        const id = event.currentTarget.dataset.id;
-        const appt = this.appointments.find((a) => a.id === id);
-        if (!appt || !appt.url) return;
-        this[NavigationMixin.Navigate]({
-            type: 'standard__webPage',
-            attributes: { url: appt.url }
-        });
-    }
-
-    handleViewAll() {
-        this[NavigationMixin.Navigate]({
-            type: 'standard__webPage',
-            attributes: { url: '#' }
-        });
     }
 }

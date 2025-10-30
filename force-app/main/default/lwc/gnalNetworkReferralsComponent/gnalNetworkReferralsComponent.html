@@ -12,44 +12,11 @@ Date            Author                     Modification
 -->
 
 <template>
-    <lightning-card title="Telehealth Registered Nurse Services" icon-name="utility:description" class="mh-card">
-        <div class="slds-p-horizontal_small" role="region" aria-labelledby="refHeading">
-            <h3 id="refHeading" class="slds-assistive-text">Telehealth Registered Nurse Services</h3>
-
-            <ul class="slds-has-dividers_around-space" role="list">
-                <template for:each={viewReferrals} for:item="ref">
-                    <li key={ref.id} class="slds-item" role="listitem">
-                        <template if:true={isAuthenticated}>
-                            <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item"
-                               data-id={ref.id}
-                               aria-label={ref.ariaLabel}
-                               title={ref.ariaLabel}
-                               onclick={handleItemClick}>
-                                <lightning-icon icon-name="utility:description" size="x-small" alternative-text="Referral"></lightning-icon>
-                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
-                                    <div class="slds-text-title_bold slds-truncate">{ref.title}</div>
-                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{ref.subTitle}</div>
-                                </div>
-                                <span class="mh-badge">{ref.dateLabel}</span>
-                            </a>
-                        </template>
-                        <template if:false={isAuthenticated}>
-                            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item" aria-disabled="true" tabindex="-1">
-                                <lightning-icon icon-name="utility:description" size="x-small" alternative-text="Referral"></lightning-icon>
-                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
-                                    <div class="slds-text-title_bold slds-truncate">{ref.title}</div>
-                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{ref.subTitle}</div>
-                                </div>
-                                <span class="mh-badge">{ref.dateLabel}</span>
-                            </div>
-                        </template>
-                    </li>
-                </template>
-            </ul>
-
-            <div class="slds-align_absolute-center slds-m-top_small">
-                <lightning-button variant="base" label="View All" aria-label="View all Telehealth Registered Nurse Services" onclick={handleViewAll}></lightning-button>
-            </div>
-        </div>
-    </lightning-card>
+  <c-gnal-generic-link-component
+    title="Telehealth Registered Nurse Services"
+    description="24/7 healthcare support through Nurse Advice Line for TRICARE beneficiaries. Keep your DBN ready."
+    links={links}
+    learn-more-url="#"
+    authenticated={isAuthenticated}
+  ></c-gnal-generic-link-component>
 </template>

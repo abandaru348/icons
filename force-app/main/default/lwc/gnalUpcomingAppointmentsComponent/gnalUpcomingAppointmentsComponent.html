@@ -12,44 +12,10 @@ Date            Author                     Modification
 -->
 
 <template>
-    <lightning-card title="Upcoming Appointments" icon-name="utility:event" class="mh-card">
-        <div class="slds-p-horizontal_small" role="region" aria-labelledby="upcomingHeading">
-            <h3 id="upcomingHeading" class="slds-assistive-text">Upcoming Appointments</h3>
-
-            <ul class="slds-has-dividers_around-space" role="list">
-                <template for:each={viewAppointments} for:item="appt">
-                    <li key={appt.id} class="slds-item" role="listitem">
-                        <template if:true={isAuthenticated}>
-                            <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item"
-                               data-id={appt.id}
-                               aria-label={appt.ariaLabel}
-                               title={appt.ariaLabel}
-                               onclick={handleItemClick}>
-                                <lightning-icon icon-name="utility:event" size="x-small" alternative-text="Appointment"></lightning-icon>
-                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
-                                    <div class="slds-text-title_bold slds-truncate">{appt.title}</div>
-                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{appt.subTitle}</div>
-                                </div>
-                                <span class="mh-badge">{appt.dateLabel}</span>
-                            </a>
-                        </template>
-                        <template if:false={isAuthenticated}>
-                            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread mh-item" aria-disabled="true" tabindex="-1">
-                                <lightning-icon icon-name="utility:event" size="x-small" alternative-text="Appointment"></lightning-icon>
-                                <div class="slds-p-horizontal_small slds-truncate" style="flex:1">
-                                    <div class="slds-text-title_bold slds-truncate">{appt.title}</div>
-                                    <div class="slds-text-body_small slds-text-color_weak slds-truncate">{appt.subTitle}</div>
-                                </div>
-                                <span class="mh-badge">{appt.dateLabel}</span>
-                            </div>
-                        </template>
-                    </li>
-                </template>
-            </ul>
-
-            <div class="slds-align_absolute-center slds-m-top_small">
-                <lightning-button variant="base" label="View All" aria-label="View all upcoming appointments" onclick={handleViewAll}></lightning-button>
-            </div>
-        </div>
-    </lightning-card>
+  <c-gnal-generic-link-component
+    title="Upcoming Appointments"
+    links={links}
+    learn-more-url="#"
+    authenticated={isAuthenticated}
+  ></c-gnal-generic-link-component>
 </template>
