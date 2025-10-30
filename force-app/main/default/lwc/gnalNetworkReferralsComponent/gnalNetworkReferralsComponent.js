@@ -1,14 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
-// No external CSS resource to load per latest direction
-
 /**
  * Component: gnalNetworkReferralsComponent
- * ---------------------------------------
- * Shows network referrals and statuses. Clickable only for authenticated users.
+ * Now delegates rendering and navigation to gnalGenericLinkComponent
  */
-export default class GnalNetworkReferralsComponent extends NavigationMixin(LightningElement) {
+export default class GnalNetworkReferralsComponent extends LightningElement {
     @track isAuthenticated = !isGuest;
 
     @api referrals = [
@@ -35,30 +31,13 @@ export default class GnalNetworkReferralsComponent extends NavigationMixin(Light
         }
     ];
 
-    // No-op: global css not used
-
-    get viewReferrals() {
+    get links() {
         return this.referrals.map((r) => ({
-            ...r,
+            key: r.id,
+            label: r.title,
+            url: r.url,
+            rightText: r.dateLabel,
             ariaLabel: `Open referral ${r.title} dated ${r.dateLabel}`
         }));
-    }
-
-    handleItemClick(event) {
-        if (!this.isAuthenticated) return;
-        const id = event.currentTarget.dataset.id;
-        const ref = this.referrals.find((r) => r.id === id);
-        if (!ref || !ref.url) return;
-        this[NavigationMixin.Navigate]({
-            type: 'standard__webPage',
-            attributes: { url: ref.url }
-        });
-    }
-
-    handleViewAll() {
-        this[NavigationMixin.Navigate]({
-            type: 'standard__webPage',
-            attributes: { url: '#' }
-        });
     }
 }
