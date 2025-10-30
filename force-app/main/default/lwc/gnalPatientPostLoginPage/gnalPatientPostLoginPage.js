@@ -1,6 +1,6 @@
 import { LightningElement } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import ASSETS from '@salesforce/resourceUrl/GNAL_icons';
+import ASSETS from '@salesforce/resourceUrl/GNAL_Icons';
 export default class GnalPatientPostLoginPage extends LightningElement {
     connectedCallback() {
         // Load shared global css; fail gracefully if not available
