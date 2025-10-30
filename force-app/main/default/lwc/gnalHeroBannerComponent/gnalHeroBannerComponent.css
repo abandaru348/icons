@@ -10,9 +10,9 @@
 }
 .overlay {
     position: absolute;
-    left: 24px;
-    bottom: 20px;
-    max-width: 520px;
+    left: 20px;
+    bottom: 18px;
+    max-width: 480px;
     color: #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
