@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import upcomingIcon from '@salesforce/resourceUrl/gnalUpcomingAppts';
 import isGuest from '@salesforce/user/isGuest';
 /**
  * Component: gnalUpcomingAppointmentsComponent
@@ -37,6 +38,7 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
             label: a.title,
             url: a.url,
             subText: a.subTitle,
+            icon: upcomingIcon,
             rightText: a.dateLabel,
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
         }));
