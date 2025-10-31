@@ -1,13 +1,13 @@
-.mh-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; }
-.mh-icon { width: 16px; height: 16px; margin-right: 0.5rem; display: inline-block; }
-.mh-icon--disabled { filter: grayscale(100%); }
-.mh-item-disabled { cursor: not-allowed; pointer-events: none; }
+.gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; }
+.gnal-icon { width: 16px; height: 16px; margin-right: 0.5rem; display: inline-block; }
+.gnal-icon--disabled { filter: grayscale(100%); }
+.gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
 
 /* Tighten card section spacing to mirror mock */
-:host lightning-card.mh-card { border-radius: 12px; overflow: hidden; }
-:host lightning-card.mh-card .slds-card__header { padding: 0.75rem 1rem; }
-:host lightning-card.mh-card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
-:host lightning-card.mh-card .slds-card__body { padding-top: 0.25rem; }
+:host lightning-card.gnal-card { border-radius: 12px; overflow: hidden; }
+:host lightning-card.gnal-card .slds-card__header { padding: 0.75rem 1rem; }
+:host lightning-card.gnal-card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
+:host lightning-card.gnal-card .slds-card__body { padding-top: 0.25rem; }
 
 /* Hover affordance like mock */
-.mh-row:hover { background-color: #f3f6fb; border-radius: 6px; }
+.gnal-row:hover { background-color: #f3f6fb; border-radius: 6px; }
