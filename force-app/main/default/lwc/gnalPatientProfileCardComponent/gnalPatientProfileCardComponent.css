@@ -24,6 +24,4 @@
 .field { display: flex; flex-direction: column; }
 .fields .label-text { display: block; color: #6b7280; font-size: 0.8rem; margin-bottom: 2px; }
 .fields .value-text { display: block; color: #111827; font-size: 0.9rem; }
-.tile-footer { text-align: center; margin-top: 12px; }
-.view-all { font-size: 0.85rem; color: #0070d2; text-decoration: none; }
-.view-all:hover { text-decoration: underline; }
+.tile-footer { text-align: right; margin-top: 12px; }
