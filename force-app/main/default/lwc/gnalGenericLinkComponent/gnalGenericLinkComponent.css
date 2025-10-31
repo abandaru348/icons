@@ -1,6 +1,6 @@
-.gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; }
+.gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; min-height: 40px; }
 .gnal-link { display: block; width: 100%; }
-.gnal-mid { display: flex; flex-direction: column; min-width: 0; }
+.gnal-mid { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 .gnal-right { text-align: right; white-space: nowrap; }
 .gnal-primary { line-height: 1.25; }
 .gnal-sub { line-height: 1.25; }
