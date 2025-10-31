@@ -14,15 +14,15 @@
                   <lightning-layout-item flexibility="shrink">
                     <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon" />
                   </lightning-layout-item>
-                  <lightning-layout-item flexibility="grow" class="slds-p-horizontal_small">
-                    <lightning-formatted-text value={l.label} class="slds-truncate"></lightning-formatted-text>
+                  <lightning-layout-item flexibility="grow" class="gnal-mid slds-p-horizontal_small slds-truncate">
+                    <span class="gnal-primary slds-truncate">{l.label}</span>
                     <template if:true={l.subText}>
-                      <lightning-formatted-text value={l.subText} class="slds-text-color_weak slds-text-body_small slds-truncate"></lightning-formatted-text>
+                      <span class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</span>
                     </template>
                   </lightning-layout-item>
-                  <lightning-layout-item flexibility="shrink">
+                  <lightning-layout-item flexibility="shrink" class="gnal-right">
                     <template if:true={l.rightText}>
-                      <lightning-formatted-text value={l.rightText} class="slds-text-body_small slds-text-color_weak"></lightning-formatted-text>
+                      <span class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
                     </template>
                   </lightning-layout-item>
                 </lightning-layout>
@@ -33,15 +33,15 @@
                 <lightning-layout-item flexibility="shrink">
                   <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
                 </lightning-layout-item>
-                <lightning-layout-item flexibility="grow" class="slds-p-horizontal_small">
-                  <lightning-formatted-text value={l.label} class="slds-truncate"></lightning-formatted-text>
+                <lightning-layout-item flexibility="grow" class="gnal-mid slds-p-horizontal_small slds-truncate">
+                  <span class="gnal-primary slds-truncate">{l.label}</span>
                   <template if:true={l.subText}>
-                    <lightning-formatted-text value={l.subText} class="slds-text-color_weak slds-text-body_small slds-truncate"></lightning-formatted-text>
+                    <span class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</span>
                   </template>
                 </lightning-layout-item>
-                <lightning-layout-item flexibility="shrink">
+                <lightning-layout-item flexibility="shrink" class="gnal-right">
                   <template if:true={l.rightText}>
-                    <lightning-formatted-text value={l.rightText} class="slds-text-body_small slds-text-color_weak"></lightning-formatted-text>
+                    <span class="slds-text-body_small slds-text-color_weak">{l.rightText}</span>
                   </template>
                 </lightning-layout-item>
               </lightning-layout>
