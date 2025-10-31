@@ -11,7 +11,7 @@
 .overlay {
     position: absolute;
     left: 20px;
-    top: 18px; /* place in left-hand corner */
+    bottom: 18px; /* place in left-bottom corner */
     max-width: 520px;
     color: #ffffff;
     text-shadow: 0 3px 10px rgba(0,0,0,0.45);
