@@ -7,9 +7,13 @@ Created Date : [10-24-2025]
 -->
 <template>
     <figure class="banner" style={bannerStyle} aria-label={heroAriaLabel}>
-        <div class="overlay">
-            <h2 class="headline">Available Anytime, Anywhere — Always!</h2>
-            <p class="sub">24/7 self-help capabilities, on-demand telehealth registered nurses, and care coordination.</p>
-        </div>
+        <lightning-layout class="overlay" multiple-rows>
+            <lightning-layout-item size="12">
+                <lightning-formatted-text class="headline" value="Available Anytime, Anywhere — Always!"></lightning-formatted-text>
+            </lightning-layout-item>
+            <lightning-layout-item size="12">
+                <lightning-formatted-text class="sub" value="24/7 self-help capabilities, on-demand telehealth registered nurses, and care coordination."></lightning-formatted-text>
+            </lightning-layout-item>
+        </lightning-layout>
     </figure>
 </template>
