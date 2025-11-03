@@ -9,24 +9,42 @@
         <template for:each={normalizedLinks} for:item="l">
           <li key={l.key} class="slds-item" role="listitem">
             <template if:true={isAuthenticated}>
-              <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row" data-url={l.url} onclick={handleNavigate} aria-label={l.ariaLabel} title={l.ariaLabel}>
-                <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon" />
-                <div class="slds-p-horizontal_small gnal-mid slds-truncate">
-                  <div class="gnal-primary slds-truncate">{l.label}</div>
-                  <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
-                </div>
-                <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+              <a class="slds-text-link_reset gnal-link gnal-row" data-url={l.url} onclick={handleNavigate} aria-label={l.ariaLabel} title={l.ariaLabel}>
+                <lightning-layout horizontal-align="spread" vertical-align="center">
+                  <template if:true={l.icon}>
+                    <lightning-layout-item flexibility="shrink">
+                      <img src={l.icon} alt="" class="gnal-icon" />
+                    </lightning-layout-item>
+                  </template>
+                  <lightning-layout-item class="slds-p-horizontal_small gnal-mid slds-truncate" flexibility="grow">
+                    <div class="gnal-primary slds-truncate">{l.label}</div>
+                    <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+                  </lightning-layout-item>
+                  <template if:true={l.rightText}>
+                    <lightning-layout-item flexibility="shrink">
+                      <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                    </lightning-layout-item>
+                  </template>
+                </lightning-layout>
               </a>
             </template>
             <template if:false={isAuthenticated}>
-              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row" aria-disabled="true">
-                <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
-                <div class="slds-p-horizontal_small gnal-mid slds-truncate">
+              <lightning-layout class="gnal-row gnal-item-disabled" horizontal-align="spread" vertical-align="center" aria-disabled="true">
+                <template if:true={l.icon}>
+                  <lightning-layout-item flexibility="shrink">
+                    <img src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
+                  </lightning-layout-item>
+                </template>
+                <lightning-layout-item class="slds-p-horizontal_small gnal-mid slds-truncate" flexibility="grow">
                   <div class="gnal-primary slds-truncate">{l.label}</div>
                   <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
-                </div>
-                <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
-              </div>
+                </lightning-layout-item>
+                <template if:true={l.rightText}>
+                  <lightning-layout-item flexibility="shrink">
+                    <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                  </lightning-layout-item>
+                </template>
+              </lightning-layout>
             </template>
           </li>
         </template>
