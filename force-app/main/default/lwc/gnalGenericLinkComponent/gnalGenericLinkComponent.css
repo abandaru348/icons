@@ -1,9 +1,9 @@
 .gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; min-height: 40px; }
 .gnal-link { width: 100%; text-decoration: none; }
-.gnal-mid { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.gnal-mid { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1 1 auto; }
 .gnal-right { text-align: right; white-space: nowrap; }
-.gnal-primary { line-height: 1.25; }
-.gnal-sub { line-height: 1.25; }
+.gnal-primary { line-height: 1.25; white-space: normal; word-break: break-word; }
+.gnal-sub { line-height: 1.25; white-space: normal; word-break: break-word; }
 .gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
 .gnal-icon--disabled { --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b); opacity: 0.6; }
 .gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
