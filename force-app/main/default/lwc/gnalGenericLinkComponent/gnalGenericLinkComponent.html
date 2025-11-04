@@ -1,44 +1,91 @@
 <template>
   <lightning-card title={title} class="gnal-card">
     <div class="slds-p-horizontal_small">
-      <template if:true={description}>
+      <!-- description -->
+      <template lwc:if={description}>
         <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
       </template>
 
       <ul class="slds-has-dividers_around-space" role="list">
         <template for:each={normalizedLinks} for:item="l">
           <li key={l.key} class="slds-item" role="listitem">
-            <template if:true={isAuthenticated}>
-              <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row" data-url={l.url} onclick={handleNavigate} aria-label={l.ariaLabel} title={l.ariaLabel}>
-                <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon" />
+            <!-- Authenticated vs not -->
+            <template lwc:if={isAuthenticated}>
+              <a
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row gnal-link"
+                data-url={l.url}
+                onclick={handleNavigate}
+                aria-label={l.ariaLabel}
+                title={l.ariaLabel}
+              >
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="gnal-icon"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+
                 <div class="slds-p-horizontal_small gnal-mid slds-truncate">
                   <div class="gnal-primary slds-truncate">{l.label}</div>
-                  <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">
+                      {l.subText}
+                    </div>
+                  </template>
                 </div>
-                <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
               </a>
             </template>
-            <template if:false={isAuthenticated}>
-              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row" aria-disabled="true">
-                <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
+
+            <template lwc:else>
+              <div
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row"
+                aria-disabled="true"
+              >
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="gnal-icon gnal-icon--disabled"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+
                 <div class="slds-p-horizontal_small gnal-mid slds-truncate">
                   <div class="gnal-primary slds-truncate">{l.label}</div>
-                  <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">
+                      {l.subText}
+                    </div>
+                  </template>
                 </div>
-                <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
               </div>
             </template>
           </li>
         </template>
       </ul>
 
-      <template if:true={footerUrlResolved}>
-        <lightning-layout class="slds-m-top_small" horizontal-align="center">
-          <lightning-layout-item>
-            <lightning-button variant="base" label={footerLabelResolved} data-url={footerUrlResolved} onclick={handleLearnMore}></lightning-button>
-          </lightning-layout-item>
-        </lightning-layout>
+      <!-- footer link -->
+      <template lwc:if={footerUrlResolved}>
+        <div class="slds-m-top_small slds-text-align_center">
+          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
+            {footerLabelResolved}
+          </a>
+        </div>
       </template>
     </div>
   </lightning-card>
-  </template>
+</template>
