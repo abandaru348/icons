@@ -7,7 +7,7 @@
 .gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
 .gnal-icon--disabled { --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b); opacity: 0.6; }
 .gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
-.gnal-icon--appointment { --sds-c-icon-color-foreground-default: #8a1538; --sds-c-icon-color-background: #f9e6ef; }
+.gnal-icon--appointment { --lwc-colorTextIconDefault: #8a1538; --lwc-colorBackgroundIcon: #f9e6ef; }
 
 /* Tighten card section spacing to mirror mock */
 :host lightning-card.gnal-card { border-radius: 12px; overflow: hidden; }
