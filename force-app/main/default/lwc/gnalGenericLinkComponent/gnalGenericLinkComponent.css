@@ -1,0 +1,18 @@
+.gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; min-height: 40px; }
+.gnal-link { width: 100%; text-decoration: none; }
+.gnal-mid { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.gnal-right { text-align: right; white-space: nowrap; }
+.gnal-primary { line-height: 1.25; }
+.gnal-sub { line-height: 1.25; }
+.gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
+.gnal-icon--disabled { --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b); opacity: 0.6; }
+.gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
+
+/* Tighten card section spacing to mirror mock */
+:host lightning-card.gnal-card { border-radius: 12px; overflow: hidden; }
+:host lightning-card.gnal-card .slds-card__header { padding: 0.75rem 1rem; }
+:host lightning-card.gnal-card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
+:host lightning-card.gnal-card .slds-card__body { padding-top: 0.25rem; }
+
+/* Hover affordance like mock */
+.gnal-row:hover { background-color: #f3f6fb; border-radius: 6px; }
