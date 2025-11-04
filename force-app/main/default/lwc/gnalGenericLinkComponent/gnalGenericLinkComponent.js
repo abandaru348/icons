@@ -2,13 +2,15 @@ import { LightningElement, api } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 
+const DEFAULT_FOOTER_LABEL = 'Learn More';
+
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }], icon should be a lightning icon name (e.g., utility:info)
   @api learnMoreUrl;      // legacy: optional footer link
   @api footerUrl;         // new: footer link URL
-  @api footerLabel = 'Learn More'; // new: footer link label, default like mock
+  @api footerLabel = DEFAULT_FOOTER_LABEL; // new: footer link label, default like mock
   @api authenticated;     // optional override
 
   get isAuthenticated() {
@@ -32,7 +34,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get footerLabelResolved() {
-    return this.footerLabel || 'Learn More';
+    return this.footerLabel || DEFAULT_FOOTER_LABEL;
   }
 
   handleNavigate(event) {
