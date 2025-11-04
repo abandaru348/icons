@@ -5,7 +5,7 @@ import isGuest from '@salesforce/user/isGuest';
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
   @api title;
   @api description;
-  @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }]
+  @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }] icon should be a lightning icon name (e.g., utility:info)
   @api learnMoreUrl;      // legacy: optional footer link
   @api footerUrl;         // new: footer link URL
   @api footerLabel = 'Learn More'; // new: footer link label, default like mock

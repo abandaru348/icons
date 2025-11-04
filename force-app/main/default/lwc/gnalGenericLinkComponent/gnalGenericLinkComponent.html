@@ -17,7 +17,13 @@
                 title={l.ariaLabel}
               >
                 <template lwc:if={l.icon}>
-                  <img src={l.icon} alt="" class="gnal-icon" />
+                  <lightning-icon
+                    class="gnal-icon"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
                 </template>
                 <div class="slds-p-horizontal_small gnal-mid">
                   <div class="gnal-primary">{l.label}</div>
@@ -33,7 +39,13 @@
             <template lwc:else>
               <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row" aria-disabled="true">
                 <template lwc:if={l.icon}>
-                  <img src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
+                  <lightning-icon
+                    class="gnal-icon gnal-icon--disabled"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
                 </template>
                 <div class="slds-p-horizontal_small gnal-mid">
                   <div class="gnal-primary">{l.label}</div>

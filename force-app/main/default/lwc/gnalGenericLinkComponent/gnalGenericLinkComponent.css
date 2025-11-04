@@ -4,8 +4,8 @@
 .gnal-right { text-align: right; white-space: nowrap; }
 .gnal-primary { line-height: 1.25; }
 .gnal-sub { line-height: 1.25; }
-.gnal-icon { width: 16px; height: 16px; margin-right: 0.5rem; display: inline-block; }
-.gnal-icon--disabled { filter: grayscale(100%); }
+.gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
+.gnal-icon--disabled { --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b); opacity: 0.6; }
 .gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
 
 /* Tighten card section spacing to mirror mock */
