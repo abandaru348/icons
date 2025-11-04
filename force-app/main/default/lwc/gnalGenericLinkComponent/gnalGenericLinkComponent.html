@@ -20,7 +20,7 @@
               >
                 <template lwc:if={l.icon}>
                   <lightning-icon
-                    class="gnal-icon"
+                    class={l.iconClasses}
                     icon-name={l.icon}
                     alternative-text={l.label}
                     title={l.label}
@@ -51,7 +51,7 @@
               >
                 <template lwc:if={l.icon}>
                   <lightning-icon
-                    class="gnal-icon gnal-icon--disabled"
+                    class={l.iconClassesDisabled}
                     icon-name={l.icon}
                     alternative-text={l.label}
                     title={l.label}

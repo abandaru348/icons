@@ -23,6 +23,8 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       label: l.label,
       url: l.url,
       icon: l.icon,
+      iconClasses: this.computeIconClasses(l.iconClass),
+      iconClassesDisabled: this.computeIconClasses(l.iconClass, true),
       subText: l.subText || l.subtitle || l.subLabel,
       rightText: l.rightText,
       ariaLabel: l.ariaLabel || `Open ${l.label}`
@@ -51,5 +53,16 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   navigateToUrl(url) {
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
+  }
+
+  computeIconClasses(iconClass, disabled = false) {
+    const classes = ['gnal-icon'];
+    if (iconClass) {
+      classes.push(iconClass);
+    }
+    if (disabled) {
+      classes.push('gnal-icon--disabled');
+    }
+    return classes.join(' ');
   }
 }
