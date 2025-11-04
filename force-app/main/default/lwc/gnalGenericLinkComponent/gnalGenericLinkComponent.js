@@ -38,12 +38,15 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   handleNavigate(event) {
     if (!this.isAuthenticated) return;
     const url = event.currentTarget.dataset.url;
-    if (!url) return;
-    this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
+    this.navigateToUrl(url);
   }
 
   handleLearnMore(event) {
     const url = event.currentTarget.dataset.url || this.footerUrlResolved;
+    this.navigateToUrl(url);
+  }
+
+  navigateToUrl(url) {
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
   }
