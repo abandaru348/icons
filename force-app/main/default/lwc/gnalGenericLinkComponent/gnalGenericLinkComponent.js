@@ -16,15 +16,24 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get normalizedLinks() {
-    return (this.links || []).map((l, i) => ({
-      key: l.key || l.label || String(i),
-      label: l.label,
-      url: l.url,
-      icon: l.icon,
-      subText: l.subText || l.subtitle || l.subLabel,
-      rightText: l.rightText,
-      ariaLabel: l.ariaLabel || `Open ${l.label}`
-    }));
+    return (this.links || []).map((l, i) => {
+      const rightText = l.rightText;
+      const rightIcon = l.rightIcon;
+      const iconBackground = l.iconBackground;
+      const iconStyle = iconBackground ? `--gnal-icon-wrapper-bg:${iconBackground}` : undefined;
+      return {
+        key: l.key || l.label || String(i),
+        label: l.label,
+        url: l.url,
+        icon: l.icon,
+        iconStyle,
+        subText: l.subText || l.subtitle || l.subLabel,
+        ariaLabel: l.ariaLabel || `Open ${l.label}`,
+        rightText,
+        rightIcon,
+        hasRightContent: Boolean(rightText || rightIcon)
+      };
+    });
   }
 
   get footerUrlResolved() {

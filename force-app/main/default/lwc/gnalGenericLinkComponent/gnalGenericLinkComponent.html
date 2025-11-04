@@ -1,60 +1,94 @@
 <template>
   <lightning-card title={title} class="gnal-card">
-    <div class="slds-p-horizontal_small">
+    <div class="gnal-card-body">
       <template lwc:if={description}>
-        <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
+        <p class="gnal-description">{description}</p>
       </template>
 
-      <ul class="slds-has-dividers_around-space" role="list">
+      <ul class="gnal-list" role="list">
         <template for:each={normalizedLinks} for:item="l">
-          <li key={l.key} class="slds-item" role="listitem">
+          <li key={l.key} class="gnal-list-item" role="listitem">
             <template lwc:if={isAuthenticated}>
               <a
-                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row"
+                class="gnal-row gnal-row--link"
                 data-url={l.url}
                 onclick={handleNavigate}
                 aria-label={l.ariaLabel}
                 title={l.ariaLabel}
               >
                 <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class="gnal-icon"
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
+                  <span class="gnal-icon-wrapper" style={l.iconStyle}>
+                    <lightning-icon
+                      class="gnal-icon"
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </span>
                 </template>
-                <div class="slds-p-horizontal_small gnal-mid">
+                <div class="gnal-mid">
                   <div class="gnal-primary">{l.label}</div>
                   <template lwc:if={l.subText}>
-                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">{l.subText}</div>
+                    <div class="gnal-sub">{l.subText}</div>
                   </template>
                 </div>
-                <template lwc:if={l.rightText}>
-                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                <template lwc:if={l.hasRightContent}>
+                  <div class="gnal-right-block">
+                    <template lwc:if={l.rightText}>
+                      <span class="gnal-right">{l.rightText}</span>
+                    </template>
+                    <template lwc:if={l.rightIcon}>
+                      <span class="gnal-right-icon" aria-hidden="true">
+                        <lightning-icon
+                          class="gnal-right-icon__icon"
+                          icon-name={l.rightIcon}
+                          size="xx-small"
+                          alternative-text=""
+                          title=""
+                        ></lightning-icon>
+                      </span>
+                    </template>
+                  </div>
                 </template>
               </a>
             </template>
             <template lwc:else>
-              <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row" aria-disabled="true">
+              <div class="gnal-row gnal-row--disabled" aria-disabled="true">
                 <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class="gnal-icon gnal-icon--disabled"
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
+                  <span class="gnal-icon-wrapper" style={l.iconStyle}>
+                    <lightning-icon
+                      class="gnal-icon"
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </span>
                 </template>
-                <div class="slds-p-horizontal_small gnal-mid">
+                <div class="gnal-mid">
                   <div class="gnal-primary">{l.label}</div>
                   <template lwc:if={l.subText}>
-                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">{l.subText}</div>
+                    <div class="gnal-sub">{l.subText}</div>
                   </template>
                 </div>
-                <template lwc:if={l.rightText}>
-                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                <template lwc:if={l.hasRightContent}>
+                  <div class="gnal-right-block">
+                    <template lwc:if={l.rightText}>
+                      <span class="gnal-right">{l.rightText}</span>
+                    </template>
+                    <template lwc:if={l.rightIcon}>
+                      <span class="gnal-right-icon" aria-hidden="true">
+                        <lightning-icon
+                          class="gnal-right-icon__icon"
+                          icon-name={l.rightIcon}
+                          size="xx-small"
+                          alternative-text=""
+                          title=""
+                        ></lightning-icon>
+                      </span>
+                    </template>
+                  </div>
                 </template>
               </div>
             </template>
@@ -63,9 +97,14 @@
       </ul>
 
       <template lwc:if={footerUrlResolved}>
-        <lightning-layout class="slds-m-top_small" horizontal-align="center">
+        <lightning-layout class="gnal-footer" horizontal-align="center">
           <lightning-layout-item>
-            <lightning-button variant="base" label={footerLabelResolved} data-url={footerUrlResolved} onclick={handleLearnMore}></lightning-button>
+            <lightning-button
+              variant="base"
+              label={footerLabelResolved}
+              data-url={footerUrlResolved}
+              onclick={handleLearnMore}
+            ></lightning-button>
           </lightning-layout-item>
         </lightning-layout>
       </template>

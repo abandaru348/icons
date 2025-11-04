@@ -39,6 +39,7 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
             subText: a.subTitle,
             icon: 'standard:note',
             rightText: a.dateLabel,
+            rightIcon: 'utility:chevronright',
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
         }));
     }
