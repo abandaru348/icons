@@ -2,9 +2,9 @@ import { LightningElement, api } from 'lwc';
 
 export default class GnalSymptomCheckerComponent extends LightningElement {
   @api links = [
-    { label: 'Symptom Checker', url: 'https://www.google.com/', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Symptom%20Checker.png' },
-    { label: 'Other Resources', url: '#', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Other%20Resources.png' },
-    { label: 'Location Services', url: '#', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Location%20Services.png' },
-    { label: 'Patient Education', url: '#', icon: 'https://raw.githubusercontent.com/abandaru348/icons/main/Patient%20Education.png' }
+    { label: 'Symptom Checker', url: 'https://www.google.com/', icon: 'utility:info_alt' },
+    { label: 'Other Resources', url: '#', icon: 'utility:apps' },
+    { label: 'Location Services', url: '#', icon: 'utility:location' },
+    { label: 'Patient Education', url: '#', icon: 'standard:knowledge' }
   ];
 }

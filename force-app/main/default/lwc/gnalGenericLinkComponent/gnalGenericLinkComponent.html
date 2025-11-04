@@ -8,22 +8,64 @@
       <ul class="slds-has-dividers_around-space" role="list">
         <template for:each={normalizedLinks} for:item="l">
           <li key={l.key} class="slds-item" role="listitem">
+<<<<<<< HEAD
             <template if:true={isAuthenticated}>
               <a class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row" data-url={l.url} onclick={handleNavigate} aria-label={l.ariaLabel} title={l.ariaLabel}>
                 <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon" />
                 <div class="slds-p-horizontal_small gnal-mid slds-truncate">
                   <div class="gnal-primary slds-truncate">{l.label}</div>
                   <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+=======
+            <template lwc:if={isAuthenticated}>
+              <a
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row"
+                data-url={l.url}
+                onclick={handleNavigate}
+                aria-label={l.ariaLabel}
+                title={l.ariaLabel}
+              >
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="gnal-icon"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+                <div class="slds-p-horizontal_small gnal-mid">
+                  <div class="gnal-primary">{l.label}</div>
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">{l.subText}</div>
+                  </template>
+>>>>>>> 51ffc1b (feat: swap static icons for lightning-icon variants)
                 </div>
                 <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
               </a>
             </template>
             <template if:false={isAuthenticated}>
               <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row" aria-disabled="true">
+<<<<<<< HEAD
                 <img if:true={l.icon} src={l.icon} alt="" class="gnal-icon gnal-icon--disabled" />
                 <div class="slds-p-horizontal_small gnal-mid slds-truncate">
                   <div class="gnal-primary slds-truncate">{l.label}</div>
                   <div if:true={l.subText} class="gnal-sub slds-text-color_weak slds-text-body_small slds-truncate">{l.subText}</div>
+=======
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="gnal-icon gnal-icon--disabled"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+                <div class="slds-p-horizontal_small gnal-mid">
+                  <div class="gnal-primary">{l.label}</div>
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">{l.subText}</div>
+                  </template>
+>>>>>>> 51ffc1b (feat: swap static icons for lightning-icon variants)
                 </div>
                 <span if:true={l.rightText} class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
               </div>
