@@ -25,8 +25,6 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       icon: l.icon,
       iconClasses: this.computeIconClasses(l.iconClass),
       iconClassesDisabled: this.computeIconClasses(l.iconClass, true),
-      iconStyle: l.iconStyle,
-      iconStyleDisabled: l.iconStyleDisabled || l.iconStyle,
       subText: l.subText || l.subtitle || l.subLabel,
       rightText: l.rightText,
       ariaLabel: l.ariaLabel || `Open ${l.label}`

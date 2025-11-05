@@ -32,8 +32,6 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
     ];
 
     get links() {
-        const activeStyle = '--sds-c-icon-color-foreground-default: #4b0b1e; --lwc-colorTextIconDefault: #4b0b1e; --sds-c-icon-color-background: #f9e6ef; --lwc-colorBackgroundIcon: #f9e6ef;';
-        const disabledStyle = '--sds-c-icon-color-foreground-default: #9a7c89; --lwc-colorTextIconDefault: #9a7c89; --sds-c-icon-color-background: #f4dbe5; --lwc-colorBackgroundIcon: #f4dbe5;';
         return this.appointments.map((a) => ({
             key: a.id,
             label: a.title,
@@ -41,8 +39,6 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
             subText: a.subTitle,
             icon: 'standard:note',
             iconClass: 'gnal-icon--appointment',
-            iconStyle: activeStyle,
-            iconStyleDisabled: disabledStyle,
             rightText: a.dateLabel,
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
         }));

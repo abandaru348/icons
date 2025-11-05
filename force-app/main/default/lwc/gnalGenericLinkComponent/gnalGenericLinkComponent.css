@@ -5,9 +5,28 @@
 .gnal-primary { line-height: 1.25; white-space: normal; word-break: break-word; }
 .gnal-sub { line-height: 1.25; white-space: normal; word-break: break-word; }
 .gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
-.gnal-icon--disabled { --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b); --lwc-colorTextIconDefault: var(--lwc-colorTextWeak, #706e6b); --sds-c-icon-color-background: #f3f6fb; --lwc-colorBackgroundIcon: #f3f6fb; opacity: 0.6; }
+.gnal-icon--disabled {
+  --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-foreground-default-hover: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-foreground-default-focus: var(--lwc-colorTextWeak, #706e6b);
+  --lwc-colorTextIconDefault: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-background: #f3f6fb;
+  --sds-c-icon-color-background-hover: #f3f6fb;
+  --sds-c-icon-color-background-focus: #f3f6fb;
+  --lwc-colorBackgroundIcon: #f3f6fb;
+  opacity: 0.6;
+}
 .gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
-.gnal-icon--appointment {}
+.gnal-icon--appointment {
+  --sds-c-icon-color-foreground-default: #4b0b1e;
+  --sds-c-icon-color-foreground-default-hover: #4b0b1e;
+  --sds-c-icon-color-foreground-default-focus: #4b0b1e;
+  --lwc-colorTextIconDefault: #4b0b1e;
+  --sds-c-icon-color-background: #f9e6ef;
+  --sds-c-icon-color-background-hover: #f9e6ef;
+  --sds-c-icon-color-background-focus: #f9e6ef;
+  --lwc-colorBackgroundIcon: #f9e6ef;
+}
 
 /* Tighten card section spacing to mirror mock */
 :host lightning-card.gnal-card { border-radius: 12px; overflow: hidden; }
