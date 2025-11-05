@@ -10,6 +10,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   @api footerUrl;         // new: footer link URL
   @api footerLabel = 'Learn More'; // new: footer link label, default like mock
   @api authenticated;     // optional override
+  @api variant = 'boxed'; // 'boxed' (default) or 'plain'
 
   get isAuthenticated() {
     return this.authenticated !== undefined ? this.authenticated : !isGuest;
@@ -17,6 +18,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
   get normalizedLinks() {
     const isAuthenticated = this.isAuthenticated;
+    const variantClass = this.variant === 'plain' ? 'gnal-row--plain' : 'gnal-row--boxed';
     return (this.links || []).map((l, i) => {
       const rightText = l.rightText;
       const rightIcon = l.rightIcon;
@@ -27,6 +29,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       const hasUrl = Boolean(l.url);
       const isClickable = !isDisabled && hasUrl;
       const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
+      const baseClass = `gnal-row ${variantClass}`;
       return {
         key: l.key || l.label || String(i),
         label: l.label,
@@ -39,7 +42,10 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
         rightIcon,
         hasRightContent: Boolean(rightText || rightIcon),
         isClickable,
-        isDisabled
+        isDisabled,
+        clickableClass: `${baseClass} gnal-row--link`,
+        disabledClass: `${baseClass} gnal-row--disabled`,
+        staticClass: baseClass
       };
     });
   }
