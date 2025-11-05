@@ -28,6 +28,9 @@
   --sds-c-icon-color-background-hover: #f9e6ef;
   --sds-c-icon-color-background-focus: #f9e6ef;
   --lwc-colorBackgroundIcon: #f9e6ef;
+  background-color: #f9e6ef;
+  color: #4b0b1e;
+  border-radius: 50%;
 }
 
 /* Tighten card section spacing to mirror mock */
