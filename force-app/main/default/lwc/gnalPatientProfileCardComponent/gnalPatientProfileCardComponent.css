@@ -1,27 +1,36 @@
-/* Compact profile card following the visual style */
-.card-container,
-.tile-container {
-    background: #fff;
-    border: 1px solid #ccc; /* match other tiles */
+:host {
+    display: block;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e4ec;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    padding: 16px;
-    width: 100%;
-    max-width: none; /* allow full column width like tiles */
-    box-sizing: border-box;
-    height: 100%;
-    font-family: 'Inter', Arial, sans-serif;
+    background-color: #f7f9fe;
 }
-.header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; background: #1a3d8f; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
-.name { font-weight: 600; }
-.fields-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 12px;
-    row-gap: 8px;
+
+.profile-header__avatar {
+    flex-shrink: 0;
 }
-.field { display: flex; flex-direction: column; }
-.fields .label-text { display: block; color: #6b7280; font-size: 0.8rem; margin-bottom: 2px; }
-.fields .value-text { display: block; color: #111827; font-size: 0.9rem; }
-.tile-footer { text-align: center; margin-top: 12px; }
+
+.profile-header__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.profile-header__name {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1b1d21;
+}
+
+.profile-header__summary {
+    margin: 0;
+    color: #5f6773;
+    font-size: 0.875rem;
+}

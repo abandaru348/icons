@@ -6,86 +6,27 @@ Created Date : [10-22-2025]
 ******************************************************************************************************/
 -->
 <template>
-    <div class="tile-container">
-        <lightning-layout class="header" vertical-align="center">
-            <lightning-layout-item flexibility="shrink">
-                <lightning-avatar initials={initials} size="medium" variant="circle" alternative-text="Patient"></lightning-avatar>
-            </lightning-layout-item>
-            <lightning-layout-item class="slds-p-left_small">
-                <p class="name">{fullName}</p>
-            </lightning-layout-item>
-        </lightning-layout>
-
-        <lightning-layout class="fields" multiple-rows="true">
-            <!-- Row 1: DOB (left) and Gender (right) -->
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">Date of Birth</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{dob}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">Gender</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{gender}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-
-            <!-- Row 2: DBN and DoD ID -->
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">DBN</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{dbn}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">DoD ID #</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{dodId}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-
-            <!-- Row 3: PCM Clinic and PMC -->
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">PCM Clinic</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{pcmClinic}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-            <lightning-layout-item size="6" padding="horizontal-small" class="slds-p-vertical_x-small">
-                <lightning-layout class="field" multiple-rows="true">
-                    <lightning-layout-item size="12">
-                        <p class="label-text">PMC</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <p class="value-text">{pmc}</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-            </lightning-layout-item>
-        </lightning-layout>
-
-        <div class="tile-footer">
-            <a class="slds-text-link" onclick={handleViewProfile}>View Profile</a>
-        </div>
+  <c-gnal-generic-link-component
+    title="Patient Profile"
+    links={profileLinks}
+    footer-url={profileUrl}
+    footer-label="View Profile"
+    authenticated="true"
+  >
+    <div slot="header" class="profile-header">
+      <lightning-avatar
+        class="profile-header__avatar"
+        initials={initials}
+        size="medium"
+        variant="circle"
+        alternative-text="Patient"
+      ></lightning-avatar>
+      <div class="profile-header__info">
+        <p class="profile-header__name">{fullName}</p>
+        <template lwc:if={headerSummary}>
+          <p class="profile-header__summary">{headerSummary}</p>
+        </template>
+      </div>
     </div>
+  </c-gnal-generic-link-component>
 </template>

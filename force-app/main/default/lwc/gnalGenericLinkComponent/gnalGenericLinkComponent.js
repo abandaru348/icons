@@ -16,11 +16,17 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get normalizedLinks() {
+    const isAuthenticated = this.isAuthenticated;
     return (this.links || []).map((l, i) => {
       const rightText = l.rightText;
       const rightIcon = l.rightIcon;
       const iconBackground = l.iconBackground;
       const iconStyle = iconBackground ? `--gnal-icon-wrapper-bg:${iconBackground}` : undefined;
+      const allowGuest = Boolean(l.allowGuest);
+      const isDisabled = Boolean(l.disabled) || (!isAuthenticated && !allowGuest);
+      const hasUrl = Boolean(l.url);
+      const isClickable = !isDisabled && hasUrl;
+      const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
       return {
         key: l.key || l.label || String(i),
         label: l.label,
@@ -28,10 +34,12 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
         icon: l.icon,
         iconStyle,
         subText: l.subText || l.subtitle || l.subLabel,
-        ariaLabel: l.ariaLabel || `Open ${l.label}`,
+        ariaLabel,
         rightText,
         rightIcon,
-        hasRightContent: Boolean(rightText || rightIcon)
+        hasRightContent: Boolean(rightText || rightIcon),
+        isClickable,
+        isDisabled
       };
     });
   }

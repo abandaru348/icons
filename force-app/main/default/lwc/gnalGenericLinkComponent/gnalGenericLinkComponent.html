@@ -1,6 +1,8 @@
 <template>
   <lightning-card title={title} class="gnal-card">
     <div class="gnal-card-body">
+      <slot name="header"></slot>
+
       <template lwc:if={description}>
         <p class="gnal-description">{description}</p>
       </template>
@@ -8,7 +10,7 @@
       <ul class="gnal-list" role="list">
         <template for:each={normalizedLinks} for:item="l">
           <li key={l.key} class="gnal-list-item" role="listitem">
-            <template lwc:if={isAuthenticated}>
+            <template lwc:if={l.isClickable}>
               <a
                 class="gnal-row gnal-row--link"
                 data-url={l.url}
@@ -53,8 +55,47 @@
                 </template>
               </a>
             </template>
-            <template lwc:else>
+            <template lwc:elseif={l.isDisabled}>
               <div class="gnal-row gnal-row--disabled" aria-disabled="true">
+                <template lwc:if={l.icon}>
+                  <span class="gnal-icon-wrapper" style={l.iconStyle}>
+                    <lightning-icon
+                      class="gnal-icon"
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </span>
+                </template>
+                <div class="gnal-mid">
+                  <div class="gnal-primary">{l.label}</div>
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub">{l.subText}</div>
+                  </template>
+                </div>
+                <template lwc:if={l.hasRightContent}>
+                  <div class="gnal-right-block">
+                    <template lwc:if={l.rightText}>
+                      <span class="gnal-right">{l.rightText}</span>
+                    </template>
+                    <template lwc:if={l.rightIcon}>
+                      <span class="gnal-right-icon" aria-hidden="true">
+                        <lightning-icon
+                          class="gnal-right-icon__icon"
+                          icon-name={l.rightIcon}
+                          size="xx-small"
+                          alternative-text=""
+                          title=""
+                        ></lightning-icon>
+                      </span>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template lwc:else>
+              <div class="gnal-row">
                 <template lwc:if={l.icon}>
                   <span class="gnal-icon-wrapper" style={l.iconStyle}>
                     <lightning-icon
