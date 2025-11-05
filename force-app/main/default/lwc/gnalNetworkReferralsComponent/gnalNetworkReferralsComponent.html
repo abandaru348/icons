@@ -1,0 +1,22 @@
+<!--
+/****************************************************************************************************
+Methods Used : [handleItemClick, handleViewAll]
+Created Date : [10-22-2025]
+@description : Displays Network Referrals tile similar to mock with items and dates.
+               Clickable for authenticated users only.
+@author : [Pratyusha Mungamuri]
+Modification Log:
+Date            Author                     Modification
+10-23-2025      [Assistant]                Initial creation
+******************************************************************************************************/
+-->
+
+<template>
+  <c-gnal-generic-link-component
+    title="Telehealth Registered Nurse Services"
+    links={links}
+    footer-url="#"
+    footer-label="Learn More"
+    authenticated={isAuthenticated}
+  ></c-gnal-generic-link-component>
+</template>
