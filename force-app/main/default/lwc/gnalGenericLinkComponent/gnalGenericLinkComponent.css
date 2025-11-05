@@ -4,7 +4,8 @@
 .gnal-right { text-align: right; white-space: nowrap; }
 .gnal-primary { line-height: 1.25; white-space: normal; word-break: break-word; }
 .gnal-sub { line-height: 1.25; white-space: normal; word-break: break-word; }
-.gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; }
+.gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; }
+.gnal-icon svg { width: 1.1rem; height: 1.1rem; }
 .gnal-icon--disabled {
   --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b);
   --sds-c-icon-color-foreground-default-hover: var(--lwc-colorTextWeak, #706e6b);
@@ -31,6 +32,12 @@
   background-color: #f9e6ef;
   color: #4b0b1e;
   border-radius: 50%;
+}
+.gnal-icon--disabled svg { fill: currentColor; }
+.appointment-note { fill: currentColor; }
+.gnal-icon--disabled.gnal-icon--appointment {
+  background-color: #f3f6fb;
+  color: var(--lwc-colorTextWeak, #706e6b);
 }
 
 /* Tighten card section spacing to mirror mock */

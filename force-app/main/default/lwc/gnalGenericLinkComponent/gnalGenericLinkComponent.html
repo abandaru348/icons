@@ -19,13 +19,30 @@
                 title={l.ariaLabel}
               >
                 <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class={l.iconClasses}
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
+                  <template lwc:if={l.customIcon}>
+                    <span
+                      class={l.iconClasses}
+                      role="img"
+                      aria-label={l.label}
+                    >
+                      <svg class={l.customIcon} viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V3z" fill="currentColor"></path>
+                        <path d="M14 1v4a1 1 0 0 0 1 1h4" fill="currentColor"></path>
+                        <path d="M9 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                      </svg>
+                    </span>
+                  </template>
+                  <template lwc:else>
+                    <lightning-icon
+                      class={l.iconClasses}
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </template>
                 </template>
 
                 <div class="slds-p-horizontal_small gnal-mid">
@@ -50,13 +67,30 @@
                 aria-disabled="true"
               >
                 <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class={l.iconClassesDisabled}
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
+                  <template lwc:if={l.customIcon}>
+                    <span
+                      class={l.iconClassesDisabled}
+                      role="img"
+                      aria-label={l.label}
+                    >
+                      <svg class={l.customIcon} viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V3z" fill="currentColor"></path>
+                        <path d="M14 1v4a1 1 0 0 0 1 1h4" fill="currentColor"></path>
+                        <path d="M9 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                      </svg>
+                    </span>
+                  </template>
+                  <template lwc:else>
+                    <lightning-icon
+                      class={l.iconClassesDisabled}
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </template>
                 </template>
 
                 <div class="slds-p-horizontal_small gnal-mid">

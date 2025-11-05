@@ -18,17 +18,22 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get normalizedLinks() {
-    return (this.links || []).map((l, i) => ({
-      key: l.key || l.label || String(i),
-      label: l.label,
-      url: l.url,
-      icon: l.icon,
-      iconClasses: this.computeIconClasses(l.iconClass),
-      iconClassesDisabled: this.computeIconClasses(l.iconClass, true),
-      subText: l.subText || l.subtitle || l.subLabel,
-      rightText: l.rightText,
-      ariaLabel: l.ariaLabel || `Open ${l.label}`
-    }));
+    return (this.links || []).map((l, i) => {
+      const iconClass = l.iconClass;
+      const customIcon = this.resolveCustomIcon(l.icon, iconClass);
+      return {
+        key: l.key || l.label || String(i),
+        label: l.label,
+        url: l.url,
+        icon: l.icon,
+        iconClasses: this.computeIconClasses(iconClass),
+        iconClassesDisabled: this.computeIconClasses(iconClass, true),
+        customIcon,
+        subText: l.subText || l.subtitle || l.subLabel,
+        rightText: l.rightText,
+        ariaLabel: l.ariaLabel || `Open ${l.label}`
+      };
+    });
   }
 
   get footerUrlResolved() {
@@ -64,5 +69,12 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       classes.push('gnal-icon--disabled');
     }
     return classes.join(' ');
+  }
+
+  resolveCustomIcon(iconName, iconClass) {
+    if (iconName === 'standard:note' && iconClass === 'gnal-icon--appointment') {
+      return 'appointment-note';
+    }
+    return null;
   }
 }
