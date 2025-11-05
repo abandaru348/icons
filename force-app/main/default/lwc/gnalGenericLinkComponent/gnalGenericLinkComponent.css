@@ -19,10 +19,12 @@
 .gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
 .gnal-icon--appointment {
   --sds-c-icon-color-foreground-default: #4b0b1e;
+  --sds-c-icon-color-foreground: #4b0b1e;
   --sds-c-icon-color-foreground-default-hover: #4b0b1e;
   --sds-c-icon-color-foreground-default-focus: #4b0b1e;
   --lwc-colorTextIconDefault: #4b0b1e;
   --sds-c-icon-color-background: #f9e6ef;
+  --sds-c-icon-color-background-default: #f9e6ef;
   --sds-c-icon-color-background-hover: #f9e6ef;
   --sds-c-icon-color-background-focus: #f9e6ef;
   --lwc-colorBackgroundIcon: #f9e6ef;
