@@ -1,0 +1,125 @@
+<template>
+  <lightning-card title={title} class="gnal-card">
+    <div class="slds-p-horizontal_small">
+      <!-- description -->
+      <template lwc:if={description}>
+        <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
+      </template>
+
+      <ul class="slds-has-dividers_around-space" role="list">
+        <template for:each={normalizedLinks} for:item="l">
+          <li key={l.key} class="slds-item" role="listitem">
+            <!-- Authenticated vs not -->
+            <template lwc:if={isAuthenticated}>
+              <a
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row gnal-link"
+                data-url={l.url}
+                onclick={handleNavigate}
+                aria-label={l.ariaLabel}
+                title={l.ariaLabel}
+              >
+                <template lwc:if={l.icon}>
+                  <template lwc:if={l.customIcon}>
+                    <span
+                      class={l.iconClasses}
+                      role="img"
+                      aria-label={l.label}
+                    >
+                      <svg class={l.customIcon} viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V3z" fill="currentColor"></path>
+                        <path d="M14 1v4a1 1 0 0 0 1 1h4" fill="currentColor"></path>
+                        <path d="M9 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                      </svg>
+                    </span>
+                  </template>
+                  <template lwc:else>
+                    <lightning-icon
+                      class={l.iconClasses}
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </template>
+                </template>
+
+                <div class="slds-p-horizontal_small gnal-mid">
+                  <div class="gnal-primary">{l.label}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
+                      {l.subText}
+                    </div>
+                  </template>
+                </div>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
+              </a>
+            </template>
+
+            <template lwc:else>
+              <div
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row"
+                aria-disabled="true"
+              >
+                <template lwc:if={l.icon}>
+                  <template lwc:if={l.customIcon}>
+                    <span
+                      class={l.iconClassesDisabled}
+                      role="img"
+                      aria-label={l.label}
+                    >
+                      <svg class={l.customIcon} viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V3z" fill="currentColor"></path>
+                        <path d="M14 1v4a1 1 0 0 0 1 1h4" fill="currentColor"></path>
+                        <path d="M9 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                        <path d="M9 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                      </svg>
+                    </span>
+                  </template>
+                  <template lwc:else>
+                    <lightning-icon
+                      class={l.iconClassesDisabled}
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                    ></lightning-icon>
+                  </template>
+                </template>
+
+                <div class="slds-p-horizontal_small gnal-mid">
+                  <div class="gnal-primary">{l.label}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
+                      {l.subText}
+                    </div>
+                  </template>
+                </div>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
+              </div>
+            </template>
+          </li>
+        </template>
+      </ul>
+
+      <!-- footer link -->
+      <template lwc:if={footerUrlResolved}>
+        <div class="slds-m-top_small slds-text-align_center">
+          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
+            {footerLabelResolved}
+          </a>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

@@ -1,0 +1,50 @@
+.gnal-row { padding: 0.5rem 0; transition: background-color 120ms ease-in; min-height: 40px; }
+.gnal-link { width: 100%; text-decoration: none; }
+.gnal-mid { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1 1 auto; }
+.gnal-right { text-align: right; white-space: nowrap; }
+.gnal-primary { line-height: 1.25; white-space: normal; word-break: break-word; }
+.gnal-sub { line-height: 1.25; white-space: normal; word-break: break-word; }
+.gnal-icon { margin-right: 0.5rem; display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; }
+.gnal-icon svg { width: 1.1rem; height: 1.1rem; }
+.gnal-icon--disabled {
+  --sds-c-icon-color-foreground-default: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-foreground-default-hover: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-foreground-default-focus: var(--lwc-colorTextWeak, #706e6b);
+  --lwc-colorTextIconDefault: var(--lwc-colorTextWeak, #706e6b);
+  --sds-c-icon-color-background: #f3f6fb;
+  --sds-c-icon-color-background-hover: #f3f6fb;
+  --sds-c-icon-color-background-focus: #f3f6fb;
+  --lwc-colorBackgroundIcon: #f3f6fb;
+  opacity: 0.6;
+}
+.gnal-item-disabled { cursor: not-allowed; pointer-events: none; }
+.gnal-icon--appointment {
+  --sds-c-icon-color-foreground-default: #4b0b1e;
+  --sds-c-icon-color-foreground: #4b0b1e;
+  --sds-c-icon-color-foreground-default-hover: #4b0b1e;
+  --sds-c-icon-color-foreground-default-focus: #4b0b1e;
+  --lwc-colorTextIconDefault: #4b0b1e;
+  --sds-c-icon-color-background: #f9e6ef;
+  --sds-c-icon-color-background-default: #f9e6ef;
+  --sds-c-icon-color-background-hover: #f9e6ef;
+  --sds-c-icon-color-background-focus: #f9e6ef;
+  --lwc-colorBackgroundIcon: #f9e6ef;
+  background-color: #f9e6ef;
+  color: #4b0b1e;
+  border-radius: 50%;
+}
+.gnal-icon--disabled svg { fill: currentColor; }
+.appointment-note { fill: currentColor; }
+.gnal-icon--disabled.gnal-icon--appointment {
+  background-color: #f3f6fb;
+  color: var(--lwc-colorTextWeak, #706e6b);
+}
+
+/* Tighten card section spacing to mirror mock */
+:host lightning-card.gnal-card { border-radius: 12px; overflow: hidden; }
+:host lightning-card.gnal-card .slds-card__header { padding: 0.75rem 1rem; }
+:host lightning-card.gnal-card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
+:host lightning-card.gnal-card .slds-card__body { padding-top: 0.25rem; }
+
+/* Hover affordance like mock */
+.gnal-row:hover { background-color: #f3f6fb; border-radius: 6px; }
