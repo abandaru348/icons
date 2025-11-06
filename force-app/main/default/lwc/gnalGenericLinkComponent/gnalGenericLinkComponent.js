@@ -31,7 +31,13 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       const hasUrl = Boolean(l.url);
       const isClickable = !isDisabled && hasUrl;
       const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
-      const baseClass = `gnal-row ${variantClass}`;
+      const rowClassList = ['gnal-row', variantClass];
+      if (isClickable) {
+        rowClassList.push('gnal-row--link');
+      }
+      if (isDisabled) {
+        rowClassList.push('gnal-row--disabled');
+      }
       return {
         key: l.key || l.label || String(i),
         label: l.label,
@@ -45,9 +51,10 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
         hasRightContent: Boolean(rightText || rightIcon),
         isClickable,
         isDisabled,
-        clickableClass: `${baseClass} gnal-row--link`,
-        disabledClass: `${baseClass} gnal-row--disabled`,
-        staticClass: baseClass
+        rowClass: rowClassList.join(' '),
+        role: isClickable ? 'link' : undefined,
+        tabIndex: isClickable ? '0' : undefined,
+        ariaDisabled: isDisabled ? 'true' : undefined
       };
     });
   }
@@ -62,6 +69,8 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
   handleNavigate(event) {
     if (!this.isAuthenticated) return;
+    const isClickable = event.currentTarget.dataset.clickable === 'true';
+    if (!isClickable) return;
     const url = event.currentTarget.dataset.url;
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
@@ -71,5 +80,17 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
     const url = event.currentTarget.dataset.url || this.footerUrlResolved;
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
+  }
+
+  handleKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    const isClickable = event.currentTarget.dataset.clickable === 'true';
+    if (!isClickable) {
+      return;
+    }
+    event.preventDefault();
+    this.handleNavigate(event);
   }
 }
