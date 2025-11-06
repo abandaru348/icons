@@ -10,12 +10,16 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
     };
   }
 
+  static get DEFAULT_FOOTER_LABEL() {
+    return 'Learn More';
+  }
+
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }] icon should be a lightning icon name (e.g., utility:info)
   @api learnMoreUrl;      // legacy: optional footer link
   @api footerUrl;         // new: footer link URL
-  @api footerLabel = 'Learn More'; // new: footer link label, default like mock
+  @api footerLabel;       // new: footer link label, default like mock
   @api authenticated;     // optional override
   @api variant = 'boxed'; // 'boxed' (default) or 'plain'
 
@@ -64,7 +68,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get footerLabelResolved() {
-    return this.footerLabel || 'Learn More';
+    return this.footerLabel || this.constructor.DEFAULT_FOOTER_LABEL;
   }
 
   handleNavigate(event) {
