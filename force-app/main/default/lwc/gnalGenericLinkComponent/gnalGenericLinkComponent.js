@@ -3,11 +3,6 @@ import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
-  static ROW_VARIANT_CLASS = {
-    boxed: 'gnal-row--boxed',
-    plain: 'gnal-row--plain'
-  };
-
   static DEFAULT_FOOTER_LABEL = 'Learn More';
 
   @api title;
@@ -25,9 +20,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
   get normalizedLinks() {
     const isAuthenticated = this.isAuthenticated;
-    const variantClass =
-      this.constructor.ROW_VARIANT_CLASS[this.variant] ||
-      this.constructor.ROW_VARIANT_CLASS.boxed;
+    const variantClass = this.variant === 'plain' ? 'gnal-row--plain' : 'gnal-row--boxed';
     return (this.links || []).map((l, i) => {
       const rightText = l.rightText;
       const rightIcon = l.rightIcon;
