@@ -3,16 +3,12 @@ import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
-  static get ROW_VARIANT_CLASS() {
-    return {
-      boxed: 'gnal-row--boxed',
-      plain: 'gnal-row--plain'
-    };
-  }
+  static ROW_VARIANT_CLASS = {
+    boxed: 'gnal-row--boxed',
+    plain: 'gnal-row--plain'
+  };
 
-  static get DEFAULT_FOOTER_LABEL() {
-    return 'Learn More';
-  }
+  static DEFAULT_FOOTER_LABEL = 'Learn More';
 
   @api title;
   @api description;
