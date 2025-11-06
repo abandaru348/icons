@@ -1,15 +1,15 @@
 <template>
-  <lightning-card title={title} class="gnal-card">
-    <div class="gnal-card-body">
+  <lightning-card title={title} class="card">
+    <div class="card-body">
         <slot name="header"></slot>
 
       <template lwc:if={description}>
-        <p class="gnal-description">{description}</p>
+        <p class="description">{description}</p>
       </template>
 
-      <ul class="gnal-list" role="list">
+      <ul class="list" role="list">
         <template for:each={normalizedLinks} for:item="l">
-          <li key={l.key} class="gnal-list-item" role="listitem">
+          <li key={l.key} class="list-item" role="listitem">
             <div
               class={l.rowClass}
               data-url={l.url}
@@ -23,9 +23,9 @@
               onkeydown={handleKeydown}
             >
               <template lwc:if={l.icon}>
-                <span class="gnal-icon-wrapper" style={l.iconStyle}>
+                <span class="icon-wrapper" style={l.iconStyle}>
                   <lightning-icon
-                    class="gnal-icon"
+                    class="icon"
                     icon-name={l.icon}
                     alternative-text={l.label}
                     title={l.label}
@@ -33,21 +33,21 @@
                   ></lightning-icon>
                 </span>
               </template>
-              <div class="gnal-mid">
-                <div class="gnal-primary">{l.label}</div>
+              <div class="mid">
+                <div class="primary">{l.label}</div>
                 <template lwc:if={l.subText}>
-                  <div class="gnal-sub">{l.subText}</div>
+                  <div class="sub">{l.subText}</div>
                 </template>
               </div>
               <template lwc:if={l.hasRightContent}>
-                <div class="gnal-right-block">
+                <div class="right">
                   <template lwc:if={l.rightText}>
-                    <span class="gnal-right">{l.rightText}</span>
+                    <span class="right-text">{l.rightText}</span>
                   </template>
                   <template lwc:if={l.rightIcon}>
-                    <span class="gnal-right-icon" aria-hidden="true">
+                    <span class="right-icon" aria-hidden="true">
                       <lightning-icon
-                        class="gnal-right-icon__icon"
+                        class="right-icon__icon"
                         icon-name={l.rightIcon}
                         size="xx-small"
                         alternative-text=""
@@ -63,7 +63,7 @@
       </ul>
 
       <template lwc:if={footerUrlResolved}>
-        <lightning-layout class="gnal-footer" horizontal-align="center">
+        <lightning-layout class="footer" horizontal-align="center">
           <lightning-layout-item>
             <lightning-button
               variant="base"

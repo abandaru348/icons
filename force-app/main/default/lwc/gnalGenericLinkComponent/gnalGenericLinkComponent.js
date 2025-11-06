@@ -20,7 +20,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
   get normalizedLinks() {
     const isAuthenticated = this.isAuthenticated;
-    const variantClass = this.variant === 'plain' ? 'gnal-row--plain' : 'gnal-row--boxed';
+    const variantClass = this.variant === 'plain' ? 'row--plain' : 'row--boxed';
     return (this.links || []).map((l, i) => {
       const rightText = l.rightText;
       const rightIcon = l.rightIcon;
@@ -31,12 +31,12 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       const hasUrl = Boolean(l.url);
       const isClickable = !isDisabled && hasUrl;
       const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
-      const rowClassList = ['gnal-row', variantClass];
+      const rowClassList = ['row', variantClass];
       if (isClickable) {
-        rowClassList.push('gnal-row--link');
+        rowClassList.push('row--link');
       }
       if (isDisabled) {
-        rowClassList.push('gnal-row--disabled');
+        rowClassList.push('row--disabled');
       }
       return {
         key: l.key || l.label || String(i),

@@ -1,40 +1,42 @@
-.gnal-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
-.gnal-description { margin: 0; color: var(--lwc-colorTextWeak, #5f6773); font-size: 0.9375rem; line-height: 1.4; }
+.card-body { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+.description { margin: 0; color: var(--lwc-colorTextWeak, #5f6773); font-size: 0.9375rem; line-height: 1.4; }
 
-.gnal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
-.gnal-list-item { margin: 0; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.list-item { margin: 0; }
 
-.gnal-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 12px; text-decoration: none; color: inherit; transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
-.gnal-row--boxed { border: 1px solid #e0e4ec; background-color: #fff; }
-.gnal-row--plain { border: none; background-color: transparent; padding-left: 0; padding-right: 0; }
-.gnal-row--plain:not(.gnal-row--link) { padding: 0.75rem 0; }
-.gnal-row--link { cursor: pointer; }
-.gnal-row--link:hover { border-color: #ccd2de; box-shadow: 0 8px 20px rgba(18, 41, 78, 0.08); transform: translateY(-1px); }
-.gnal-row--plain.gnal-row--link:hover { border-color: transparent; box-shadow: none; transform: none; background-color: #f5f7fc; border-radius: 12px; }
-.gnal-row--link:focus-visible { outline: none; border-color: #0176d3; box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3); }
-.gnal-row--plain.gnal-row--link:focus-visible { border-color: transparent; box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3); background-color: #f5f7fc; }
-.gnal-row--disabled { background-color: #f4f6fb; border-color: #e5e8f1; color: var(--lwc-colorTextWeak, #6f6f6f); cursor: default; }
-.gnal-row--disabled.gnal-row--plain { background-color: transparent; border-color: transparent; }
-.gnal-row--disabled .gnal-primary { color: inherit; }
-.gnal-row--disabled .gnal-sub { color: inherit; }
-.gnal-row--disabled .gnal-icon-wrapper { background: #d8dae6; }
+.row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 12px; transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
+.row--boxed { border: 1px solid #e0e4ec; background-color: #fff; }
+.row--plain { border: none; background-color: transparent; padding-left: 0; padding-right: 0; }
+.row--plain:not(.row--link) { padding: 0.75rem 0; }
+.row--link { cursor: pointer; }
+.row:hover { background-color: #f3f6fb; border-radius: 6px; }
+.row--boxed.row--link:hover { border-color: #ccd2de; box-shadow: 0 8px 20px rgba(18, 41, 78, 0.08); transform: translateY(-1px); }
+.row--plain.row--link:hover { border-radius: 12px; box-shadow: none; transform: none; }
+.row--link:focus-visible { outline: none; border-radius: 12px; box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3); }
+.row--boxed.row--link:focus-visible { border-color: #0176d3; }
+.row--plain.row--link:focus-visible { border-color: transparent; background-color: #f5f7fc; }
+.row--disabled { background-color: #f4f6fb; border-color: #e5e8f1; color: var(--lwc-colorTextWeak, #6f6f6f); cursor: default; }
+.row--disabled .icon-wrapper { background: #d8dae6; }
+.row--disabled .primary,
+.row--disabled .sub,
+.row--disabled .right-text { color: inherit; }
 
-.gnal-icon-wrapper { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: var(--gnal-icon-wrapper-bg, linear-gradient(135deg, #a12c81 0%, #cc3261 100%)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.gnal-icon { --sds-c-icon-color-foreground-default: #ffffff; --sds-c-icon-color-background: transparent; }
+.icon-wrapper { width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: var(--gnal-icon-wrapper-bg, linear-gradient(135deg, #a12c81 0%, #cc3261 100%)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icon { --sds-c-icon-color-foreground-default: #ffffff; --sds-c-icon-color-background: transparent; }
+.icon--appointment { --slds-c-icon-color-background: #4e1e2d; }
 
-.gnal-mid { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
-.gnal-primary { font-weight: 600; color: #1b1d21; line-height: 1.25; }
-.gnal-sub { color: #5f6773; font-size: 0.85rem; line-height: 1.35; }
+.mid { display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; min-width: 0; gap: 0.25rem; }
+.primary { font-weight: 600; color: #1b1d21; line-height: 1.25; }
+.sub { color: #5f6773; font-size: 0.85rem; line-height: 1.35; }
 
-.gnal-right-block { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-shrink: 0; }
-.gnal-right { font-weight: 600; color: #1b1d21; white-space: nowrap; }
-.gnal-row--disabled .gnal-right { color: inherit; }
-.gnal-right-icon { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background-color: #edf0f8; }
-.gnal-right-icon__icon { --sds-c-icon-color-foreground-default: #4e5663; }
+.right { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-shrink: 0; text-align: right; white-space: nowrap; }
+.right-text { font-weight: 600; color: #1b1d21; }
+.right-icon { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background-color: #edf0f8; }
+.right-icon__icon { --sds-c-icon-color-foreground-default: #4e5663; }
 
-.gnal-footer { margin-top: 0.5rem; }
+.footer { margin-top: 0.5rem; }
 
-:host lightning-card.gnal-card { border-radius: 16px; overflow: hidden; background: #fff; }
-:host lightning-card.gnal-card .slds-card__header { padding: 0.75rem 1rem; }
-:host lightning-card.gnal-card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
-:host lightning-card.gnal-card .slds-card__body { padding: 0; }
+:host lightning-card.card { border-radius: 12px; overflow: hidden; }
+:host lightning-card.card .slds-card__header { padding: 0.75rem 1rem; }
+:host lightning-card.card .slds-card__header-title .slds-truncate { font-weight: 600; font-size: 1rem; }
+:host lightning-card.card .slds-card__body { padding-top: 0.25rem; }
