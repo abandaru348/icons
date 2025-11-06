@@ -3,6 +3,13 @@ import { NavigationMixin } from 'lightning/navigation';
 import isGuest from '@salesforce/user/isGuest';
 
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
+  static get ROW_VARIANT_CLASS() {
+    return {
+      boxed: 'gnal-row--boxed',
+      plain: 'gnal-row--plain'
+    };
+  }
+
   @api title;
   @api description;
   @api links = [];        // [{ label, url, icon?, rightText?, ariaLabel? }] icon should be a lightning icon name (e.g., utility:info)
@@ -18,7 +25,9 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
   get normalizedLinks() {
     const isAuthenticated = this.isAuthenticated;
-    const variantClass = this.variant === 'plain' ? 'gnal-row--plain' : 'gnal-row--boxed';
+    const variantClass =
+      this.constructor.ROW_VARIANT_CLASS[this.variant] ||
+      this.constructor.ROW_VARIANT_CLASS.boxed;
     return (this.links || []).map((l, i) => {
       const rightText = l.rightText;
       const rightIcon = l.rightIcon;
