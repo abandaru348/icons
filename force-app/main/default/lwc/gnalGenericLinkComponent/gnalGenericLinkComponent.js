@@ -27,14 +27,15 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       const hasUrl = Boolean(l.url);
       const isClickable = hasUrl && !isDisabled;
       const hasRightContent = Boolean(rightText || rightIcon);
-      const hasIcon = Boolean(l.icon);
       const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
       const rowClass = [
         'gnal-row',
+        'slds-grid',
+        'slds-grid_vertical-align-center',
+        'slds-grid_align-spread',
+        'slds-wrap',
         isClickable ? 'gnal-row--clickable' : '',
-        isDisabled ? 'gnal-row--disabled' : '',
-        !hasIcon ? 'gnal-row--no-icon' : '',
-        !hasRightContent ? 'gnal-row--no-meta' : ''
+        isDisabled ? 'gnal-row--disabled' : ''
       ]
         .filter(Boolean)
         .join(' ');

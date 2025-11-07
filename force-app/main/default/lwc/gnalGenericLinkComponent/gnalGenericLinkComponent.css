@@ -1,39 +1,63 @@
-.mid {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-}
+.gnal-card-body { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+.gnal-description { margin: 0; color: var(--lwc-colorTextWeak, #5f6773); font-size: 0.9375rem; line-height: 1.4; }
 
-.right {
-  text-align: right;
-  white-space: nowrap;
-}
+.gnal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.gnal-list-item { margin: 0; }
 
-.icon--appointment {
-  --slds-c-icon-color-background: #4e1e2d;
-}
-
-:host lightning-card.card {
+.gnal-row {
+  border: 1px solid #e0e4ec;
   border-radius: 12px;
-  overflow: hidden;
-}
-
-:host lightning-card.card .slds-card__header {
+  background-color: #fff;
   padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
+.gnal-row--clickable { cursor: pointer; }
+.gnal-row--clickable:hover { border-color: #ccd2de; box-shadow: 0 8px 20px rgba(18, 41, 78, 0.08); transform: translateY(-1px); }
+.gnal-row--clickable:focus-visible { outline: none; border-color: #0176d3; box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3); }
+.gnal-row--disabled { background-color: #f4f6fb; border-color: #e5e8f1; color: var(--lwc-colorTextWeak, #6f6f6f); cursor: default; }
+.gnal-row--disabled .gnal-primary { color: inherit; }
+.gnal-row--disabled .gnal-sub { color: inherit; }
+.gnal-row--disabled .gnal-icon-wrapper { background: #d8dae6; }
 
-:host lightning-card.card .slds-card__header-title .slds-truncate {
-  font-weight: 600;
-  font-size: 1rem;
+.gnal-icon-wrapper {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--gnal-icon-wrapper-bg, linear-gradient(135deg, #a12c81 0%, #cc3261 100%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.gnal-icon { --sds-c-icon-color-foreground-default: #ffffff; --sds-c-icon-color-background: transparent; }
 
-:host lightning-card.card .slds-card__body {
-  padding-top: 0.25rem;
-}
+.gnal-content { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.gnal-primary { font-weight: 600; color: #1b1d21; line-height: 1.25; }
+.gnal-sub { color: #5f6773; font-size: 0.85rem; line-height: 1.35; }
 
-.row:hover {
-  background-color: #f3f6fb;
-  border-radius: 6px;
+.gnal-meta { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.gnal-meta__text { font-weight: 600; color: #1b1d21; white-space: nowrap; }
+.gnal-row--disabled .gnal-meta__text { color: inherit; }
+.gnal-meta__icon { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background-color: #edf0f8; }
+.gnal-meta__icon-inner { --sds-c-icon-color-foreground-default: #4e5663; }
+
+.gnal-footer { margin-top: 0.5rem; }
+
+:host lightning-card.gnal-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  --slds-c-card-header-spacing-block-start: 0.75rem;
+  --slds-c-card-header-spacing-block-end: 0.75rem;
+  --slds-c-card-header-spacing-inline-start: 1rem;
+  --slds-c-card-header-spacing-inline-end: 1rem;
+  --slds-c-card-header-title-font-weight: 600;
+  --slds-c-card-header-title-font-size: 1rem;
+  --slds-c-card-body-spacing-block-start: 0;
+  --slds-c-card-body-spacing-block-end: 0;
+  --slds-c-card-body-spacing-inline-start: 0;
+  --slds-c-card-body-spacing-inline-end: 0;
 }
