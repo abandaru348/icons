@@ -25,8 +25,19 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
       const allowGuest = Boolean(l.allowGuest);
       const isDisabled = Boolean(l.disabled) || (!isAuthenticated && !allowGuest);
       const hasUrl = Boolean(l.url);
-      const isClickable = !isDisabled && hasUrl;
+      const isClickable = hasUrl && !isDisabled;
+      const hasRightContent = Boolean(rightText || rightIcon);
+      const hasIcon = Boolean(l.icon);
       const ariaLabel = l.ariaLabel || (isClickable ? `Open ${l.label}` : l.label);
+      const rowClass = [
+        'gnal-row',
+        isClickable ? 'gnal-row--clickable' : '',
+        isDisabled ? 'gnal-row--disabled' : '',
+        !hasIcon ? 'gnal-row--no-icon' : '',
+        !hasRightContent ? 'gnal-row--no-meta' : ''
+      ]
+        .filter(Boolean)
+        .join(' ');
       return {
         key: l.key || l.label || String(i),
         label: l.label,
@@ -37,9 +48,12 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
         ariaLabel,
         rightText,
         rightIcon,
-        hasRightContent: Boolean(rightText || rightIcon),
-        isClickable,
-        isDisabled
+        hasRightContent,
+        rowClass,
+        dataClickable: isClickable ? 'true' : 'false',
+        role: isClickable ? 'link' : undefined,
+        tabIndex: isClickable ? '0' : undefined,
+        ariaDisabled: isDisabled ? 'true' : undefined
       };
     });
   }
@@ -53,10 +67,25 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   handleNavigate(event) {
-    if (!this.isAuthenticated) return;
-    const url = event.currentTarget.dataset.url;
+    const { currentTarget } = event;
+    if (currentTarget.dataset.clickable !== 'true') {
+      return;
+    }
+    const url = currentTarget.dataset.url;
     if (!url) return;
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } });
+  }
+
+  handleRowKeydown(event) {
+    const { key, currentTarget } = event;
+    if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
+      return;
+    }
+    if (currentTarget.dataset.clickable !== 'true') {
+      return;
+    }
+    event.preventDefault();
+    this.handleNavigate(event);
   }
 
   handleLearnMore(event) {
