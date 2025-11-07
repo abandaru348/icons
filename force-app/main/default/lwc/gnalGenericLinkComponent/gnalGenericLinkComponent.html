@@ -1,78 +1,90 @@
 <template>
-  <lightning-card title={title} class="card">
-    <div class="card-body slds-p-around_medium slds-grid slds-grid_vertical slds-grid_align-stretch slds-gap_medium">
-        <slot name="header"></slot>
-
+  <lightning-card title={title} class="gnal-card">
+    <div class="slds-p-horizontal_small">
+      <!-- description -->
       <template lwc:if={description}>
-        <p class="description slds-text-color_weak slds-m-vertical_none slds-text-body_regular">{description}</p>
+        <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
       </template>
 
-      <ul class="list slds-list_vertical slds-m-vertical_none slds-grid slds-grid_vertical slds-gap_small" role="list">
+      <ul role="list">
         <template for:each={normalizedLinks} for:item="l">
-          <li key={l.key} class="list-item slds-p-vertical_x-small" role="listitem">
-            <div
-              class={l.rowClass}
-              data-url={l.url}
-              data-clickable={l.isClickable}
-              role={l.role}
-              tabindex={l.tabIndex}
-              aria-disabled={l.ariaDisabled}
-              aria-label={l.ariaLabel}
-              title={l.ariaLabel}
-              onclick={handleNavigate}
-              onkeydown={handleKeydown}
-            >
-              <template lwc:if={l.icon}>
-                <span class="icon-wrapper slds-align_absolute-center slds-rounded_medium slds-p-around_x-small" style={l.iconStyle}>
+          <li key={l.key} class="slds-item" role="listitem">
+            <!-- Authenticated vs not -->
+            <template lwc:if={isAuthenticated}>
+              <a
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row gnal-link"
+                data-url={l.url}
+                onclick={handleNavigate}
+                aria-label={l.ariaLabel}
+                title={l.ariaLabel}
+              >
+                <template lwc:if={l.icon}>
                   <lightning-icon
-                    class="icon"
+                    class="icon--appointment"
                     icon-name={l.icon}
                     alternative-text={l.label}
                     title={l.label}
                     size="small"
                   ></lightning-icon>
-                </span>
-              </template>
-              <div class="mid slds-grid slds-grid_vertical slds-grid_align-stretch slds-gap_x-small slds-grow">
-                <div class="primary slds-text-heading_small">{l.label}</div>
-                <template lwc:if={l.subText}>
-                  <div class="sub slds-text-body_small">{l.subText}</div>
                 </template>
-              </div>
-              <template lwc:if={l.hasRightContent}>
-                <div class="right slds-grid slds-grid_vertical-align-center slds-gap_x-small slds-m-left_auto slds-text-align_right">
-                  <template lwc:if={l.rightText}>
-                    <span class="right-text">{l.rightText}</span>
-                  </template>
-                  <template lwc:if={l.rightIcon}>
-                    <span class="right-icon" aria-hidden="true">
-                      <lightning-icon
-                        class="right-icon__icon"
-                        icon-name={l.rightIcon}
-                        size="xx-small"
-                        alternative-text=""
-                        title=""
-                      ></lightning-icon>
-                    </span>
+
+                <div class="slds-p-horizontal_small mid">
+                  <div class="gnal-primary">{l.label}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
+                      {l.subText}
+                    </div>
                   </template>
                 </div>
-              </template>
-            </div>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
+              </a>
+            </template>
+
+            <template lwc:else>
+              <div
+                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row"
+                aria-disabled="true"
+              >
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="icon--appointment "
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+
+                <div class="slds-p-horizontal_small mid">
+                  <div class="gnal-primary">{l.label}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
+                      {l.subText}
+                    </div>
+                  </template>
+                </div>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
+              </div>
+            </template>
           </li>
         </template>
       </ul>
-
+      <hr class="tile-divider" />
+      <!-- footer link -->
       <template lwc:if={footerUrlResolved}>
-        <lightning-layout class="footer slds-m-top_small" horizontal-align="center">
-          <lightning-layout-item>
-            <lightning-button
-              variant="base"
-              label={footerLabelResolved}
-              data-url={footerUrlResolved}
-              onclick={handleLearnMore}
-            ></lightning-button>
-          </lightning-layout-item>
-        </lightning-layout>
+        <div class="slds-m-top_small slds-text-align_center">
+          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
+            {footerLabelResolved}
+          </a>
+        </div>
       </template>
     </div>
   </lightning-card>
