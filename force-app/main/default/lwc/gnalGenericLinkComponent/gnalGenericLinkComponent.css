@@ -1,15 +1,8 @@
-.card-body { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
-.description { margin: 0; color: var(--lwc-colorTextWeak, #5f6773); font-size: 0.9375rem; line-height: 1.4; }
-
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
-.list-item { margin: 0; }
-
-.row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 12px; transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
+.row { border-radius: 12px; transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
 .row--boxed { border: 1px solid #e0e4ec; background-color: #fff; }
-.row--plain { border: none; background-color: transparent; padding-left: 0; padding-right: 0; }
-.row--plain:not(.row--link) { padding: 0.75rem 0; }
+.row--plain { border: none; background-color: transparent; }
 .row--link { cursor: pointer; }
-.row:hover { background-color: #f3f6fb; border-radius: 6px; }
+.row--link:hover { background-color: #f3f6fb; }
 .row--boxed.row--link:hover { border-color: #ccd2de; box-shadow: 0 8px 20px rgba(18, 41, 78, 0.08); transform: translateY(-1px); }
 .row--plain.row--link:hover { border-radius: 12px; box-shadow: none; transform: none; }
 .row--link:focus-visible { outline: none; border-radius: 12px; box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3); }

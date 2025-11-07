@@ -1,15 +1,15 @@
 <template>
   <lightning-card title={title} class="card">
-    <div class="card-body">
+    <div class="card-body slds-p-around_medium slds-grid slds-grid_vertical slds-grid_align-stretch slds-gap_medium">
         <slot name="header"></slot>
 
       <template lwc:if={description}>
-        <p class="description">{description}</p>
+        <p class="description slds-text-color_weak slds-m-vertical_none slds-text-body_regular">{description}</p>
       </template>
 
-      <ul class="list" role="list">
+      <ul class="list slds-list_vertical slds-m-vertical_none slds-grid slds-grid_vertical slds-gap_small" role="list">
         <template for:each={normalizedLinks} for:item="l">
-          <li key={l.key} class="list-item" role="listitem">
+          <li key={l.key} class="list-item slds-p-vertical_x-small" role="listitem">
             <div
               class={l.rowClass}
               data-url={l.url}
@@ -23,7 +23,7 @@
               onkeydown={handleKeydown}
             >
               <template lwc:if={l.icon}>
-                <span class="icon-wrapper" style={l.iconStyle}>
+                <span class="icon-wrapper slds-align_absolute-center slds-rounded_medium slds-p-around_x-small" style={l.iconStyle}>
                   <lightning-icon
                     class="icon"
                     icon-name={l.icon}
@@ -33,14 +33,14 @@
                   ></lightning-icon>
                 </span>
               </template>
-              <div class="mid">
-                <div class="primary">{l.label}</div>
+              <div class="mid slds-grid slds-grid_vertical slds-grid_align-stretch slds-gap_x-small slds-grow">
+                <div class="primary slds-text-heading_small">{l.label}</div>
                 <template lwc:if={l.subText}>
-                  <div class="sub">{l.subText}</div>
+                  <div class="sub slds-text-body_small">{l.subText}</div>
                 </template>
               </div>
               <template lwc:if={l.hasRightContent}>
-                <div class="right">
+                <div class="right slds-grid slds-grid_vertical-align-center slds-gap_x-small slds-m-left_auto slds-text-align_right">
                   <template lwc:if={l.rightText}>
                     <span class="right-text">{l.rightText}</span>
                   </template>
@@ -63,7 +63,7 @@
       </ul>
 
       <template lwc:if={footerUrlResolved}>
-        <lightning-layout class="footer" horizontal-align="center">
+        <lightning-layout class="footer slds-m-top_small" horizontal-align="center">
           <lightning-layout-item>
             <lightning-button
               variant="base"
