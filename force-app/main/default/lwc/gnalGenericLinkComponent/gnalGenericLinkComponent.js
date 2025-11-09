@@ -41,8 +41,8 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get rowClass() {
-    const baseClass = 'slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-row';
-    return this.isAuthenticated ? `${baseClass} slds-text-link_reset gnal-link` : `${baseClass} gnal-item-disabled`;
+    const baseClass = 'slds-grid slds-grid_vertical-align-center slds-grid_align-spread row';
+    return this.isAuthenticated ? `${baseClass} slds-text-link_reset link` : `${baseClass} item-disabled`;
   }
 
   get disabledState() {

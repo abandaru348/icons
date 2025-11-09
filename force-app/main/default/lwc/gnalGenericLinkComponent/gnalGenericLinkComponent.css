@@ -1,34 +1,34 @@
-.gnal-row {
+.row {
   padding: 0.75rem 1rem;
   border-radius: 12px;
   transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
-.gnal-link {
+.link {
   cursor: pointer;
 }
 
-.gnal-link:hover {
+.link:hover {
   background-color: #f3f6fb;
   border-radius: 12px;
 }
 
-.gnal-link:focus-visible {
+.link:focus-visible {
   outline: none;
   border-radius: 12px;
   box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3);
 }
 
-.gnal-item-disabled {
+.item-disabled {
   background-color: #f4f6fb;
   color: var(--lwc-colorTextWeak, #6f6f6f);
   cursor: default;
   border-radius: 12px;
 }
 
-.gnal-item-disabled .gnal-primary,
-.gnal-item-disabled .gnal-sub,
-.gnal-item-disabled .gnal-right {
+.item-disabled .gnal-primary,
+.item-disabled .gnal-sub,
+.item-disabled .gnal-right {
   color: inherit;
 }
 
