@@ -4,7 +4,7 @@ import isGuest from '@salesforce/user/isGuest';
 
 
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
-  
+
   static DEFAULT_FOOTER_LABEL = 'Learn More';
 
   @api title;
@@ -39,12 +39,34 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
 
     return this.footerLabel || this.constructor.DEFAULT_FOOTER_LABEL;
   }
+
+  get rowClass() {
+    const baseClass = 'slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-row';
+    return this.isAuthenticated ? `${baseClass} slds-text-link_reset gnal-link` : `${baseClass} gnal-item-disabled`;
+  }
+
+  get disabledState() {
+    return this.isAuthenticated ? 'false' : 'true';
+  }
+
+  get rowTabIndex() {
+    return this.isAuthenticated ? '0' : '-1';
+  }
    
 
   handleNavigate(event) {
     if (!this.isAuthenticated) return;
     const url = event.currentTarget.dataset.url;
     this.navigateToUrl(url);
+  }
+
+  handleRowKeydown(event) {
+    if (!this.isAuthenticated) return;
+    const { key } = event;
+    if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
+      event.preventDefault();
+      this.handleNavigate(event);
+    }
   }
 
   handleLearnMore(event) {
