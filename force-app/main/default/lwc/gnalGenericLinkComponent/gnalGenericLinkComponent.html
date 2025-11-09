@@ -8,15 +8,17 @@
 
       <ul role="list">
         <template for:each={normalizedLinks} for:item="l">
-          <li key={l.key} class="slds-item" role="listitem">
-            <!-- Authenticated vs not -->
-            <template lwc:if={isAuthenticated}>
-              <a
-                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-link_reset gnal-row gnal-link"
+            <li key={l.key} class="slds-item" role="listitem">
+              <div
+                class={rowClass}
                 data-url={l.url}
                 onclick={handleNavigate}
+                onkeydown={handleRowKeydown}
                 aria-label={l.ariaLabel}
                 title={l.ariaLabel}
+                aria-disabled={disabledState}
+                role="link"
+                tabindex={rowTabIndex}
               >
                 <template lwc:if={l.icon}>
                   <lightning-icon
@@ -41,39 +43,7 @@
                 <template lwc:if={l.rightText}>
                   <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
                 </template>
-              </a>
-            </template>
-
-            <template lwc:else>
-              <div
-                class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-item-disabled gnal-row"
-                aria-disabled="true"
-              >
-                <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class="icon--appointment "
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
-                </template>
-
-                <div class="slds-p-horizontal_small mid">
-                  <div class="gnal-primary">{l.label}</div>
-
-                  <template lwc:if={l.subText}>
-                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
-                      {l.subText}
-                    </div>
-                  </template>
-                </div>
-
-                <template lwc:if={l.rightText}>
-                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
-                </template>
               </div>
-            </template>
           </li>
         </template>
       </ul>
