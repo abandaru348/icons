@@ -1,0 +1,40 @@
+.page-container {
+  padding: 16px;
+}
+
+.tile-wrapper {
+  display: flex;
+}
+
+.tile-wrapper c-gnal-tile-component {
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .left-tiles-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-right {
+    order: 2;
+  }
+
+  .hero-left {
+    order: 1;
+  }
+
+  .right-column {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .left-tiles-grid {
+    grid-template-columns: 1fr;
+  }
+}

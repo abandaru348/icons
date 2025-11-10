@@ -1,0 +1,32 @@
+<!--
+/****************************************************************************************************
+Created Date : [10-22-2025]
+@description : Patient mini profile card shown on the right in mock.
+               Kept independent to drop into any page layout. Header/footer ignored.
+******************************************************************************************************/
+-->
+<template>
+  <c-gnal-generic-link-component
+    title="Patient Profile"
+    links={profileLinks}
+    footer-url={profileUrl}
+    footer-label="View Profile"
+    authenticated="true"
+  >
+    <div slot="header" class="profile-header">
+      <lightning-avatar
+        class="profile-header__avatar"
+        initials={initials}
+        size="medium"
+        variant="circle"
+        alternative-text="Patient"
+      ></lightning-avatar>
+      <div class="profile-header__info">
+        <p class="profile-header__name">{fullName}</p>
+        <template lwc:if={headerSummary}>
+          <p class="profile-header__summary">{headerSummary}</p>
+        </template>
+      </div>
+    </div>
+  </c-gnal-generic-link-component>
+</template>
