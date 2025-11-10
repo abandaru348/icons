@@ -1,0 +1,9 @@
+.tile {
+  display: flex;
+  flex: 1;
+}
+
+.tile c-gnal-generic-link-component {
+  flex: 1;
+  display: flex;
+}
