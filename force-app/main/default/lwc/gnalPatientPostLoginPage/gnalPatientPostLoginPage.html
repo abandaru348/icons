@@ -20,7 +20,13 @@
                     padding="around-small"
                     class="tile-grid__item"
                 >
-                    <c-gnal-symptom-checker-component></c-gnal-symptom-checker-component>
+                    <c-gnal-tile-component
+                        title="Symptom Checker & Self-Help Capabilities"
+                        description="Self-Help Capabilities include an online symptom checker to explore potential causes and guidance on next steps."
+                        links={symptomCheckerLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
                 <lightning-layout-item
                     size="12"
@@ -29,7 +35,13 @@
                     padding="around-small"
                     class="tile-grid__item"
                 >
-                    <c-gnal-telehealth-component></c-gnal-telehealth-component>
+                    <c-gnal-tile-component
+                        title="Telehealth Registered Nurse Services"
+                        description="Self-Help 24/7 access to Telehealth RN and Care Coordination services. Have your DOD Benefit Number (DBN) ready."
+                        links={telehealthLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
                 <lightning-layout-item
                     size="12"
@@ -37,7 +49,13 @@
                     padding="around-small"
                     class="tile-grid__item"
                 >
-                    <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
+                    <c-gnal-tile-component
+                        title="My Military Health"
+                        description="My Military Health keeps you connected on your phone, tablet, or computer."
+                        links={militaryHealthLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
             </lightning-layout>
         </lightning-layout-item>

@@ -10,9 +10,7 @@
     display: flex;
 }
 
-.tile-grid__item c-gnal-symptom-checker-component,
-.tile-grid__item c-gnal-telehealth-component,
-.tile-grid__item c-gnal-my-military-health-component {
+.tile-grid__item c-gnal-tile-component {
     flex: 1 1 auto;
     display: flex;
 }
