@@ -1,25 +1,6 @@
-:host {
-  display: flex;
+.title-text {
+    color: #02184b;
 }
-
-:host lightning-card {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  --slds-c-card-heading-font-weight: 600;
-  --slds-c-card-heading-font-size: 1rem;
-}
-
-.tile-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.tile-links {
-  flex: 1;
-}
-
-.tile-divider {
-  margin-top: auto;
-}
+.icon--appointment { 
+  --slds-c-icon-color-background: #4e1e2d;
+  }
