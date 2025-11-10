@@ -4,13 +4,13 @@
   width: 100%;
 }
 
-.tile {
+.tile-wrapper {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
 }
 
-.tile c-gnal-generic-link-component {
+.tile-wrapper c-gnal-generic-link-component {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
