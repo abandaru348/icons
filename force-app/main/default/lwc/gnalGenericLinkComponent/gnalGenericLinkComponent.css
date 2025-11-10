@@ -1,9 +1,3 @@
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .row {
   padding: 0.75rem 1rem;
   border-radius: 12px;
@@ -56,9 +50,6 @@
 }
 
 :host .gnal-card {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
   border-radius: 12px;
   overflow: hidden;
   --slds-c-card-heading-font-weight: 600;
@@ -70,19 +61,4 @@
   --slds-c-card-body-spacing-block-start: 0.25rem;
   --slds-c-card-body-spacing-inline-start: 1rem;
   --slds-c-card-body-spacing-inline-end: 1rem;
-}
-
-:host .gnal-card .slds-card__body {
-  display: flex;
-  flex: 1;
-}
-
-:host .gnal-card .slds-card__body .slds-p-horizontal_small {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-:host .gnal-card .slds-card__body .slds-p-horizontal_small ul {
-  flex: 1;
 }

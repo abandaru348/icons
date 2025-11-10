@@ -1,15 +1,1 @@
-.tile-grid__item {
-  display: flex;
-}
-
-.tile-grid__card {
-  display: flex;
-  flex: 1;
-}
-
-.tile-grid__card c-gnal-symptom-checker-component,
-.tile-grid__card c-gnal-telehealth-component,
-.tile-grid__card c-gnal-my-military-health-component {
-  flex: 1;
-  display: flex;
-}
+/* Intentionally minimal; layout handled by lightning-layout (SLDS) */
