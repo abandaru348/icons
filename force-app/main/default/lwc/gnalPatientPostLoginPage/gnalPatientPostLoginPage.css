@@ -1,0 +1,18 @@
+.tile-section.slds-grid {
+    align-items: stretch;
+}
+
+.tile-grid.slds-grid {
+    align-items: stretch;
+}
+
+.tile-grid__item {
+    display: flex;
+}
+
+.tile-grid__item c-gnal-symptom-checker-component,
+.tile-grid__item c-gnal-telehealth-component,
+.tile-grid__item c-gnal-my-military-health-component {
+    flex: 1 1 auto;
+    display: flex;
+}
