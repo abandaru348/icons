@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 
 export default class GnalPatientPostLoginPage extends LightningElement {
-    symptomCheckerLinks = [
+    selfHelpLinks = [
         { label: 'Symptom Checker', url: 'https://www.google.com/', icon: 'utility:info_alt' },
         { label: 'Other Resources', url: '#', icon: 'utility:apps' },
         { label: 'Location Services', url: '#', icon: 'utility:location' },
@@ -15,7 +15,7 @@ export default class GnalPatientPostLoginPage extends LightningElement {
         { label: 'Email', url: '#', icon: 'utility:email' }
     ];
 
-    militaryHealthLinks = [
+    militaryLinks = [
         { label: 'Quick Care Connect', url: '#', icon: 'utility:call' },
         { label: 'Self Scheduling', url: '#', icon: 'utility:event' }
     ];
