@@ -1,0 +1,9 @@
+:host {
+  display: flex;
+  flex: 1;
+}
+
+c-gnal-tile-component {
+  flex: 1;
+  display: flex;
+}

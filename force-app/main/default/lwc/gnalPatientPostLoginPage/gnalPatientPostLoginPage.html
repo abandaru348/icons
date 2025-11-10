@@ -1,39 +1,24 @@
 <template>
-    <!-- Row 1: 8/12 hero left + 4/12 profile right -->
-    <lightning-layout multiple-rows>
-        <lightning-layout-item size="12" large-device-size="8" padding="around-small">
-            <c-gnal-hero-banner-component height="260px"></c-gnal-hero-banner-component>
-        </lightning-layout-item>
-        <lightning-layout-item size="12" large-device-size="4" padding="around-small">
-            <c-gnal-patient-profile-card-component></c-gnal-patient-profile-card-component>
-        </lightning-layout-item>
-    </lightning-layout>
+    <div class="page-container">
+        <div class="hero-grid">
+            <div class="hero-left">
+                <c-gnal-hero-banner-component height="260px"></c-gnal-hero-banner-component>
+            </div>
+            <div class="hero-right">
+                <c-gnal-patient-profile-card-component></c-gnal-patient-profile-card-component>
+            </div>
+        </div>
 
-    <!-- Row 2: Left three tiles (each 4/12) + Right column stacked -->
-    <lightning-layout multiple-rows class="slds-m-top_medium">
-        <lightning-layout-item size="12" large-device-size="8" padding="around-small">
-            <lightning-layout multiple-rows>
-                <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
-                    <c-gnal-symptom-checker-component></c-gnal-symptom-checker-component>
-                </lightning-layout-item>
-                <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
-                    <c-gnal-telehealth-component></c-gnal-telehealth-component>
-                </lightning-layout-item>
-                <lightning-layout-item size="12" large-device-size="4" padding="around-small">
-                    <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
-                </lightning-layout-item>
-            </lightning-layout>
-        </lightning-layout-item>
-
-        <lightning-layout-item size="12" large-device-size="4" padding="around-small">
-            <lightning-layout multiple-rows>
-                <lightning-layout-item size="12" padding="around-small">
-                    <c-gnal-upcoming-appointments-component></c-gnal-upcoming-appointments-component>
-                </lightning-layout-item>
-                <lightning-layout-item size="12" padding="around-small">
-                    <c-gnal-network-referrals-component></c-gnal-network-referrals-component>
-                </lightning-layout-item>
-            </lightning-layout>
-        </lightning-layout-item>
-    </lightning-layout>
+        <div class="content-grid">
+            <div class="left-tiles-grid">
+                <c-gnal-symptom-checker-component></c-gnal-symptom-checker-component>
+                <c-gnal-telehealth-component></c-gnal-telehealth-component>
+                <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
+            </div>
+            <div class="right-column">
+                <c-gnal-upcoming-appointments-component></c-gnal-upcoming-appointments-component>
+                <c-gnal-network-referrals-component></c-gnal-network-referrals-component>
+            </div>
+        </div>
+    </div>
 </template>
