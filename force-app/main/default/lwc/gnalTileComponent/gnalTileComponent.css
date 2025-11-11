@@ -11,14 +11,29 @@
   width: 100%;
 }
 
-.tile {
+:host lightning-card {
   display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
-  width: 100%;
 }
 
-.tile c-gnal-generic-link-component {
+:host lightning-card .slds-card__body {
   display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
-  width: 100%;
+}
+
+.tile-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.tile-content lightning-layout {
+  flex: 1 1 auto;
+}
+
+.tile-divider {
+  margin-top: auto;
 }
