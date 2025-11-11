@@ -1,16 +1,23 @@
-:host {
+.title-text {
+    color: #02184b;
+}
+.icon--appointment { 
+  --slds-c-icon-color-background: #4e1e2d;
+  }
+
+  :host {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
 }
 
-.tile-wrapper {
+.tile {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
 }
 
-.tile-wrapper c-gnal-generic-link-component {
+.tile c-gnal-generic-link-component {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
