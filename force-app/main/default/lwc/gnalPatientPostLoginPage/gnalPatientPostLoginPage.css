@@ -1,16 +1,40 @@
-.tile-section.slds-grid {
-    align-items: stretch;
+.page-container {
+  padding: 16px;
 }
 
-.tile-grid.slds-grid {
-    align-items: stretch;
+.tile-wrapper {
+  display: flex;
 }
 
-.tile-grid__item {
-    display: flex;
+.tile-wrapper c-gnal-tile-component {
+  flex: 1;
 }
 
-.tile-grid__item c-gnal-tile-component {
-    flex: 1 1 auto;
-    display: flex;
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .left-tiles-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-right {
+        order: 2;
+    }
+
+    .hero-left {
+        order: 1;
+    }
+
+    .right-column {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .left-tiles-grid {
+        grid-template-columns: 1fr;
+    }
 }
