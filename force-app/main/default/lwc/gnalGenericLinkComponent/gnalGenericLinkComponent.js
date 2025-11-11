@@ -4,7 +4,7 @@ import isGuest from '@salesforce/user/isGuest';
 
 
 export default class GnalGenericLinkComponent extends NavigationMixin(LightningElement) {
-  
+
   static DEFAULT_FOOTER_LABEL = 'Learn More';
 
   @api title;
@@ -41,8 +41,8 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get rowClass() {
-    const baseClass = 'slds-grid slds-grid_vertical-align-center slds-grid_align-spread gnal-row';
-    return this.isAuthenticated ? `${baseClass} slds-text-link_reset gnal-link` : `${baseClass} gnal-item-disabled`;
+    const baseClass = 'slds-grid slds-grid_vertical-align-center slds-grid_align-spread row';
+    return this.isAuthenticated ? `${baseClass} slds-text-link_reset link` : `${baseClass} item-disabled`;
   }
 
   get disabledState() {
@@ -52,7 +52,7 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   get rowTabIndex() {
     return this.isAuthenticated ? '0' : '-1';
   }
-   
+
 
   handleNavigate(event) {
     if (!this.isAuthenticated) return;
@@ -79,5 +79,5 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
     this[NavigationMixin.Navigate]({ type: 'standard__webPage', attributes: { url } }); 
   }
 
-  
+
 }
