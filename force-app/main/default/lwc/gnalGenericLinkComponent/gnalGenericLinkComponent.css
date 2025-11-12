@@ -45,8 +45,12 @@
   white-space: nowrap;
 }
 
+.gnal-icon,
 .icon--appointment {
+  margin-right: 0.75rem;
+  flex-shrink: 0;
   --slds-c-icon-color-background: #4e1e2d;
+  --slds-c-icon-color-foreground: #ffffff;
 }
 
 :host lightning-card.card {

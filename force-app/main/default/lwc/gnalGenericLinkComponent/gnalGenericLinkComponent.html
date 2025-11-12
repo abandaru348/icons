@@ -20,15 +20,17 @@
                 role="link"
                 tabindex={rowTabIndex}
               >
-                <template lwc:if={l.icon}>
-                  <lightning-icon
-                    class="icon--appointment"
-                    icon-name={l.icon}
-                    alternative-text={l.label}
-                    title={l.label}
-                    size="small"
-                  ></lightning-icon>
-                </template>
+                  <template lwc:if={l.icon}>
+                    <lightning-icon
+                      class={l.iconClass}
+                      icon-name={l.icon}
+                      alternative-text={l.label}
+                      title={l.label}
+                      size="small"
+                      variant={l.iconVariant}
+                      style={l.iconStyle}
+                    ></lightning-icon>
+                  </template>
 
                 <div class="slds-p-horizontal_small mid">
                   <div class="gnal-primary">{l.label}</div>

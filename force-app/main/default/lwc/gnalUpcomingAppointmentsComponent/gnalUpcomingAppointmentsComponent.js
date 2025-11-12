@@ -32,12 +32,15 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
     ];
 
     get links() {
-        return this.appointments.map((a) => ({
+        const palette = ['#0176D3', '#6F2C91', '#04844B', '#FF9A3C'];
+
+        return this.appointments.map((a, index) => ({
             key: a.id,
             label: a.title,
             url: a.url,
             subText: a.subTitle,
             icon: 'standard:note',
+            iconBackground: palette[index % palette.length],
             rightText: a.dateLabel,
             rightIcon: 'utility:chevronright',
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`

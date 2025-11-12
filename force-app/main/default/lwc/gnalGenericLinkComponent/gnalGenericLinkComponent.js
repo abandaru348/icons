@@ -20,15 +20,56 @@ export default class GnalGenericLinkComponent extends NavigationMixin(LightningE
   }
 
   get normalizedLinks() {
-    return (this.links || []).map((l, i) => ({
-      key: l.key || l.label || String(i),
-      label: l.label,
-      url: l.url,
-      icon: l.icon,
-      subText: l.subText || l.subtitle || l.subLabel,
-      rightText: l.rightText,
-      ariaLabel: l.ariaLabel || `Open ${l.label}`
-    }));
+    return (this.links || []).map((link, index) => this.normalizeLink(link, index));
+  }
+
+  normalizeLink(link, index) {
+    const iconBackground =
+      link.iconBackground ??
+      link.iconBackgroundColor ??
+      link.iconBgColor ??
+      link.iconColorBackground ??
+      link.iconColor;
+
+    const iconForeground =
+      link.iconForeground ??
+      link.iconForegroundColor ??
+      link.iconFgColor ??
+      link.iconColorForeground ??
+      (iconBackground ? '#ffffff' : undefined);
+
+    const iconClassList = ['gnal-icon', 'icon--appointment'];
+
+    if (link.iconClass) {
+      iconClassList.push(link.iconClass);
+    }
+
+    return {
+      key: link.key || link.label || String(index),
+      label: link.label,
+      url: link.url,
+      icon: link.icon,
+      iconVariant: link.iconVariant,
+      iconClass: iconClassList.join(' '),
+      iconStyle: this.buildIconStyle(iconBackground, iconForeground),
+      subText: link.subText || link.subtitle || link.subLabel,
+      rightText: link.rightText,
+      ariaLabel: link.ariaLabel || `Open ${link.label}`
+    };
+  }
+
+  buildIconStyle(iconBackground, iconForeground) {
+    const styleParts = [];
+
+    if (iconBackground) {
+      styleParts.push(`--slds-c-icon-color-background: ${iconBackground}`);
+    }
+
+    if (iconForeground) {
+      styleParts.push(`--slds-c-icon-color-foreground: ${iconForeground}`);
+    }
+
+    return styleParts.length ? styleParts.join('; ') : undefined;
   }
 
   get footerUrlResolved() {
