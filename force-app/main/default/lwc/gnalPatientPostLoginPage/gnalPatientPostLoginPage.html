@@ -12,15 +12,33 @@
     <!-- Row 2: Left three tiles (each 4/12) + Right column stacked -->
     <lightning-layout multiple-rows class="slds-m-top_medium">
         <lightning-layout-item size="12" large-device-size="8" padding="around-small">
-            <lightning-layout multiple-rows>
+            <lightning-layout multiple-rows vertical-align="stretch">
                 <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
-                    <c-gnal-symptom-checker-component></c-gnal-symptom-checker-component>
+                    <c-gnal-tile-component
+                        title="Symptom Checker and Self-Help Capabilities"
+                        description="Self-Help Capabilities to help address your healthcare needs including an online symptom checker to explore causes and get guidance on next steps."
+                        links={selfHelpLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
                 <lightning-layout-item size="12" medium-device-size="6" large-device-size="4" padding="around-small">
-                    <c-gnal-telehealth-component></c-gnal-telehealth-component>
+                    <c-gnal-tile-component
+                        title="Telehealth Registered Nurse Services"
+                        description="Connect with Telehealth Registered Nurses and Care Coordination services 24/7. Please have your DOD Benefit Number (DBN) ready."
+                        links={telehealthLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
                 <lightning-layout-item size="12" large-device-size="4" padding="around-small">
-                    <c-gnal-my-military-health-component></c-gnal-my-military-health-component>
+                    <c-gnal-tile-component
+                        title="My Military Health"
+                        description="Stay connected on your phone, tablet, or computer with My Military Health."
+                        links={militaryLinks}
+                        footer-url="#"
+                        footer-label="Learn More"
+                    ></c-gnal-tile-component>
                 </lightning-layout-item>
             </lightning-layout>
         </lightning-layout-item>
