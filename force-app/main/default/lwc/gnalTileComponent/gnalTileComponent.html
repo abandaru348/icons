@@ -1,50 +1,52 @@
 <template>
     <lightning-card>
-        <div class="tile-content slds-p-around_medium">
+        <lightning-layout class="tile-content slds-p-around_medium" multiple-rows vertical-align="stretch">
+            <lightning-layout-item size="12" flexibility="auto">
+                <!-- Title -->
+                <h3 class="slds-text-heading_medium slds-m-bottom_small 
+                           slds-text-align_center slds-medium-text-align_left title-text">
+                   <strong>{title}</strong>
+                </h3>
 
-            <!-- Title -->
-            <h3 class="slds-text-heading_medium slds-m-bottom_small 
-                       slds-text-align_center slds-medium-text-align_left title-text">
-               <strong>{title}</strong>
-            </h3>
+                <!-- Description -->
+                <p class="slds-text-body_small slds-text-align_center slds-medium-text-align_left
+                          slds-m-bottom_medium slds-text-color_weak">
+                    {description}
+                </p>
 
-            <!-- Description -->
-            <p class="slds-text-body_small slds-text-align_center slds-medium-text-align_left
-                      slds-m-bottom_medium slds-text-color_weak">
-                {description}
-            </p>
+                <!-- Links -->
+                <lightning-layout multiple-rows vertical-align="center">
+                    <template for:each={normalizedLinks} for:item="link">
+                        <lightning-layout-item key={link.key} size="12" class="slds-p-vertical_x-small">
+                            <div class="slds-grid slds-grid_vertical-align-center">
+                                <template lwc:if={link.iconName}>
+                                    <lightning-icon 
+                                        icon-name={link.iconName}
+                                        size={link.iconSize}
+                                        class={link.iconClass}
+                                        style={link.iconStyle}
+                                        variant={link.iconVariant}
+                                        alternative-text={link.alternativeText}
+                                        title={link.title}>
+                                    </lightning-icon>
+                                </template>
+                                <span>{link.label}</span>
+                            </div>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </lightning-layout-item>
 
-            <!-- Links -->
-            <lightning-layout multiple-rows vertical-align="center">
-                <template for:each={normalizedLinks} for:item="link">
-                    <lightning-layout-item key={link.key} size="12" class="slds-p-vertical_x-small">
-                        <div class="slds-grid slds-grid_vertical-align-center">
-                            <template lwc:if={link.iconName}>
-                                <lightning-icon 
-                                    icon-name={link.iconName}
-                                    size={link.iconSize}
-                                    class={link.iconClass}
-                                    style={link.iconStyle}
-                                    variant={link.iconVariant}
-                                    alternative-text={link.alternativeText}
-                                    title={link.title}>
-                                </lightning-icon>
-                            </template>
-                            <span>{link.label}</span>
-                        </div>
-                    </lightning-layout-item>
-                </template>
-            </lightning-layout>
-            <hr class="tile-divider" />
-      <!-- footer link -->
-      <template lwc:if={footerUrlResolved}>
-        <div class="slds-m-top_small slds-text-align_center">
-          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
-            {footerLabelResolved}
-          </a>
-        </div>
-      </template>
-
-        </div>
+            <template lwc:if={footerUrlResolved}>
+                <lightning-layout-item size="12" class="slds-m-top_medium">
+                    <hr class="tile-divider" />
+                    <div class="slds-m-top_small slds-text-align_center">
+                        <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
+                            {footerLabelResolved}
+                        </a>
+                    </div>
+                </lightning-layout-item>
+            </template>
+        </lightning-layout>
     </lightning-card>
 </template>
