@@ -1,9 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
-const DEFAULT_ICON_FOREGROUND = '#0B5CAB';
-const DEFAULT_ICON_BACKGROUND = '#E5ECFF';
-
 export default class GnalTileComponent extends NavigationMixin(LightningElement) {
   static DEFAULT_FOOTER_LABEL = 'Learn More';
 
@@ -37,24 +34,6 @@ export default class GnalTileComponent extends NavigationMixin(LightningElement)
         link.iconBackgroundColor || link.iconBgColor || link.iconBackground;
       if (background) {
         styleSegments.push(`--slds-c-icon-color-background: ${background}`);
-      }
-
-      const hasForeground = styleSegments.some((segment) =>
-        segment.trim().startsWith('--slds-c-icon-color-foreground')
-      );
-      if (!hasForeground) {
-        styleSegments.push(
-          `--slds-c-icon-color-foreground: ${DEFAULT_ICON_FOREGROUND}`
-        );
-      }
-
-      const hasBackground = styleSegments.some((segment) =>
-        segment.trim().startsWith('--slds-c-icon-color-background')
-      );
-      if (!hasBackground) {
-        styleSegments.push(
-          `--slds-c-icon-color-background: ${DEFAULT_ICON_BACKGROUND}`
-        );
       }
 
       const iconStyle = styleSegments.join('; ');
