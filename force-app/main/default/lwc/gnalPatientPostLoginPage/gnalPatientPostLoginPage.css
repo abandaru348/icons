@@ -22,4 +22,5 @@
 .tile-icon-brand {
     --slds-c-icon-color-foreground: #0176d3;
     --slds-c-icon-color-foreground-default: #0176d3;
+    --slds-c-card-heading-text-color: #092068;
 }
