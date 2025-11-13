@@ -1,20 +1,9 @@
-.tile-equalizer lightning-layout-item {
+.tile-wrapper {
     display: flex;
+    height: 100%;
 }
 
-.tile-equalizer c-gnal-tile-component {
+.tile-wrapper c-gnal-tile-component {
     display: flex;
     flex: 1 1 auto;
-}
-
-@media (max-width: 1024px) {
-    .tile-equalizer {
-        row-gap: 0;
-    }
-}
-
-@media (max-width: 640px) {
-    .tile-equalizer lightning-layout-item {
-        min-height: auto;
-    }
 }
