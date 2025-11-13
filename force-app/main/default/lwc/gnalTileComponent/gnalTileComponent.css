@@ -17,6 +17,10 @@
   font-weight: inherit;
 }
 
+.links-list {
+  margin-bottom: 1rem;
+}
+
 .icon--appointment { 
   --slds-c-icon-color-background: #4e1e2d;
   }
