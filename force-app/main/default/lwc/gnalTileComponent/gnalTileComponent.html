@@ -4,33 +4,31 @@
             <lightning-layout-item size="12" flexibility="auto">
                 <!-- Title -->
                 <h3 class="slds-text-heading_medium slds-m-bottom_small 
-                           slds-text-align_center slds-medium-text-align_left title-text">
+                           slds-text-align_left slds-medium-text-align_left title-text">
                    <strong>{title}</strong>
                 </h3>
 
                 <!-- Description -->
-                <p class="slds-text-body_small slds-text-align_center slds-medium-text-align_left
+                <p class="slds-text-body_small slds-text-align_left slds-medium-text-align_left
                           slds-m-bottom_medium slds-text-color_weak">
                     {description}
                 </p>
 
                 <!-- Links -->
                 <lightning-layout multiple-rows vertical-align="center">
-                    <template for:each={normalizedLinks} for:item="link">
-                        <lightning-layout-item key={link.key} size="12" class="slds-p-vertical_x-small">
+                    <template for:each={links} for:item="l">
+                        <lightning-layout-item key={l.label} size="12" class="slds-p-vertical_x-small">
                             <div class="slds-grid slds-grid_vertical-align-center">
-                                <template lwc:if={link.iconName}>
+                                <template lwc:if={l.iconName}>
                                     <lightning-icon 
-                                        icon-name={link.iconName}
-                                        size={link.iconSize}
-                                        class={link.iconClass}
-                                        style={link.iconStyle}
-                                        variant={link.iconVariant}
-                                        alternative-text={link.alternativeText}
-                                        title={link.title}>
+                                        icon-name={l.iconName}
+                                        size="small"
+                                        class="slds-m-right_small"
+                                        alternative-text={l.label}
+                                        title={l.label}>
                                     </lightning-icon>
                                 </template>
-                                <span>{link.label}</span>
+                                <span>{l.label}</span>
                             </div>
                         </lightning-layout-item>
                     </template>
