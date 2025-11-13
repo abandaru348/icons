@@ -5,6 +5,11 @@
   --slds-c-icon-color-background: #4e1e2d;
   }
 
+.tile-icon {
+  --slds-c-icon-color-foreground: #0176d3;
+  --slds-c-icon-color-foreground-default: #0176d3;
+}
+
   :host {
   display: flex;
   flex: 1 1 auto;
