@@ -1,16 +1,22 @@
-:host(.tile-icon-brand) .title-text {
-  color: #092068;
-  font-family: 'Salesforce Sans', 'Segoe UI', Arial, sans-serif;
-  font-weight: 600;
-}
-
-:host(.tile-icon-brand) .title-text strong {
-  font-weight: inherit;
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
 }
 
 .title-text {
-    color: #02184b;
+  color: var(--gnal-tile-title-color, #02184b);
+  font-family: var(--gnal-tile-title-font-family, inherit);
+  font-weight: var(--gnal-tile-title-font-weight, inherit);
+  font-size: var(--gnal-tile-title-font-size, inherit);
+  line-height: var(--gnal-tile-title-line-height, inherit);
+  letter-spacing: var(--gnal-tile-title-letter-spacing, normal);
 }
+
+.title-text strong {
+  font-weight: inherit;
+}
+
 .icon--appointment { 
   --slds-c-icon-color-background: #4e1e2d;
   }
@@ -18,12 +24,6 @@
 .tile-icon {
   --slds-c-icon-color-foreground: #0176d3;
   --slds-c-icon-color-foreground-default: #0176d3;
-}
-
-  :host {
-  display: flex;
-  flex: 1 1 auto;
-  width: 100%;
 }
 
 :host lightning-card {

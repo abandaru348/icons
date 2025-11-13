@@ -23,4 +23,10 @@
     --slds-c-icon-color-foreground: #0176d3;
     --slds-c-icon-color-foreground-default: #0176d3;
     --slds-c-card-heading-text-color: #092068;
+    --gnal-tile-title-color: #092068;
+    --gnal-tile-title-font-family: 'Salesforce Sans', 'Segoe UI', Arial, sans-serif;
+    --gnal-tile-title-font-weight: 600;
+    --gnal-tile-title-font-size: 1.125rem;
+    --gnal-tile-title-line-height: 1.35;
+    --gnal-tile-title-letter-spacing: 0.01em;
 }
