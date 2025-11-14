@@ -1,10 +1,10 @@
 import { LightningElement } from 'lwc';
 export default class GnalPatientPostLoginPage extends LightningElement {
       selfHelpLinks = [
-        { label: 'Symptom Checker', url: '/gnal-symptom-checker', iconName: 'utility:search' }
-        { label: 'Other Resources', url: '#', iconName: 'utility:knowledge_base' },
-        { label: 'Location Services', url: '#', iconName: 'utility:location' },
-        { label: 'Patient Education', url: '#', iconName: 'utility:education' }
+       { label: 'Symptom Checker', url: '/gnal-symptom-checker', iconName: 'utility:search' },
+        { label: 'Other Resources', url: '/gnal-other-resources', iconName: 'utility:knowledge_base' },
+        { label: 'Location Services', url: '/gnal-location-services', iconName: 'utility:location' },
+        { label: 'Patient Education', url: '/gnal-patient-education', iconName: 'utility:education' }
     ];
      // ===== Telehealth Links =====
     telehealthLinks = [
