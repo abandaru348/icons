@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 export default class GnalPatientPostLoginPage extends LightningElement {
       selfHelpLinks = [
-        { label: 'Symptom Checker', url: '#', iconName: 'utility:search' },
+        { label: 'Symptom Checker', url: '/gnal-symptom-checker', iconName: 'utility:search' }
         { label: 'Other Resources', url: '#', iconName: 'utility:knowledge_base' },
         { label: 'Location Services', url: '#', iconName: 'utility:location' },
         { label: 'Patient Education', url: '#', iconName: 'utility:education' }
