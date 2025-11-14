@@ -1,9 +1,14 @@
+.tile-equalizer {
+    row-gap: 0;
+}
+
 .tile-wrapper {
     display: flex;
     height: 100%;
+    width: 100%;
 }
 
 .tile-wrapper c-gnal-tile-component {
-    display: flex;
     flex: 1 1 auto;
+    display: flex;
 }
