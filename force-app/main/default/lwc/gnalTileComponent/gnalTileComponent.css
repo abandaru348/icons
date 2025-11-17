@@ -41,6 +41,10 @@
   height: 100%;
 }
 
+.tile-links {
+  flex: 1 1 auto;
+}
+
 .tile-body {
   display: flex;
   flex-direction: column;
