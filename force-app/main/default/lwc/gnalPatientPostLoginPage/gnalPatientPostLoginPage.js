@@ -5,11 +5,9 @@ const ICON_STYLE = Object.freeze({
   iconForegroundColor: '#0B5CAB',
   iconBackgroundColor: '#E5ECFF'
 });
-const UNAUTHENTICATED_MESSAGE = 'Please sign in to access your patient home page.';
 
 export default class GnalPatientPostLoginPage extends LightningElement {
   isAuthenticated = !isGuest;
-  unauthenticatedMessage = UNAUTHENTICATED_MESSAGE;
 
   selfHelpLinks = [
     { label: 'Symptom Checker', url: '#', iconName: 'utility:search', ...ICON_STYLE },

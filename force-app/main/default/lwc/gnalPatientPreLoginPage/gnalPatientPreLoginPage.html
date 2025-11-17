@@ -1,0 +1,25 @@
+<template>
+    <section class="prelogin slds-p-around_large">
+        <lightning-card title="Welcome to My Military Health">
+            <div class="slds-p-around_medium">
+                <p class="slds-m-bottom_medium">
+                    Sign in to access your personalized care team, appointments, referrals, and virtual care tools.
+                </p>
+                <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
+                    <lightning-button
+                        variant="brand"
+                        label="Sign In"
+                        onclick={handleLogin}
+                    ></lightning-button>
+                    <template lwc:if={resolvedCreateAccountUrl}>
+                        <lightning-button
+                            variant="neutral"
+                            label="Create Account"
+                            onclick={handleCreateAccount}
+                        ></lightning-button>
+                    </template>
+                </div>
+            </div>
+        </lightning-card>
+    </section>
+</template>

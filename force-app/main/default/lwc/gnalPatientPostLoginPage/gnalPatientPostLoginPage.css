@@ -12,8 +12,3 @@
     flex: 1 1 auto;
     display: flex;
 }
-
-.unauthenticated-message {
-    max-width: 32rem;
-    margin: 0 auto;
-}

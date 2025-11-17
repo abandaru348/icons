@@ -67,12 +67,6 @@
     </template>
 
     <template lwc:else>
-        <section class="unauthenticated-message slds-p-around_xx-large">
-            <lightning-card title="Sign In Required">
-                <div class="slds-p-around_medium">
-                    <p>{unauthenticatedMessage}</p>
-                </div>
-            </lightning-card>
-        </section>
+        <c-gnal-patient-pre-login-page></c-gnal-patient-pre-login-page>
     </template>
 </template>

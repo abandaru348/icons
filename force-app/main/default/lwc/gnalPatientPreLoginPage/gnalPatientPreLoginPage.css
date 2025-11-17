@@ -1,0 +1,8 @@
+.prelogin {
+    max-width: 32rem;
+    margin: 0 auto;
+}
+
+.prelogin lightning-card {
+    width: 100%;
+}
