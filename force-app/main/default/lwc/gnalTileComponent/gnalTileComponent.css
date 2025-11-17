@@ -6,7 +6,14 @@
   --slds-c-icon-color-background: #4e1e2d;
 }
 
+.tile-icon {
+  --slds-c-icon-color-foreground: var(--gnal-tile-icon-foreground);
+  --slds-c-icon-color-background: var(--gnal-tile-icon-background);
+}
+
 :host {
+  --gnal-tile-icon-foreground: #0B5CAB;
+  --gnal-tile-icon-background: #E5ECFF;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
