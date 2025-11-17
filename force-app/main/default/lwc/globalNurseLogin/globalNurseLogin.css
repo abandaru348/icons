@@ -4,117 +4,77 @@
 
 .page {
     min-height: 100vh;
-    background: #f2f4f7;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     padding: 64px 16px 32px;
+    background: #f2f4f7;
     box-sizing: border-box;
 }
 
 .card {
-    width: 100%;
+    margin: 0 auto;
     max-width: 420px;
-    text-align: center;
-    background: #f9fafc;
     border-radius: 28px;
-    padding: 56px 48px 48px;
+    padding: 48px 40px;
+    background: #f9fafc;
     box-shadow: 0 18px 45px rgba(15, 35, 75, 0.08);
-    box-sizing: border-box;
 }
 
 .subtitle {
-    margin: 0 0 32px;
-    font-size: 24px;
-    font-weight: 500;
+    margin-bottom: 24px;
     color: #1f2937;
 }
 
-button {
+.primary-btn,
+.secondary-btn {
     width: 100%;
-    height: 56px;
     border-radius: 28px;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    border: none;
-    transition: transform 120ms ease, box-shadow 120ms ease;
-}
-
-button:focus-visible {
-    outline: 3px solid rgba(12, 56, 126, 0.4);
-    outline-offset: 2px;
+    letter-spacing: 0.05em;
 }
 
 .primary-btn {
-    background: #102f86;
-    color: #fff;
+    margin-bottom: 24px;
     box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25);
-    margin-bottom: 28px;
-}
-
-.primary-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .secondary-btn {
-    background: transparent;
-    color: #1f2937;
-    border: 2px solid #d1d5db;
-}
-
-.secondary-btn:hover {
-    border-color: #0f2c66;
-    color: #0f2c66;
+    border-width: 2px;
 }
 
 .divider {
+    margin: 0 auto 24px;
     width: 100%;
     height: 1px;
     background: #e3e7ee;
-    margin-bottom: 28px;
 }
 
 .footer {
+    margin: 48px auto 0;
     width: 100%;
     max-width: 960px;
-    margin-top: 64px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 16px;
     font-weight: 600;
     color: #0f2c66;
 }
 
-.footer .link {
+.link {
     color: inherit;
     text-decoration: none;
 }
 
-.footer .link:hover {
+.link:focus,
+.link:hover {
     text-decoration: underline;
-}
-
-.brand {
-    letter-spacing: 0.04em;
 }
 
 @media (max-width: 600px) {
     .card {
-        padding: 48px 32px 40px;
-    }
-
-    .subtitle {
-        font-size: 20px;
+        padding: 40px 28px;
     }
 
     .footer {
         flex-direction: column;
         gap: 8px;
-        font-size: 14px;
+        text-align: center;
     }
 }
