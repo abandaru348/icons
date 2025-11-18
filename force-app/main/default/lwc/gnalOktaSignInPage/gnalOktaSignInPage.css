@@ -23,6 +23,12 @@
     color: #1f2937;
 }
 
+.logo {
+    width: 120px;
+    max-width: 100%;
+    margin-bottom: 1rem;
+}
+
 .slds-button {
     width: 100%;
     border-radius: 1.75rem;
