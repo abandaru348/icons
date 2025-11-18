@@ -28,3 +28,7 @@
 .primary-btn {
     margin-bottom: 1.5rem;
 }
+
+.secondary-btn {
+    border: none;
+}
