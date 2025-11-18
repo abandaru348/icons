@@ -1,29 +1,21 @@
 <template>
-    <div class="page slds-grid slds-grid_vertical-align-start slds-grid_align-center slds-wrap slds-p-around_xx-large">
-        <lightning-card class="slds-size_1-of-1 slds-medium-size_6-of-12" aria-labelledby="loginHeading">
-            <div slot="title" class="slds-grid slds-grid_vertical-align-center slds-grid_align-center">
+    <div class="page">
+        <section class="card" role="form" aria-labelledby="loginHeading">
+            <div class="logo-wrapper">
                 <img src={logo} alt="Global Nurse Advice Line logo" class="logo" />
             </div>
 
-            <div class="slds-p-around_xx-large slds-text-align_center slds-medium-text-align_left">
-                <p id="loginHeading" class="slds-text-heading_medium slds-m-bottom_large">Log in using</p>
+            <p id="loginHeading" class="heading">Log in using</p>
 
-                <lightning-button
-                    variant="brand"
-                    label="OKTA"
-                    class="slds-m-bottom_large slds-button_stretch"
-                    title="Log in with Okta"
-                ></lightning-button>
+            <button class="primary-btn" type="button" aria-label="Log in with Okta">
+                OKTA
+            </button>
 
-                <div class="slds-border_top slds-m-bottom_large" role="presentation"></div>
+            <div class="divider" role="presentation"></div>
 
-                <lightning-button
-                    variant="neutral"
-                    label="Sign up for a new account"
-                    class="slds-button_stretch"
-                    title="Sign up for a new account"
-                ></lightning-button>
-            </div>
-        </lightning-card>
+            <button class="secondary-btn" type="button" aria-label="Sign up for a new account">
+                Sign up for a new account
+            </button>
+        </section>
     </div>
 </template>
