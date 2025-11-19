@@ -34,9 +34,9 @@
     width: 100%;
     border-radius: 999px;
     font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.06em;
-    padding: 0.55rem 1.5rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    padding: 0.45rem 1.25rem;
     border: none;
     cursor: pointer;
 }
