@@ -1,5 +1,9 @@
 <template>
-  <lightning-card title={title} class="gnal-card">
+  <lightning-card class="gnal-card">
+            <!-- Title -->
+                <lightning-formatted-text value={title} class="slds-text-heading_medium slds-m-bottom_small 
+                       slds-text-align_left slds-medium-text-align_left title-text"></lightning-formatted-text>
+            
     <div class="slds-p-horizontal_small">
       <!-- description -->
       <template lwc:if={description}>
