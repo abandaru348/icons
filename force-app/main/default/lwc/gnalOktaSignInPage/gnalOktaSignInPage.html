@@ -1,41 +1,43 @@
 <template>
-    <div class="page slds-grid slds-grid_vertical-align-start slds-grid_align-center slds-wrap slds-p-around_xx-large">
-        <lightning-card
-            class="login-card slds-size_1-of-1 slds-medium-size_6-of-12"
-            aria-label="Global Nurse Advice Line sign-in options"
-        >
-            <div class="slds-p-around_xx-large">
-                <div class="slds-text-align_center slds-m-bottom_large">
-                    <img src={logo} alt="Global Nurse Advice Line" class="logo" />
-                </div>
-
-                <p
-                    id="loginHeading"
-                    class="slds-text-heading_medium slds-text-align_center slds-m-bottom_large"
+    <div class="page">
+        <lightning-layout multiple-rows horizontal-align="center">
+            <lightning-layout-item size="12" medium-device-size="8" large-device-size="5">
+                <section
+                    class="login-panel slds-text-align_center slds-p-around_xx-large"
+                    role="form"
+                    aria-labelledby="loginHeading"
                 >
-                    Log in using
-                </p>
+                    <img src={logo} alt="Global Nurse Advice Line" class="logo slds-m-bottom_large" />
 
-                <div class="cta-btn-wrapper slds-m-bottom_large">
+                    <p id="loginHeading" class="heading slds-text-heading_medium slds-m-bottom_large">
+                        Log in using
+                    </p>
+
                     <lightning-button
                         label="OKTA"
                         variant="brand"
-                        class="cta-btn cta-btn_primary slds-button_stretch"
+                        class="cta-btn cta-btn_primary slds-button_stretch slds-m-bottom_large"
                         title="Log in with Okta"
                     ></lightning-button>
-                </div>
 
-                <div class="slds-border_top slds-m-bottom_large" role="presentation"></div>
+                    <div class="divider slds-m-bottom_large" role="presentation"></div>
 
-                <div class="cta-btn-wrapper">
                     <lightning-button
                         label="Sign up for a new account"
                         variant="neutral"
                         class="cta-btn cta-btn_outline slds-button_stretch"
                         title="Sign up for a new account"
                     ></lightning-button>
-                </div>
-            </div>
-        </lightning-card>
+                </section>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" class="slds-m-top_x-large">
+                <footer class="se-footer slds-grid slds-grid_align-spread slds-text-title_bold">
+                    <a href="javascript:void(0);" class="footer-link">Contact Us</a>
+                    <span class="footer-brand">MyMilitaryHealth</span>
+                    <a href="javascript:void(0);" class="footer-link">Privacy Policy</a>
+                </footer>
+            </lightning-layout-item>
+        </lightning-layout>
     </div>
 </template>

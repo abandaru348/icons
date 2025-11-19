@@ -8,16 +8,15 @@
     background: #f2f4f7;
 }
 
-.login-card {
-    max-width: 480px;
+.login-panel {
+    max-width: 440px;
     margin: 0 auto;
-    --slds-c-card-color-background: #f9fafc;
-    --slds-c-card-radius-border: 1.75rem;
-    --slds-c-card-shadow: 0 18px 45px rgba(15, 35, 75, 0.08);
+    background: transparent;
+    border-radius: 1.75rem;
 }
 
 .logo {
-    max-width: 180px;
+    max-width: 210px;
 }
 
 .heading {
@@ -25,21 +24,17 @@
     font-weight: 500;
 }
 
-.cta-btn-wrapper {
-    max-width: 360px;
-    width: 100%;
-    margin: 0 auto;
-}
-
 .cta-btn {
     --slds-c-button-radius-border: 999px;
     --slds-c-button-font-weight: 600;
     --slds-c-button-font-size: 1rem;
-    --slds-c-button-spacing-inline-start: 1rem;
-    --slds-c-button-spacing-inline-end: 1rem;
+    --slds-c-button-spacing-inline-start: 1.5rem;
+    --slds-c-button-spacing-inline-end: 1.5rem;
     --slds-c-button-spacing-block-start: 0.85rem;
     --slds-c-button-spacing-block-end: 0.85rem;
-    --slds-c-button-shadow-focus: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+    --slds-c-button-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+    max-width: 360px;
+    margin: 0 auto;
 }
 
 .cta-btn_primary {
@@ -55,4 +50,27 @@
     --slds-c-button-neutral-color-border-hover: #0a2c87;
     --slds-c-button-neutral-color-text: #0a2c87;
     --slds-c-button-neutral-color-text-hover: #0a2c87;
+}
+
+.divider {
+    height: 1px;
+    background: #cfd6e3;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.se-footer {
+    max-width: 960px;
+    margin: 0 auto;
+    color: #0a2c87;
+}
+
+.footer-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+    text-decoration: underline;
 }
