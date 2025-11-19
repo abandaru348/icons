@@ -25,6 +25,8 @@
 }
 
 .cta-btn {
+    display: block;
+    width: 100%;
     --slds-c-button-radius-border: 999px;
     --slds-c-button-font-weight: 600;
     --slds-c-button-font-size: 1rem;
