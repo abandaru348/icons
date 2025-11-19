@@ -14,7 +14,7 @@ export default class GnalTileComponent extends NavigationMixin(LightningElement)
   get normalizedLinks() {
     return (this.links || []).map((link, index) => {
       const iconName = link.iconName || link.icon;
-      const iconClass = ['slds-m-right_small'];
+      const iconClass = ['slds-m-right_small', 'tile-icon'];
       if (link.iconClass) {
         iconClass.push(link.iconClass);
       }
