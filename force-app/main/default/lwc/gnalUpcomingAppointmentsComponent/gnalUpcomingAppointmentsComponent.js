@@ -1,9 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import isGuest from '@salesforce/user/isGuest';
-/**
- * Component: gnalUpcomingAppointmentsComponent
- * Now delegates rendering and navigation to gnalGenericLinkComponent
- */
+
 export default class GnalUpcomingAppointmentsComponent extends LightningElement {
     @track isAuthenticated = !isGuest;
 
@@ -39,8 +36,10 @@ export default class GnalUpcomingAppointmentsComponent extends LightningElement 
             subText: a.subTitle,
             icon: 'standard:note',
             rightText: a.dateLabel,
-            rightIcon: 'utility:chevronright',
             ariaLabel: `Open appointment ${a.title} on ${a.dateLabel}`
         }));
+        
     }
+
+    
 }
