@@ -1,11 +1,16 @@
 import { LightningElement } from 'lwc';
+import isGuest from '@salesforce/user/isGuest';
+
 export default class GnalPatientPostLoginPage extends LightningElement {
-      selfHelpLinks = [
-       { label: 'Symptom Checker', url: '/gnal-symptom-checker', iconName: 'utility:search' },
+  isAuthenticated = !isGuest;
+
+   selfHelpLinks = [
+        { label: 'Symptom Checker', url: '/gnal-symptom-checker', iconName: 'utility:search' },
         { label: 'Other Resources', url: '/gnal-other-resources', iconName: 'utility:knowledge_base' },
         { label: 'Location Services', url: '/gnal-location-services', iconName: 'utility:location' },
         { label: 'Patient Education', url: '/gnal-patient-education', iconName: 'utility:education' }
-    ];
+  ];
+    
      // ===== Telehealth Links =====
     telehealthLinks = [
         { label: 'Chat', url: '#', iconName: 'utility:chat' },
@@ -18,6 +23,8 @@ export default class GnalPatientPostLoginPage extends LightningElement {
     militaryLinks = [
         { label: 'Quick Care Connect', url: '#', iconName: 'utility:record_lookup' },
         { label: 'Self Scheduling', url: '#', iconName: 'utility:event' }
+        
+        
     ];
     
 }
