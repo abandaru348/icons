@@ -1,20 +1,41 @@
 <template>
-    <div class="page slds-grid slds-grid_vertical-align-start slds-grid_align-center slds-wrap">
-        <section class="card slds-size_1-of-1 slds-medium-size_6-of-12" role="form" aria-labelledby="loginHeading">
-            <div class="slds-text-align_center">
-                <img src={logo} alt="Global Nurse Advice Line" class="logo" />
-                <h1 id="loginHeading" class="subtitle slds-text-heading_medium">Log in using</h1>
+    <div class="page slds-grid slds-grid_vertical-align-start slds-grid_align-center slds-wrap slds-p-around_xx-large">
+        <lightning-card
+            class="login-card slds-size_1-of-1 slds-medium-size_6-of-12"
+            aria-label="Global Nurse Advice Line sign-in options"
+        >
+            <div class="slds-p-around_xx-large">
+                <div class="slds-text-align_center slds-m-bottom_large">
+                    <img src={logo} alt="Global Nurse Advice Line" class="logo" />
+                </div>
 
-                <button class="primary-btn" type="button" aria-label="Log in with Okta">
-                    OKTA
-                </button>
+                <p
+                    id="loginHeading"
+                    class="slds-text-heading_medium slds-text-align_center slds-m-bottom_large"
+                >
+                    Log in using
+                </p>
 
-                <div class="divider" role="separator" aria-hidden="true"></div>
+                <div class="cta-btn-wrapper slds-m-bottom_large">
+                    <lightning-button
+                        label="OKTA"
+                        variant="brand"
+                        class="cta-btn cta-btn_primary slds-button_stretch"
+                        title="Log in with Okta"
+                    ></lightning-button>
+                </div>
 
-                <button class="secondary-btn" type="button" aria-label="Sign up for a new account">
-                    Sign up for a new account
-                </button>
+                <div class="slds-border_top slds-m-bottom_large" role="presentation"></div>
+
+                <div class="cta-btn-wrapper">
+                    <lightning-button
+                        label="Sign up for a new account"
+                        variant="neutral"
+                        class="cta-btn cta-btn_outline slds-button_stretch"
+                        title="Sign up for a new account"
+                    ></lightning-button>
+                </div>
             </div>
-        </section>
+        </lightning-card>
     </div>
 </template>

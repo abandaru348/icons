@@ -4,38 +4,55 @@
 
 .page {
     min-height: 100vh;
+    padding: 4rem 1rem 2rem;
     background: #f2f4f7;
 }
 
 .login-card {
-    max-width: 420px;
+    max-width: 480px;
     margin: 0 auto;
+    --slds-c-card-color-background: #f9fafc;
+    --slds-c-card-radius-border: 1.75rem;
+    --slds-c-card-shadow: 0 18px 45px rgba(15, 35, 75, 0.08);
 }
 
 .logo {
-    max-width: 150px;
+    max-width: 180px;
+}
+
+.heading {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.cta-btn-wrapper {
+    max-width: 360px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .cta-btn {
-    --sds-c-button-font-weight: 600;
-    --sds-c-button-radius-border: 1.75rem;
-    --sds-c-button-font-size: 1rem;
-    --sds-c-button-spacing-block-start: 0.85rem;
-    --sds-c-button-spacing-block-end: 0.85rem;
-    --sds-c-button-spacing-inline-start: 1rem;
-    --sds-c-button-spacing-inline-end: 1rem;
+    --slds-c-button-radius-border: 999px;
+    --slds-c-button-font-weight: 600;
+    --slds-c-button-font-size: 1rem;
+    --slds-c-button-spacing-inline-start: 1rem;
+    --slds-c-button-spacing-inline-end: 1rem;
+    --slds-c-button-spacing-block-start: 0.85rem;
+    --slds-c-button-spacing-block-end: 0.85rem;
+    --slds-c-button-shadow-focus: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
 }
 
 .cta-btn_primary {
-    --sds-c-button-brand-color-background: #083b8a;
-    --sds-c-button-brand-color-background-hover: #062a63;
-    --sds-c-button-brand-color-border: #083b8a;
-    --sds-c-button-brand-color-border-hover: #062a63;
+    --slds-c-button-brand-color-background: #0a2c87;
+    --slds-c-button-brand-color-background-hover: #08215f;
+    --slds-c-button-brand-color-border: #0a2c87;
+    --slds-c-button-brand-color-border-hover: #08215f;
+    --slds-c-button-brand-color-text: #fff;
 }
 
 .cta-btn_outline {
-    --sds-c-button-neutral-color-border: #9aa7c5;
-    --sds-c-button-neutral-color-border-hover: #083b8a;
-    --sds-c-button-neutral-color-text: #083b8a;
-    --sds-c-button-neutral-color-text-hover: #062a63;
+    --slds-c-button-neutral-color-border: #9aa7c5;
+    --slds-c-button-neutral-color-border-hover: #0a2c87;
+    --slds-c-button-neutral-color-text: #0a2c87;
+    --slds-c-button-neutral-color-text-hover: #0a2c87;
 }
