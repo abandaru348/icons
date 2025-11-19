@@ -29,7 +29,18 @@
                                         title={link.title}>
                                     </lightning-icon>
                                 </template>
-                                <span>{link.label}</span>
+                                <template lwc:if={link.isClickable}>
+                                    <a
+                                        class="tile-link"
+                                        href={link.url}
+                                        data-url={link.url}
+                                        onclick={handleLinkClick}>
+                                        {link.label}
+                                    </a>
+                                </template>
+                                <template lwc:else>
+                                    <span class="tile-link__label">{link.label}</span>
+                                </template>
                             </div>
                         </lightning-layout-item>
                     </template>

@@ -13,15 +13,15 @@ export default class GnalPatientPostLoginPage extends LightningElement {
 
   // ===== Telehealth Links =====
   telehealthLinks = [
-    { label: 'Chat', url: '#', iconName: 'utility:chat' },
-    { label: 'Phone', url: '#', iconName: 'utility:call' },
-    { label: 'Video', url: '#', iconName: 'utility:video' },
-    { label: 'Email', url: '#', iconName: 'utility:email' }
+    { label: 'Chat', iconName: 'utility:chat' },
+    { label: 'Phone', iconName: 'utility:call' },
+    { label: 'Video', iconName: 'utility:video' },
+    { label: 'Email', iconName: 'utility:email' }
   ];
 
   // ===== My Military Health Links =====
   militaryLinks = [
-    { label: 'Quick Care Connect', url: '#', iconName: 'utility:record_lookup' },
-    { label: 'Self Scheduling', url: '#', iconName: 'utility:event' }
+    { label: 'Quick Care Connect', iconName: 'utility:record_lookup' },
+    { label: 'Self Scheduling', iconName: 'utility:event' }
   ];
 }

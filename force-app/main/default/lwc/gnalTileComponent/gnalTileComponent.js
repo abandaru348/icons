@@ -37,11 +37,13 @@ export default class GnalTileComponent extends NavigationMixin(LightningElement)
       }
 
       const iconStyle = styleSegments.join('; ');
+      const url = link.url?.trim();
 
       return {
         key: link.key || link.label || `link-${index}`,
         label: link.label,
-        url: link.url,
+        url,
+        isClickable: Boolean(url),
         iconName,
         iconVariant: link.iconVariant,
         iconSize: link.iconSize || 'small',
@@ -61,8 +63,26 @@ export default class GnalTileComponent extends NavigationMixin(LightningElement)
     return this.footerLabel || this.constructor.DEFAULT_FOOTER_LABEL;
   }
 
+  handleLinkClick(event) {
+    event.preventDefault();
+    const url = event.currentTarget.dataset.url;
+    this.navigateToUrl(url);
+  }
+
   handleLearnMore(event) {
+    event.preventDefault();
     const url = event.currentTarget.dataset.url || this.footerUrlResolved;
     this.navigateToUrl(url);
+  }
+
+  navigateToUrl(url) {
+    if (!url) {
+      return;
+    }
+
+    this[NavigationMixin.Navigate]({
+      type: 'standard__webPage',
+      attributes: { url }
+    });
   }
 }
