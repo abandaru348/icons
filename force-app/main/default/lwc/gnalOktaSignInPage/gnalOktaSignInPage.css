@@ -26,32 +26,38 @@
 
 .cta-btn {
     display: block;
-    width: 100%;
-    --slds-c-button-radius-border: 999px;
-    --slds-c-button-font-weight: 600;
-    --slds-c-button-font-size: 1rem;
-    --slds-c-button-spacing-inline-start: 1.5rem;
-    --slds-c-button-spacing-inline-end: 1.5rem;
-    --slds-c-button-spacing-block-start: 0.85rem;
-    --slds-c-button-spacing-block-end: 0.85rem;
-    --slds-c-button-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
     max-width: 360px;
     margin: 0 auto;
 }
 
-.cta-btn_primary {
-    --slds-c-button-brand-color-background: #0a2c87;
-    --slds-c-button-brand-color-background-hover: #08215f;
-    --slds-c-button-brand-color-border: #0a2c87;
-    --slds-c-button-brand-color-border-hover: #08215f;
-    --slds-c-button-brand-color-text: #fff;
+.cta-btn .slds-button {
+    width: 100%;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1.5rem;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
 }
 
-.cta-btn_outline {
-    --slds-c-button-neutral-color-border: #9aa7c5;
-    --slds-c-button-neutral-color-border-hover: #0a2c87;
-    --slds-c-button-neutral-color-text: #0a2c87;
-    --slds-c-button-neutral-color-text-hover: #0a2c87;
+.cta-btn_primary .slds-button {
+    background: #0a2c87;
+    border: none;
+}
+
+.cta-btn_primary .slds-button:hover {
+    background: #08215f;
+}
+
+.cta-btn_outline .slds-button {
+    background: transparent;
+    border: 2px solid #9aa7c5;
+    color: #0a2c87;
+    box-shadow: none;
+}
+
+.cta-btn_outline .slds-button:hover {
+    border-color: #0a2c87;
 }
 
 .divider {
