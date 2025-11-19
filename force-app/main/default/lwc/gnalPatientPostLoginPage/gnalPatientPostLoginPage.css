@@ -1,20 +1,4 @@
-.tile-equalizer lightning-layout-item {
-    display: flex;
-}
-
-.tile-equalizer c-gnal-tile-component {
-    display: flex;
-    flex: 1 1 auto;
-}
-
-@media (max-width: 1024px) {
-    .tile-equalizer {
-        row-gap: 0;
-    }
-}
-
-@media (max-width: 640px) {
-    .tile-equalizer lightning-layout-item {
-        min-height: auto;
-    }
+.tile-icon-brand {
+    --slds-c-icon-color-foreground: #4d9ada;
+    --slds-c-icon-color-foreground-default: #00A8B9;
 }
