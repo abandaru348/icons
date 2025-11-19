@@ -29,37 +29,29 @@
     margin: 0 auto;
 }
 
-.cta-btn lightning-button {
-    width: 100%;
+.cta-btn__action {
     display: block;
+    width: 100%;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    padding: 0.45rem 1.25rem;
+    border: none;
+    cursor: pointer;
 }
 
-.cta-btn_primary {
-    --slds-c-button-brand-radius-border: 999px;
-    --slds-c-button-brand-font-weight: 600;
-    --slds-c-button-brand-font-size: 0.9rem;
-    --slds-c-button-brand-spacing-inline-start: 1.25rem;
-    --slds-c-button-brand-spacing-inline-end: 1.25rem;
-    --slds-c-button-brand-spacing-block-start: 0.45rem;
-    --slds-c-button-brand-spacing-block-end: 0.45rem;
-    --slds-c-button-brand-color-background: #0a2c87;
-    --slds-c-button-brand-color-background-hover: #091f5c;
-    --slds-c-button-brand-shadow-focus: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+.cta-btn__action-primary {
+    background: #0a2c87;
+    color: #fff;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.cta-btn_outline {
-    --slds-c-button-neutral-radius-border: 999px;
-    --slds-c-button-neutral-font-weight: 600;
-    --slds-c-button-neutral-font-size: 0.9rem;
-    --slds-c-button-neutral-spacing-inline-start: 1.25rem;
-    --slds-c-button-neutral-spacing-inline-end: 1.25rem;
-    --slds-c-button-neutral-spacing-block-start: 0.45rem;
-    --slds-c-button-neutral-spacing-block-end: 0.45rem;
-    --slds-c-button-neutral-color-border: #9aa7c5;
-    --slds-c-button-neutral-color-border-hover: #0a2c87;
-    --slds-c-button-neutral-color-text: #0a2c87;
-    --slds-c-button-neutral-color-text-hover: #0a2c87;
-    --slds-c-button-neutral-shadow-focus: none;
+.cta-btn__action-outline {
+    background: transparent;
+    border: 1px solid #9aa7c5;
+    color: #0a2c87;
+    box-shadow: none;
 }
 
 .divider {
