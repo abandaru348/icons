@@ -59,18 +59,3 @@
     margin: 0 auto;
 }
 
-.se-footer {
-    max-width: 960px;
-    margin: 0 auto;
-    color: #0a2c87;
-}
-
-.footer-link {
-    color: inherit;
-    text-decoration: none;
-}
-
-.footer-link:hover,
-.footer-link:focus {
-    text-decoration: underline;
-}
