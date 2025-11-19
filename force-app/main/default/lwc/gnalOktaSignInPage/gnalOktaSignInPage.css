@@ -30,6 +30,7 @@
 }
 
 .cta-btn__action {
+    display: block;
     width: 100%;
     border-radius: 999px;
     font-weight: 600;
@@ -46,10 +47,6 @@
     box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.cta-btn__action-primary:hover {
-    background: #091f5c;
-}
-
 .cta-btn__action-outline {
     background: transparent;
     border: 2px solid #9aa7c5;
@@ -57,14 +54,10 @@
     box-shadow: none;
 }
 
-.cta-btn__action-outline:hover {
-    border-color: #0a2c87;
-}
-
 .divider {
     height: 1px;
     background: #cfd6e3;
     max-width: 360px;
-    margin: 0 auto;
+    margin: 0 auto 24px;
 }
 
