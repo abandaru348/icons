@@ -1,16 +1,3 @@
-<!--
-/****************************************************************************************************
-Methods Used : [handleItemClick, handleViewAll]
-Created Date : [10-22-2025]
-@description : Displays Upcoming Appointments list tile. Items are clickable
-               for authenticated users and non-clickable for guests.
-@author : [Pratyusha Mungamuri]
-Modification Log:
-Date            Author                     Modification
-10-23-2025      [Assistant]                Initial creation
-******************************************************************************************************/
--->
-
 <template>
   <c-gnal-generic-link-component
     title="Upcoming Appointments"
@@ -18,6 +5,5 @@ Date            Author                     Modification
     footer-url="#"
     footer-label="View All"
     authenticated={isAuthenticated}
-    variant="plain"
   ></c-gnal-generic-link-component>
 </template>
