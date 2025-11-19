@@ -1,39 +1,31 @@
 .title-text {
-    color: #02184b;
-}
-.icon--appointment { 
-  --slds-c-icon-color-background: #4e1e2d;
-  }
-
-  :host {
-  display: flex;
-  flex: 1 1 auto;
-  width: 100%;
-}
-
-:host lightning-card {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-}
-
-:host lightning-card .slds-card__body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
+    font-weight: 600;
+    color: #092068;
 }
 
 .tile-content {
-  display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
-  height: 100%;
 }
 
-.tile-content lightning-layout {
+.tile-links {
   flex: 1 1 auto;
 }
 
-.tile-divider {
-  margin-top: auto;
+.one-size-card {
+	min-height: 323px;
+}
+
+.tile-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tile-link:hover,
+.tile-link:focus {
+  text-decoration: underline;
+  color: #0b5cab;
+}
+
+.tile-link__label {
+  color: #0b5cab;
 }
