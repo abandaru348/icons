@@ -15,19 +15,21 @@
 
                 <!-- Links -->
                 <lightning-layout class="tile-links" multiple-rows vertical-align="center">
-                    <template for:each={links} for:item="l">
-                        <lightning-layout-item key={l.label} size="12" class="slds-p-vertical_x-small">
+                    <template for:each={normalizedLinks} for:item="link">
+                        <lightning-layout-item key={link.key} size="12" class="slds-p-vertical_x-small">
                             <div class="slds-grid slds-grid_vertical-align-center">
-                                <template lwc:if={l.iconName}>
+                                <template lwc:if={link.iconName}>
                                     <lightning-icon
-                                        icon-name={l.iconName}
-                                        size="small"
-                                        class="slds-m-right_small tile-icon"
-                                        alternative-text={l.label}
-                                        title={l.label}>
+                                        icon-name={link.iconName}
+                                        size={link.iconSize}
+                                        class={link.iconClass}
+                                        style={link.iconStyle}
+                                        variant={link.iconVariant}
+                                        alternative-text={link.alternativeText}
+                                        title={link.title}>
                                     </lightning-icon>
                                 </template>
-                                <span>{l.label}</span>
+                                <span>{link.label}</span>
                             </div>
                         </lightning-layout-item>
                     </template>
