@@ -1,3 +1,7 @@
+.title-text {
+    font-weight: 600; 
+    color: #092068;
+}
 .row {
   padding: 0.75rem 1rem;
   border-radius: 12px;
@@ -46,7 +50,7 @@
 }
 
 .icon--appointment {
-  --slds-c-icon-color-background: #4e1e2d;
+  --slds-c-icon-color-background: #582931;
 }
 
 :host .gnal-card {
