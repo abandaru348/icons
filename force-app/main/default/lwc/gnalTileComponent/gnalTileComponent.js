@@ -18,15 +18,25 @@ export default class GnalTileComponent extends NavigationMixin(LightningElement)
   }
 
   get footerLabelResolved() {
-
     return this.footerLabel || this.constructor.DEFAULT_FOOTER_LABEL;
   }
    
+    handleLearnMore(event) {
+     event.preventDefault();
+   }
 
-   handleLearnMore(event) {
-    const url = event.currentTarget.dataset.url || this.footerUrlResolved;
-    this.navigateToUrl(url);
-  }
+   handleLinkClick(event) {
+     event.preventDefault();
+     const url = event.currentTarget.dataset.url;
+     this.openInNewTab(url);
+   }
 
-  
+   openInNewTab(url) {
+     if (!url) {
+       return;
+     }
+
+     window.open(url, '_blank', 'noopener,noreferrer');
+   }
+
 }
