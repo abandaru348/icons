@@ -6,3 +6,23 @@
 .prelogin lightning-card {
     width: 100%;
 }
+
+.prelogin-tiles {
+    max-width: 80rem;
+    margin: 0 auto;
+}
+
+.tile-equalizer {
+    row-gap: 0;
+}
+
+.tile-wrapper {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.tile-wrapper c-gnal-tile-component {
+    flex: 1 1 auto;
+    display: flex;
+}
