@@ -13,21 +13,23 @@
                         Log in using
                     </p>
 
-                    <lightning-button
-                        label="OKTA"
-                        variant="brand"
-                        class="cta-btn cta-btn_primary slds-button_stretch slds-m-bottom_large"
-                        title="Log in with Okta"
-                    ></lightning-button>
+                    <div class="cta-btn slds-m-bottom_large">
+                        <button class="cta-btn__action cta-btn__action-primary" type="button" aria-label="Log in with Okta">
+                            OKTA
+                        </button>
+                    </div>
 
                     <div class="divider slds-m-bottom_large" role="presentation"></div>
 
-                    <lightning-button
-                        label="Sign up for a new account"
-                        variant="neutral"
-                        class="cta-btn cta-btn_outline slds-button_stretch"
-                        title="Sign up for a new account"
-                    ></lightning-button>
+                    <div class="cta-btn">
+                        <button
+                            class="cta-btn__action cta-btn__action-outline"
+                            type="button"
+                            aria-label="Sign up for a new account"
+                        >
+                            Sign up for a new account
+                        </button>
+                    </div>
                 </section>
             </lightning-layout-item>
         </lightning-layout>

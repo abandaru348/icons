@@ -25,38 +25,39 @@
 }
 
 .cta-btn {
-    display: block;
     max-width: 360px;
     margin: 0 auto;
 }
 
-.cta-btn .slds-button {
+.cta-btn__action {
     width: 100%;
     border-radius: 999px;
     font-weight: 600;
     font-size: 1rem;
     letter-spacing: 0.05em;
     padding: 0.85rem 1.5rem;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
-}
-
-.cta-btn_primary .slds-button {
-    background: #0a2c87;
     border: none;
+    cursor: pointer;
 }
 
-.cta-btn_primary .slds-button:hover {
-    background: #08215f;
+.cta-btn__action-primary {
+    background: #0a2c87;
+    color: #fff;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
-.cta-btn_outline .slds-button {
+.cta-btn__action-primary:hover {
+    background: #091f5c;
+}
+
+.cta-btn__action-outline {
     background: transparent;
     border: 2px solid #9aa7c5;
     color: #0a2c87;
     box-shadow: none;
 }
 
-.cta-btn_outline .slds-button:hover {
+.cta-btn__action-outline:hover {
     border-color: #0a2c87;
 }
 
