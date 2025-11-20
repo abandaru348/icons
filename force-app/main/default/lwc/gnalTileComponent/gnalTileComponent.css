@@ -1,0 +1,31 @@
+.title-text {
+    font-weight: 600;
+    color: #092068;
+}
+
+.tile-content {
+  flex-direction: column;
+}
+
+.tile-links {
+  flex: 1 1 auto;
+}
+
+.one-size-card {
+	min-height: 323px;
+}
+
+.tile-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tile-link:hover,
+.tile-link:focus {
+  text-decoration: underline;
+  color: #0b5cab;
+}
+
+.tile-link__label {
+  color: #0b5cab;
+}

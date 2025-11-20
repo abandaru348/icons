@@ -1,0 +1,100 @@
+<template>
+  <div class="slds-grid slds-grid_vertical slds-grid_align-center slds-p-around_large">
+
+    <!-- ===== Banner ===== -->
+    <div class="slds-col slds-size_12-of-12 slds-grid slds-grid_align-center slds-m-bottom_small">
+      <div class="slds-size_12-of-12 slds-large-size_8-of-12">
+        <c-gnal-banner-component></c-gnal-banner-component>
+      </div>
+    </div>
+
+    <!-- ===== Login Section ===== -->
+    <div class="slds-col slds-size_12-of-12 slds-grid slds-grid_align-center slds-m-vertical_small">
+      <div class="slds-size_12-of-12 slds-large-size_8-of-12">
+        <lightning-card aria-label="Login and account access options">
+          <div class="slds-p-around_large">
+
+            <h2 class="slds-text-heading_medium slds-text-color_brand slds-text-align_left slds-m-bottom_medium">
+              <strong>Log In to Access Your Services Below</strong>
+            </h2>
+
+            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_medium">
+              <div class="slds-col slds-size_3-of-12 slds-p-around_small">
+                <lightning-button 
+                  variant="brand" 
+                  label="Log In" 
+                  title="Log In" 
+                  aria-label="Log in to your account"
+                  onclick={handleLogin}
+                  stretch>
+                </lightning-button>
+              </div>
+
+              <div class="slds-col slds-size_6-of-12 slds-text-align_right">
+                <span class="slds-text-body_medium slds-text-color_weak">
+                  Don’t have an account?
+                </span>
+              </div>
+
+              <div class="slds-col slds-size_3-of-12 slds-p-around_small slds-text-align_right">
+                <lightning-button 
+                  variant="neutral" 
+                  label="Sign Up" 
+                  title="Sign Up" 
+                  aria-label="Sign up for a new account"
+                  onclick={handleSignup}
+                  stretch>
+                </lightning-button>
+              </div>
+            </div>
+
+            <p class="slds-text-body_regular slds-text-align_center slds-text-color_weak slds-m-top_small">
+              If you encounter any technical issues, please call our support team at
+              <span class="slds-text-color_brand">1-800-555-0199</span> for assistance.
+            </p>
+
+          </div>
+        </lightning-card>
+      </div>
+    </div>
+
+    <!-- ===== Tiles Section ===== -->
+    <div class="slds-col slds-size_12-of-12 slds-grid slds-grid_align-center slds-m-top_small">
+      <div class="slds-size_12-of-12 slds-large-size_8-of-12">
+        <div class="slds-grid slds-wrap slds-grid_align-center slds-gutters slds-p-around_small">
+
+          <!-- Self-Help Tile -->
+          <div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-p-around_small">
+            <c-gnal-tile-component
+              title="Symptom Checker and Self-Help Capabilities"
+              aria-title-label="Symptom Checker and Self-Help Capabilities"
+              description="Self-Help Capabilities to help address your healthcare needs to include an online symptom checker to help explore potential causes and receive guidance on next steps."
+              links={selfHelpLinks}>
+            </c-gnal-tile-component>
+          </div>
+
+          <!-- Telehealth Tile -->
+          <div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-p-around_small">
+            <c-gnal-tile-component
+              title="Telehealth Registered Nurse Services"
+              aria-title-label="Telehealth Registered Nurse Services"
+              description="Self-Help 24/7 Access Telehealth RN and Care Coordination services. Please have your DOD Benefit Number (DBN) ready."
+              links={telehealthLinks}>
+            </c-gnal-tile-component>
+          </div>
+
+          <!-- Military Health Tile -->
+          <div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-p-around_small">
+            <c-gnal-tile-component
+              title="My Military Health"
+              aria-title-label="My Military Health"
+              description="My Military Health keeps you connected on your phone, tablet, or computer."
+              links={militaryLinks}>
+            </c-gnal-tile-component>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

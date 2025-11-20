@@ -1,0 +1,65 @@
+<template>
+    <template lwc:if={isAuthenticated}>
+    <!-- Row 1: 8/12 hero left + 4/12 profile right -->
+    <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" large-device-size="8" padding="around-small">
+            <c-gnal-banner-component height="260px"></c-gnal-banner-component>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" large-device-size="4" padding="around-small">
+            <c-gnal-patient-profile-card-component></c-gnal-patient-profile-card-component>
+        </lightning-layout-item>
+    </lightning-layout>
+
+    <!-- Row 2: Left three tiles (each 4/12) + Right column stacked -->
+    <lightning-layout multiple-rows class="slds-m-top_medium">
+        <lightning-layout-item size="12" large-device-size="8" padding="around-small">
+            <lightning-layout multiple-rows>
+                <lightning-layout-item class="tile-icon-brand" size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+                        <c-gnal-tile-component
+                        title="Symptom Checker & Self-Help Capabilities"
+                        aria-title-label="Symptom Checker and Self-Help Capabilities"
+                        description="Self-Help Capabilities to help address your healthcare needs to include an online symptom checker to help."
+                        links={selfHelpLinks}
+                        footer-url="#"
+                        footer-label="Learn More">
+                    </c-gnal-tile-component>
+                </lightning-layout-item>
+                <lightning-layout-item class="tile-icon-brand" size="12" medium-device-size="6" large-device-size="4" padding="around-small">
+                    <c-gnal-tile-component
+                        title="Telehealth RN and Care Coordination Services"
+                        aria-title-label="Telehealth RN and Care Coordination Services"
+                        description="Self-Help 24/7 Access Telehealth RN and Care Coordination services. Please have your DOD Benefit Number (DBN) ready."
+                        links={telehealthLinks}
+                        footer-url="#"
+                        footer-label="Learn More">
+                    </c-gnal-tile-component>
+                </lightning-layout-item>
+                <lightning-layout-item class="tile-icon-brand" size="12" medium-device-size="6" large-device-size="4" padding="around-small" >
+                   <c-gnal-tile-component
+                        title="My Military Health"
+                        aria-title-label="My Military Health"
+                        description="My Military Health keeps you connected on your phone, tablet, or computer."
+                        links={militaryLinks}
+                        footer-url="#"
+                        footer-label="Learn More">
+                    </c-gnal-tile-component>
+                   </lightning-layout-item>
+            </lightning-layout>
+        </lightning-layout-item>
+
+        <lightning-layout-item size="12" large-device-size="4" padding="around-small">
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" padding="around-small">
+                    <c-gnal-upcoming-appointments-component></c-gnal-upcoming-appointments-component>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" padding="around-small">
+                    <c-gnal-network-referrals-component></c-gnal-network-referrals-component>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-layout-item>
+    </lightning-layout>
+    </template>
+    <template lwc:else>
+        <c-gnal-patient-pre-login-page></c-gnal-patient-pre-login-page>
+    </template>
+</template>

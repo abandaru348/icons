@@ -1,0 +1,65 @@
+<template>
+  <lightning-card class="gnal-card">
+            <!-- Title -->
+                <lightning-formatted-text value={title} class="slds-text-heading_medium slds-m-bottom_small 
+                       slds-text-align_left slds-medium-text-align_left title-text"></lightning-formatted-text>
+            
+    <div class="slds-p-horizontal_small">
+      <!-- description -->
+      <template lwc:if={description}>
+        <p class="slds-text-body_regular slds-m-bottom_small">{description}</p>
+      </template>
+
+      <ul role="list">
+        <template for:each={normalizedLinks} for:item="l">
+            <li key={l.key} class="slds-item" role="listitem">
+              <div
+                class={rowClass}
+                data-url={l.url}
+                onclick={handleNavigate}
+                onkeydown={handleRowKeydown}
+                aria-label={l.ariaLabel}
+                title={l.ariaLabel}
+                aria-disabled={disabledState}
+                role="link"
+                tabindex={rowTabIndex}
+              >
+                <template lwc:if={l.icon}>
+                  <lightning-icon
+                    class="icon--appointment"
+                    icon-name={l.icon}
+                    alternative-text={l.label}
+                    title={l.label}
+                    size="small"
+                  ></lightning-icon>
+                </template>
+
+                <div class="slds-p-horizontal_small mid">
+                  <div class="gnal-primary">{l.label}</div>
+
+                  <template lwc:if={l.subText}>
+                    <div class="gnal-sub slds-text-color_weak slds-text-body_small">
+                      {l.subText}
+                    </div>
+                  </template>
+                </div>
+
+                <template lwc:if={l.rightText}>
+                  <span class="gnal-right slds-text-body_small slds-text-color_weak">{l.rightText}</span>
+                </template>
+              </div>
+          </li>
+        </template>
+      </ul>
+      <hr class="tile-divider" />
+      <!-- footer link -->
+      <template lwc:if={footerUrlResolved}>
+        <div class="slds-m-top_small slds-text-align_center">
+          <a class="slds-text-link" data-url={footerUrlResolved} onclick={handleLearnMore}>
+            {footerLabelResolved}
+          </a>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

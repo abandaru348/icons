@@ -1,0 +1,68 @@
+.title-text {
+    font-weight: 600; 
+    color: #092068;
+}
+.row {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.link {
+  cursor: pointer;
+}
+
+.link:hover {
+  background-color: #f3f6fb;
+  border-radius: 12px;
+}
+
+.link:focus-visible {
+  outline: none;
+  border-radius: 12px;
+  box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.3);
+}
+
+.item-disabled {
+  background-color: #f4f6fb;
+  color: var(--lwc-colorTextWeak, #6f6f6f);
+  cursor: default;
+  border-radius: 12px;
+}
+
+.item-disabled .gnal-primary,
+.item-disabled .gnal-sub,
+.item-disabled .gnal-right {
+  color: inherit;
+}
+
+.mid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.icon--appointment {
+  --slds-c-icon-color-background: #582931;
+}
+
+:host .gnal-card {
+  border-radius: 12px;
+  overflow: hidden;
+  --slds-c-card-heading-font-weight: 600;
+  --slds-c-card-heading-font-size: 1rem;
+  --slds-c-card-header-spacing-block-start: 0.75rem;
+  --slds-c-card-header-spacing-block-end: 0.75rem;
+  --slds-c-card-header-spacing-inline-start: 1rem;
+  --slds-c-card-header-spacing-inline-end: 1rem;
+  --slds-c-card-body-spacing-block-start: 0.25rem;
+  --slds-c-card-body-spacing-inline-start: 1rem;
+  --slds-c-card-body-spacing-inline-end: 1rem;
+}
