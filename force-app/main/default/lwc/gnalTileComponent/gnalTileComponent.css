@@ -1,0 +1,46 @@
+.title-text {
+    font-weight: 600;
+    color: #092068;
+}
+
+.tile-content {
+    flex-direction: column;
+}
+
+.tile-links {
+    flex: 1 1 auto;
+}
+
+.one-size-card {
+    min-height: 323px;
+}
+
+.tile-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.tile-link:hover,
+.tile-link:focus {
+    text-decoration: underline;
+    color: #0b5cab;
+}
+
+.tile-link__label {
+    color: #0b5cab;
+}
+
+.tile-link--neutral,
+.tile-link--neutral:hover,
+.tile-link--neutral:focus {
+    color: #1f1f1f;
+}
+
+.tile-link--neutral .tile-link__label {
+    color: #1f1f1f;
+}
+
+.tile-link--neutral lightning-icon {
+    --sds-c-icon-color-foreground-default: #1f1f1f;
+    --sds-c-icon-color-foreground: #1f1f1f;
+}

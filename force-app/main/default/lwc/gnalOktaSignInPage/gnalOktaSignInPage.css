@@ -1,0 +1,59 @@
+:host {
+    display: block;
+}
+
+.page {
+    min-height: 100vh;
+    padding: 4rem 1rem 2rem;
+    background: #f2f4f7;
+}
+
+.login-panel {
+    max-width: 440px;
+    margin: 0 auto;
+    background: transparent;
+}
+
+.logo {
+    max-width: 210px;
+}
+
+.heading {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.cta-btn {
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.cta-btn__action {
+    display: block;
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    padding: 0.45rem 1.25rem;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-btn__action-primary {
+    background: #0a2c87;
+    color: #fff;
+}
+
+.cta-btn__action-outline {
+    background: transparent;
+    border: 1px solid #9aa7c5;
+    color: #0a2c87;
+}
+
+.divider {
+    height: 1px;
+    background: #cfd6e3;
+    max-width: 360px;
+    margin: 16px auto 24px;
+}
+
