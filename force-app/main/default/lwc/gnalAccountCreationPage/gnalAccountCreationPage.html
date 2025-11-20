@@ -1,0 +1,235 @@
+<template>
+    <div class="page">
+        <lightning-layout multiple-rows horizontal-align="center">
+            <lightning-layout-item size="12" medium-device-size="10" large-device-size="6">
+                <section
+                    class="account-panel slds-p-around_xx-large"
+                    role="form"
+                    aria-labelledby="accountCreationHeading"
+                >
+                    <img src={logo} alt="Global Nurse Advice Line" class="logo slds-m-bottom_large" />
+
+                    <p class="eyebrow slds-m-bottom_x-small">Create your account</p>
+                    <h1 id="accountCreationHeading" class="heading slds-m-bottom_small">
+                        Tell us about yourself
+                    </h1>
+                    <p class="subheading slds-m-bottom_x-large">
+                        Use the same information that appears on your military health record so we can match your
+                        account and keep your data secure.
+                    </p>
+
+                    <form class="form" onsubmit={handleSubmit} aria-describedby="accountSupportText">
+                        <fieldset class="field-group">
+                            <legend class="field-group__title">Personal information</legend>
+                            <p class="field-group__helper" id="personalInfoHelper">
+                                We’ll match this with the information on file with TRICARE or DEERS.
+                            </p>
+
+                            <div class="field-grid" aria-describedby="personalInfoHelper">
+                                <label class="field">
+                                    <span class="field__label">First name</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="firstName"
+                                        autocomplete="given-name"
+                                        placeholder="Enter first name"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Middle initial (optional)</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="middleInitial"
+                                        maxlength="1"
+                                        autocomplete="additional-name"
+                                        placeholder="M"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Last name</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="lastName"
+                                        autocomplete="family-name"
+                                        placeholder="Enter last name"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Date of birth</span>
+                                    <input
+                                        class="field__input"
+                                        type="date"
+                                        name="dateOfBirth"
+                                        autocomplete="bday"
+                                        placeholder="MM/DD/YYYY"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">DoD Benefit Number (DBN)</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="dbn"
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
+                                        placeholder="Enter 11-digit DBN"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Relationship to sponsor</span>
+                                    <select class="field__input" name="relationship">
+                                        <option value="">Select one</option>
+                                        <option value="sponsor">Sponsor / Service Member</option>
+                                        <option value="spouse">Spouse</option>
+                                        <option value="dependent">Dependent</option>
+                                        <option value="caregiver">Caregiver</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="field-group">
+                            <legend class="field-group__title">Contact information</legend>
+                            <p class="field-group__helper" id="contactInfoHelper">
+                                We’ll send confirmations and security alerts to these contacts.
+                            </p>
+
+                            <div class="field-grid" aria-describedby="contactInfoHelper">
+                                <label class="field">
+                                    <span class="field__label">Email address</span>
+                                    <input
+                                        class="field__input"
+                                        type="email"
+                                        name="email"
+                                        autocomplete="email"
+                                        placeholder="name@example.mil"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Confirm email</span>
+                                    <input
+                                        class="field__input"
+                                        type="email"
+                                        name="confirmEmail"
+                                        autocomplete="email"
+                                        placeholder="Re-enter email address"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Mobile phone</span>
+                                    <input
+                                        class="field__input"
+                                        type="tel"
+                                        name="mobile"
+                                        autocomplete="tel"
+                                        placeholder="(555) 123-4567"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Preferred contact method</span>
+                                    <select class="field__input" name="contactPreference">
+                                        <option value="">Select one</option>
+                                        <option value="email">Email</option>
+                                        <option value="sms">Text message</option>
+                                        <option value="phone">Phone call</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="field-group">
+                            <legend class="field-group__title">Account security</legend>
+                            <p class="field-group__helper" id="securityInfoHelper">
+                                Choose a username and password you’ll remember. Passwords must include at least 12
+                                characters, one uppercase letter, one number, and one special character.
+                            </p>
+
+                            <div class="field-grid" aria-describedby="securityInfoHelper">
+                                <label class="field">
+                                    <span class="field__label">Username</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="username"
+                                        autocomplete="username"
+                                        placeholder="Create a username"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Password</span>
+                                    <input
+                                        class="field__input"
+                                        type="password"
+                                        name="password"
+                                        autocomplete="new-password"
+                                        placeholder="Create a password"
+                                    />
+                                </label>
+
+                                <label class="field">
+                                    <span class="field__label">Confirm password</span>
+                                    <input
+                                        class="field__input"
+                                        type="password"
+                                        name="confirmPassword"
+                                        autocomplete="new-password"
+                                        placeholder="Re-enter password"
+                                    />
+                                </label>
+
+                                <label class="field field--full">
+                                    <span class="field__label">Security question</span>
+                                    <select class="field__input" name="securityQuestion">
+                                        <option value="">Select a question</option>
+                                        <option value="city">In what city were you born?</option>
+                                        <option value="teacher">What is the last name of your favorite teacher?</option>
+                                        <option value="pet">What was the name of your first pet?</option>
+                                    </select>
+                                </label>
+
+                                <label class="field field--full">
+                                    <span class="field__label">Security answer</span>
+                                    <input
+                                        class="field__input"
+                                        type="text"
+                                        name="securityAnswer"
+                                        placeholder="Enter your answer"
+                                    />
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <label class="checkbox">
+                            <input type="checkbox" name="terms" />
+                            <span>
+                                I confirm that I am authorized to create this account and agree to the Global Nurse
+                                Advice Line Terms of Use and Privacy Policy.
+                            </span>
+                        </label>
+
+                        <div class="actions">
+                            <button class="btn btn-secondary" type="button">Cancel</button>
+                            <button class="btn btn-primary" type="submit">Create account</button>
+                        </div>
+
+                        <p id="accountSupportText" class="supporting-text">
+                            Need help? Call 1-800-874-2273 (option 1) or email gnal-support@health.mil for assistance.
+                        </p>
+                    </form>
+                </section>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
+</template>
