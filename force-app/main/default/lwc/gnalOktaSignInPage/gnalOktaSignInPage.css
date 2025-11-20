@@ -12,7 +12,6 @@
     max-width: 440px;
     margin: 0 auto;
     background: transparent;
-    border-radius: 1.75rem;
 }
 
 .logo {
@@ -32,7 +31,6 @@
 .cta-btn__action {
     display: block;
     width: 100%;
-    border-radius: 999px;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.08em;
@@ -44,14 +42,12 @@
 .cta-btn__action-primary {
     background: #0a2c87;
     color: #fff;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .cta-btn__action-outline {
     background: transparent;
     border: 1px solid #9aa7c5;
     color: #0a2c87;
-    box-shadow: none;
 }
 
 .divider {
