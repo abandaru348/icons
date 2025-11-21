@@ -1,0 +1,37 @@
+<template>
+    <div class="page">
+        <lightning-layout multiple-rows horizontal-align="center">
+            <lightning-layout-item size="12" medium-device-size="8" large-device-size="5">
+                <section
+                    class="login-panel slds-text-align_center slds-p-around_xx-large"
+                    role="form"
+                    aria-labelledby="loginHeading"
+                >
+                    <img src={logo} alt="Global Nurse Advice Line" class="logo slds-m-bottom_large" />
+
+                    <p id="loginHeading" class="heading slds-text-heading_medium slds-m-bottom_large">
+                        Log in using
+                    </p>
+
+                    <div class="cta-btn slds-m-bottom_medium">
+                        <button class="cta-btn__action cta-btn__action-primary" type="button" aria-label="Log in with Okta">
+                            OKTA
+                        </button>
+                    </div>
+
+                    <div class="divider" role="presentation"></div>
+
+                    <div class="cta-btn">
+                        <button
+                            class="cta-btn__action cta-btn__action-outline"
+                            type="button"
+                            aria-label="Sign up for a new account"
+                        >
+                            Sign up for a new account
+                        </button>
+                    </div>
+                </section>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
+</template>
