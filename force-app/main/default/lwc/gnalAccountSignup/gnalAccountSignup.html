@@ -101,16 +101,16 @@
                             </a>.
                         </p>
                     </div>
-                    <lightning-layout class="slds-m-top_large button-row" vertical-align="end" horizontal-align="stretch">
-                        <lightning-layout-item size="3" class="button-row__item">
+                    <div class="slds-m-top_large button-row slds-grid slds-grid_vertical-align-end slds-wrap slds-gutters_small">
+                        <div class="button-row__item slds-size_12-of-12 slds-medium-size_3-of-12">
                             <lightning-button
                                 label="Cancel"
                                 variant="neutral"
                                 title="Cancel account creation"
                                 style="width: 100%;">
                             </lightning-button>
-                        </lightning-layout-item>
-                        <lightning-layout-item size="9" class="button-row__item">
+                        </div>
+                        <div class="button-row__item slds-size_12-of-12 slds-medium-size_9-of-12">
                             <lightning-button
                                 label="Create Account"
                                 variant="brand"
@@ -119,8 +119,8 @@
                                 onclick={handleSubmit}
                                 disabled={isCreateDisabled}>
                             </lightning-button>
-                        </lightning-layout-item>
-                    </lightning-layout>
+                        </div>
+                    </div>
                 </div>
             </lightning-card>
         </div>
