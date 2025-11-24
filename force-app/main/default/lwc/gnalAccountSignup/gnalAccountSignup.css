@@ -35,12 +35,19 @@
     margin-top: 0.25rem;
 }
 
-.terms-container lightning-input {
-    display: block;
+.terms-checkbox {
+    margin-top: 0.25rem;
 }
 
-.terms-container a {
+.terms-text {
+    color: #1d3153;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.terms-text a {
     color: #0b5cab;
+    font-weight: 600;
 }
 
 .button-row {

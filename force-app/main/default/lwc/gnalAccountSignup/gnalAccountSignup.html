@@ -80,17 +80,18 @@
                             </p>
                         </div>
                     </div>
-                    <div class="slds-m-top_medium terms-container" role="group" aria-label="Terms and policies agreement">
+                    <div class="slds-m-top_medium terms-container slds-grid slds-grid_vertical-align-start" role="group" aria-label="Terms and policies agreement">
                         <lightning-input
-                            class="terms-checkbox"
+                            class="terms-checkbox slds-m-right_small"
                             type="checkbox"
                             name="terms"
-                            label="I agree to the terms and conditions and privacy policy."
-                            aria-label="Agree to terms and privacy policy"
+                            variant="label-hidden"
+                            aria-label="Agree to the terms and privacy policy"
+                            aria-describedby="termsDescription"
                             onchange={handleTermsChange}>
                         </lightning-input>
-                        <p class="field-helper">
-                            By selecting the checkbox you agree to the
+                        <p class="terms-text" id="termsDescription">
+                            I agree to the
                             <a href="https://www.health.mil/" target="_blank" rel="noopener noreferrer" title="View terms and conditions">
                                 terms and conditions
                             </a>
