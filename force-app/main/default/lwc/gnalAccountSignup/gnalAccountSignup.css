@@ -8,14 +8,11 @@
     max-width: 480px;
 }
 
-.page__heading {
-    color: #1d3153;
-}
-
 .page__title {
     font-size: 1.75rem;
     font-weight: 600;
     margin: 0;
+    color: #0b5cab;
 }
 
 .page__content lightning-card {
