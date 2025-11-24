@@ -4,6 +4,20 @@
     min-height: 100vh;
 }
 
+.page__content {
+    max-width: 480px;
+}
+
+.page__heading {
+    color: #1d3153;
+}
+
+.page__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+}
+
 .page__content lightning-card {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     border-radius: 1.5rem;
@@ -23,4 +37,16 @@
 
 .terms-container lightning-input {
     display: block;
+}
+
+.terms-container a {
+    color: #0b5cab;
+}
+
+.button-row {
+    gap: 0.75rem;
+}
+
+.button-row lightning-button:first-child {
+    flex: 1;
 }
