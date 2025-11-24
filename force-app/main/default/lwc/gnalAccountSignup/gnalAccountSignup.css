@@ -47,14 +47,6 @@
     font-weight: 600;
 }
 
-.button-row {
-    gap: 0.75rem;
-}
-
-.button-row lightning-button:first-child {
-    flex: 0 0 auto;
-}
-
-.button-row .create-account-button {
-    flex: 1;
+.button-row__item {
+    padding: 0.25rem 0;
 }

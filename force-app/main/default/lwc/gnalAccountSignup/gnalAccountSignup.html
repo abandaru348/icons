@@ -101,22 +101,26 @@
                             </a>.
                         </p>
                     </div>
-                    <div class="slds-m-top_large slds-grid slds-grid_align-end slds-gutters_x-small button-row">
-                        <lightning-button
-                            label="Cancel"
-                            variant="neutral"
-                            title="Cancel account creation"
-                            class="slds-m-right_small">
-                        </lightning-button>
-                        <lightning-button
-                            label="Create Account"
-                            variant="brand"
-                            title="Submit account creation request"
-                            class="create-account-button"
-                            onclick={handleSubmit}
-                            disabled={isCreateDisabled}>
-                        </lightning-button>
-                    </div>
+                    <lightning-layout class="slds-m-top_large button-row" vertical-align="end" multiple-rows="true">
+                        <lightning-layout-item size="12" medium-device-size="3" class="button-row__item">
+                            <lightning-button
+                                label="Cancel"
+                                variant="neutral"
+                                title="Cancel account creation"
+                                style="width: 100%;">
+                            </lightning-button>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" medium-device-size="9" class="button-row__item">
+                            <lightning-button
+                                label="Create Account"
+                                variant="brand"
+                                title="Submit account creation request"
+                                style="width: 100%;"
+                                onclick={handleSubmit}
+                                disabled={isCreateDisabled}>
+                            </lightning-button>
+                        </lightning-layout-item>
+                    </lightning-layout>
                 </div>
             </lightning-card>
         </div>
