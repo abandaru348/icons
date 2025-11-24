@@ -1,0 +1,26 @@
+:host {
+    display: block;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.page__content lightning-card {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 1.5rem;
+}
+
+.required-indicator {
+    color: #6b6d70;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.field-helper {
+    color: #6b6d70;
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+}
+
+.terms-container lightning-input {
+    display: block;
+}

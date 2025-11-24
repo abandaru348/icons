@@ -1,0 +1,117 @@
+<template>
+    <section class="page slds-p-around_large slds-grid slds-grid_vertical-align-center slds-grid_align-center">
+        <div class="page__content slds-size_1-of-1 slds-medium-size_10-of-12 slds-large-size_6-of-12">
+            <lightning-card title="Sign up for a new account" aria-label="Global Nurse account creation form">
+                <div class="slds-p-around_large">
+                    <p class="required-indicator" aria-label="Required field note">
+                        * indicates a required field.
+                    </p>
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                name="firstName"
+                                label="First Name"
+                                aria-label="First Name"
+                                required>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                name="lastName"
+                                label="Last Name"
+                                aria-label="Last Name"
+                                required>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                type="date"
+                                name="dob"
+                                label="Date of Birth"
+                                aria-label="Date of Birth"
+                                required>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                name="dodId"
+                                label="DoD ID (EDI-PI)"
+                                aria-label="Department of Defense Identification Number example 1234567890"
+                                placeholder="Ex: 1234567890"
+                                maxlength="10"
+                                aria-describedby="dodId-helper"
+                                pattern="[0-9]{10}"
+                                message-when-pattern-mismatch="Enter the 10 digit DoD ID">
+                            </lightning-input>
+                            <p class="field-helper" id="dodId-helper">
+                                This is the 10 digit DOD ID number on the front of your military ID card.
+                            </p>
+                        </div>
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                name="dbn"
+                                label="DBN"
+                                aria-label="Department Beneficiary Number example 98765432101"
+                                placeholder="Ex: 98765432101"
+                                maxlength="11"
+                                aria-describedby="dbn-helper"
+                                pattern="[0-9]{11}"
+                                message-when-pattern-mismatch="Enter the 11 digit DBN">
+                            </lightning-input>
+                            <p class="field-helper" id="dbn-helper">
+                                This is the 11-digit number on the back of the ID card used to verify TRICARE eligibility and process claims.
+                            </p>
+                        </div>
+                        <div class="slds-size_1-of-1">
+                            <lightning-input
+                                type="email"
+                                name="email"
+                                label="Email"
+                                aria-label="Email address"
+                                aria-describedby="email-helper"
+                                placeholder="Enter your DoD email address"
+                                message-when-bad-input="Enter a valid DoD email address">
+                            </lightning-input>
+                            <p class="field-helper" id="email-helper">
+                                Enter your DoD email address.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="slds-m-top_medium terms-container" role="group" aria-label="Terms and policies agreement">
+                        <lightning-input
+                            type="checkbox"
+                            name="terms"
+                            label="I agree to the terms and conditions and privacy policy."
+                            aria-label="Agree to terms and privacy policy"
+                            onchange={handleTermsChange}>
+                        </lightning-input>
+                        <p class="field-helper">
+                            <a href="https://www.health.mil/" target="_blank" rel="noopener noreferrer" title="View terms and conditions">
+                                terms and conditions
+                            </a>
+                            and
+                            <a href="https://www.health.mil/" target="_blank" rel="noopener noreferrer" title="View privacy policy">
+                                privacy policy
+                            </a>.
+                        </p>
+                    </div>
+                    <div class="slds-m-top_large slds-grid slds-grid_align-end slds-gutters_x-small">
+                        <lightning-button
+                            label="Cancel"
+                            variant="neutral"
+                            title="Cancel account creation">
+                        </lightning-button>
+                        <lightning-button
+                            label="Create Account"
+                            variant="brand"
+                            title="Submit account creation request"
+                            class="slds-m-left_small"
+                            onclick={handleSubmit}
+                            disabled={isCreateDisabled}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </lightning-card>
+        </div>
+    </section>
+</template>
