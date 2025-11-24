@@ -103,17 +103,17 @@
                     </div>
                     <div class="slds-m-top_large slds-grid slds-grid_align-end slds-gutters_x-small button-row">
                         <lightning-button
+                            label="Cancel"
+                            variant="neutral"
+                            title="Cancel account creation"
+                            class="slds-m-right_small">
+                        </lightning-button>
+                        <lightning-button
                             label="Create Account"
                             variant="brand"
                             title="Submit account creation request"
-                            class="slds-m-right_small"
                             onclick={handleSubmit}
                             disabled={isCreateDisabled}>
-                        </lightning-button>
-                        <lightning-button
-                            label="Cancel"
-                            variant="neutral"
-                            title="Cancel account creation">
                         </lightning-button>
                     </div>
                 </div>
