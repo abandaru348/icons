@@ -52,5 +52,9 @@
 }
 
 .button-row lightning-button:first-child {
+    flex: 0 0 auto;
+}
+
+.button-row .create-account-button {
     flex: 1;
 }
