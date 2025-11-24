@@ -1,0 +1,49 @@
+:host {
+    display: block;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.page__content {
+    max-width: 480px;
+}
+
+.page__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    color: #0b5cab;
+}
+
+.page__content lightning-card {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 1.5rem;
+}
+
+.required-indicator {
+    color: #6b6d70;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.field-helper {
+    color: #6b6d70;
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+}
+
+.terms-checkbox {
+    margin-top: 0.25rem;
+}
+
+.terms-text {
+    color: #1d3153;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.terms-text a {
+    color: #0b5cab;
+    font-weight: 600;
+}
+
