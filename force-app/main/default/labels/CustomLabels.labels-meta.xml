@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Google_Geocode_URL</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Google Geocode API endpoint</shortDescription>
+        <value>https://maps.googleapis.com/maps/api/geocode/json</value>
+    </labels>
+    <labels>
+        <fullName>Google_Route_Matrix_URL</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Google Route Matrix API endpoint</shortDescription>
+        <value>https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix</value>
+    </labels>
+    <labels>
+        <fullName>Google_Maps_API_Key</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Google Maps API key placeholder</shortDescription>
+        <value>REPLACE_WITH_API_KEY</value>
+    </labels>
+</CustomLabels>
