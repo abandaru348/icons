@@ -389,8 +389,12 @@ public with sharing class GnalFacilitySearchController {
         List<String> optional = new List<String>{
             'Origin_Location__Latitude__s',
             'Origin_Location__Longitude__s',
-            'Origin_Location_Latitude__c',
-            'Origin_Location_Longitude__c',
+            // If origin is stored in a custom geolocation field (Apex type: System.Location),
+            // read the subfields instead of the compound field to avoid Location->Double assignment.
+            'Origin_Location_Latitude__Latitude__s',
+            'Origin_Location_Latitude__Longitude__s',
+            'Origin_Location_Longitude__Latitude__s',
+            'Origin_Location_Longitude__Longitude__s',
             'Origin_Latitude__c',
             'Origin_Longitude__c',
             'Origin_Lat__c',
@@ -429,15 +433,32 @@ public with sharing class GnalFacilitySearchController {
             }
         }
 
-        // 2) Numeric lat/lon fields (common fallback design)
-        LatLng locPair = extractNumericLatLng(cacheRow, 'Origin_Location_Latitude__c', 'Origin_Location_Longitude__c');
-        if (locPair != null) return locPair;
+        // 2) Alternate custom geolocation fields (still store a point; read subfields).
+        LatLng customGeo = extractGeoLatLng(cacheRow, 'Origin_Location_Latitude__Latitude__s', 'Origin_Location_Latitude__Longitude__s');
+        if (customGeo != null) return customGeo;
 
+        LatLng customGeo2 = extractGeoLatLng(cacheRow, 'Origin_Location_Longitude__Latitude__s', 'Origin_Location_Longitude__Longitude__s');
+        if (customGeo2 != null) return customGeo2;
+
+        // 3) Numeric lat/lon fields (common fallback design)
         LatLng numeric = extractNumericLatLng(cacheRow, 'Origin_Latitude__c', 'Origin_Longitude__c');
         if (numeric != null) return numeric;
 
-        // 3) Alternate short names
+        // 4) Alternate short names
         return extractNumericLatLng(cacheRow, 'Origin_Lat__c', 'Origin_Lng__c');
+    }
+
+    private static LatLng extractGeoLatLng(SObject row, String latSubfield, String lonSubfield) {
+        if (row == null || CACHE_FIELD_MAP == null) return null;
+        if (!CACHE_FIELD_MAP.containsKey(latSubfield) || !CACHE_FIELD_MAP.containsKey(lonSubfield)) return null;
+        Object latVal = row.get(latSubfield);
+        Object lonVal = row.get(lonSubfield);
+        if (latVal instanceof Double && lonVal instanceof Double) {
+            Double lat = (Double) latVal;
+            Double lon = (Double) lonVal;
+            return (lat != null && lon != null) ? new LatLng(lat, lon) : null;
+        }
+        return null;
     }
 
     private static LatLng extractNumericLatLng(SObject row, String latField, String lonField) {
@@ -465,10 +486,18 @@ public with sharing class GnalFacilitySearchController {
             return;
         }
 
-        // Otherwise try numeric fields.
-        if (tryWriteNumericLatLng(record, 'Origin_Location_Latitude__c', 'Origin_Location_Longitude__c', lat, lon, isInsert)) {
+        // If org incorrectly modeled lat/long as separate geolocation fields, write the point to either field.
+        // (A geolocation field always stores both latitude and longitude.)
+        if (CACHE_FIELD_MAP.containsKey('Origin_Location_Latitude__c')) {
+            setLocationField(record, 'Origin_Location_Latitude__c', lat, lon, isInsert);
             return;
         }
+        if (CACHE_FIELD_MAP.containsKey('Origin_Location_Longitude__c')) {
+            setLocationField(record, 'Origin_Location_Longitude__c', lat, lon, isInsert);
+            return;
+        }
+
+        // Otherwise try numeric fields.
         if (tryWriteNumericLatLng(record, 'Origin_Latitude__c', 'Origin_Longitude__c', lat, lon, isInsert)) {
             return;
         }
