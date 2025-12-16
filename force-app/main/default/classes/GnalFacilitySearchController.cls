@@ -23,6 +23,43 @@ public with sharing class GnalFacilitySearchController {
         }
     }
 
+    // Cache-only radius search: does NOT call Google. Intended for radius changes in the LWC.
+    @AuraEnabled(cacheable=false)
+    public static List<Map<String, Object>> findFacilitiesFromCacheWithRadius(
+        String originAddress,
+        Double radiusMiles
+    ) {
+        try {
+            if (String.isBlank(originAddress)) {
+                throw new AuraHandledException('Origin address is required.');
+            }
+
+            Double effectiveRadius = radiusMiles;
+            if (effectiveRadius == null || effectiveRadius <= 0) {
+                effectiveRadius = DEFAULT_RADIUS_MILES;
+            }
+
+            LatLng origin = getOriginLatLngFromAnyCacheRow(originAddress);
+            if (origin == null || origin.lat == null || origin.lng == null) {
+                // No cached origin coordinates yet; user should run the main search to warm cache.
+                return new List<Map<String, Object>>();
+            }
+
+            List<GeocodeCache__c> filteredCaches = queryCachesWithinRadiusAllCached(
+                originAddress,
+                origin.lat,
+                origin.lng,
+                effectiveRadius
+            );
+
+            return formatCacheResults(filteredCaches);
+        } catch (AuraHandledException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new AuraHandledException(formatExceptionForClient('Cache radius search failed', ex));
+        }
+    }
+
     @AuraEnabled(cacheable=false)
     public static List<Map<String, Object>> findNearestFacilities(Id accountId, String originAddress) {
         try {
@@ -363,6 +400,36 @@ public with sharing class GnalFacilitySearchController {
         ];
     }
 
+    // Cache-only query (no destination IN list) for fast radius changes.
+    private static List<GeocodeCache__c> queryCachesWithinRadiusAllCached(
+        String originAddress,
+        Double originLatitude,
+        Double originLongitude,
+        Double radiusMiles
+    ) {
+        if (String.isBlank(originAddress)) return new List<GeocodeCache__c>();
+        if (originLatitude == null || originLongitude == null) return new List<GeocodeCache__c>();
+
+        Location originLocation = Location.newInstance(originLatitude, originLongitude);
+        Double radiusFilter = radiusMiles + 0.000001;
+
+        return [
+            SELECT Id,
+                   Origin_Address__c,
+                   Destination_Address__c,
+                   Distance_Miles__c,
+                   Distance_Meters__c,
+                   Travel_Time_Minutes__c,
+                   Destination_Location__Latitude__s,
+                   Destination_Location__Longitude__s,
+                   Destination_Location__c
+            FROM GeocodeCache__c
+            WHERE Origin_Address__c = :originAddress
+            AND DISTANCE(Destination_Location__c, :originLocation, 'mi') < :radiusFilter
+            ORDER BY Distance_Miles__c ASC NULLS LAST
+        ];
+    }
+
     private static List<GeocodeCache__c> buildCacheRecords(
         String originAddress,
         List<GnalTravelTimeServiceWithGeocoding.TravelTimeResult> travelTimes
@@ -570,6 +637,44 @@ public with sharing class GnalFacilitySearchController {
 
         // 4) Alternate short names
         return extractNumericLatLng(cacheRow, 'Origin_Lat__c', 'Origin_Lng__c');
+    }
+
+    private static LatLng getOriginLatLngFromAnyCacheRow(String originAddress) {
+        if (String.isBlank(originAddress)) return null;
+        // Pull a single cache row for this origin and extract origin lat/lng using schema-safe logic.
+        List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.query(
+            'SELECT Id, Origin_Address__c, Destination_Address__c' +
+            // optional fields will only be selected if present
+            buildOptionalOriginFieldsSelect() +
+            ' FROM GeocodeCache__c' +
+            ' WHERE Origin_Address__c = :originAddress' +
+            ' AND Destination_Location__c != null' +
+            ' ORDER BY LastModifiedDate DESC LIMIT 1'
+        );
+        if (rows.isEmpty()) return null;
+        return extractOriginLatLng(rows[0]);
+    }
+
+    private static String buildOptionalOriginFieldsSelect() {
+        List<String> optional = new List<String>();
+        List<String> candidates = new List<String>{
+            'Origin_Location__Latitude__s',
+            'Origin_Location__Longitude__s',
+            'Origin_Location_Latitude__Latitude__s',
+            'Origin_Location_Latitude__Longitude__s',
+            'Origin_Location_Longitude__Latitude__s',
+            'Origin_Location_Longitude__Longitude__s',
+            'Origin_Latitude__c',
+            'Origin_Longitude__c',
+            'Origin_Lat__c',
+            'Origin_Lng__c'
+        };
+        for (String f : candidates) {
+            if (CACHE_FIELD_MAP != null && CACHE_FIELD_MAP.containsKey(f)) {
+                optional.add(f);
+            }
+        }
+        return optional.isEmpty() ? '' : (', ' + String.join(optional, ', '));
     }
 
     private static LatLng extractGeoLatLng(SObject row, String latSubfield, String lonSubfield) {

@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import getAccountBillingAddress from '@salesforce/apex/GnalFacilitySearchController.getAccountBillingAddress';
 import getLatestCaseOriginAddressForAccount from '@salesforce/apex/GnalFacilitySearchController.getLatestCaseOriginAddressForAccount';
+import findFacilitiesFromCacheWithRadius from '@salesforce/apex/GnalFacilitySearchController.findFacilitiesFromCacheWithRadius';
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -97,8 +98,50 @@ export default class FindNearestFacilities extends LightningElement {
         if (!this.searchHasRun || this.isLoading) {
             return;
         }
-        // Radius change triggers a lightweight SOQL distance filter; no Google calls when cache is warm.
-        this.executeSearch({ showToastOnSuccess: false });
+        // Radius change must NOT call Google. Query only from GeocodeCache__c.
+        this.executeCacheOnlyRadiusSearch();
+    }
+
+    executeCacheOnlyRadiusSearch() {
+        if (!this.originAddress) {
+            this.showToast('Error', 'Please provide an origin address.', 'error');
+            return;
+        }
+
+        this.isLoading = true;
+        this.lastErrorMessage = '';
+        this.lastErrorDetails = '';
+
+        const radius = Number(this.selectedDistance);
+        const payload = {
+            originAddress: this.originAddress,
+            radiusMiles: isNaN(radius) ? null : radius
+        };
+
+        findFacilitiesFromCacheWithRadius(payload)
+            .then((data = []) => {
+                const normalized = data.map((r) => ({
+                    ...r,
+                    info: `${Math.round(r.minutes ?? 0)} mins (${(r.distanceMiles ?? 0).toFixed(1)} mi)`
+                }));
+
+                const listResults = normalized.slice(0, FindNearestFacilities.LIST_RESULT_LIMIT);
+                const markerResults = normalized.slice(0, FindNearestFacilities.MAP_MARKER_LIMIT);
+
+                this.results = listResults;
+                this.updateMap(markerResults);
+            })
+            .catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('Error filtering facilities from cache:', error);
+                const msg = this.getErrorMessage(error);
+                this.lastErrorMessage = msg;
+                this.lastErrorDetails = this.getErrorDetails(error);
+                this.showToast('Error', msg, 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
 
     handleFind() {
