@@ -1,13 +1,13 @@
 @IsTest
 private class GnalFacilitySearchControllerTest {
-    private static void setGeo(SObject record, String fieldApiName, Double lat, Double lon) {
+    private static void setGeo(SObject record, String fieldApiName, Decimal lat, Decimal lon) {
         if (record == null || String.isBlank(fieldApiName) || lat == null || lon == null) return;
         Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
         if (fields == null) return;
 
         Schema.SObjectField f = fields.get(fieldApiName);
         if (f != null && f.getDescribe().isCreateable()) {
-            record.put(fieldApiName, Location.newInstance(lat, lon));
+            record.put(fieldApiName, Location.newInstance((Double) lat, (Double) lon));
             return;
         }
 
@@ -16,8 +16,8 @@ private class GnalFacilitySearchControllerTest {
             String lonField = fieldApiName.substring(0, fieldApiName.length() - 3) + '__Longitude__s';
             Schema.SObjectField lf = fields.get(latField);
             Schema.SObjectField lof = fields.get(lonField);
-            if (lf != null && lf.getDescribe().isCreateable()) record.put(latField, lat);
-            if (lof != null && lof.getDescribe().isCreateable()) record.put(lonField, lon);
+            if (lf != null && lf.getDescribe().isCreateable()) record.put(latField, (Double) lat);
+            if (lof != null && lof.getDescribe().isCreateable()) record.put(lonField, (Double) lon);
         }
     }
 
