@@ -162,6 +162,7 @@ public with sharing class GnalFacilitySearchController {
             return null;
         }
 
+        // First try the strict requirement filters.
         List<Case> casesWithOrigin = [
             SELECT Id, GNAL_Origin_Location__c
             FROM Case
@@ -173,7 +174,22 @@ public with sharing class GnalFacilitySearchController {
             LIMIT 1
         ];
 
-        return casesWithOrigin.isEmpty() ? null : casesWithOrigin[0].GNAL_Origin_Location__c;
+        if (!casesWithOrigin.isEmpty()) {
+            return casesWithOrigin[0].GNAL_Origin_Location__c;
+        }
+
+        // Fallback: orgs often have different picklist values for Origin/Status.
+        // Still prefer the latest Case on the Account that has GNAL origin populated.
+        List<Case> anyWithOrigin = [
+            SELECT Id, GNAL_Origin_Location__c
+            FROM Case
+            WHERE AccountId = :accountId
+            AND GNAL_Origin_Location__c != null
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+
+        return anyWithOrigin.isEmpty() ? null : anyWithOrigin[0].GNAL_Origin_Location__c;
     }
 
     private static List<ServiceTerritory> getDistinctTerritories() {

@@ -8,7 +8,19 @@ export default class FindNearestFacilities extends LightningElement {
     static LIST_RESULT_LIMIT = 8;
     static MAP_MARKER_LIMIT = 5;
 
-    @api recordId;
+    _recordId;
+    @api
+    get recordId() {
+        return this._recordId;
+    }
+    set recordId(value) {
+        this._recordId = value;
+        // On record pages, recordId may be undefined during connectedCallback.
+        // Initialize only once we actually have an Account Id.
+        if (this._recordId) {
+            this.initializeOriginAddress();
+        }
+    }
     @track originAddress = '';
     @track results = [];
     @track isLoading = false;
@@ -33,13 +45,14 @@ export default class FindNearestFacilities extends LightningElement {
         ];
     }
 
-    connectedCallback() {
-        this.initializeOriginAddress();
-    }
+    connectedCallback() {}
 
     initializeOriginAddress() {
         // Requirement: origin should be prepopulated from latest matching Case for logged-in user,
         // fallback to Account billing address.
+        if (!this.recordId) {
+            return;
+        }
         getLatestCaseOriginAddressForAccount({ accountId: this.recordId })
             .then((caseOrigin) => {
                 if (caseOrigin) {

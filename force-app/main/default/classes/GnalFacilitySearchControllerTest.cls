@@ -39,4 +39,16 @@ private class GnalFacilitySearchControllerTest {
 
         System.assertEquals(null, origin);
     }
+
+    @IsTest
+    static void getLatestCaseOriginAddressForAccount_noCases_returnsNull() {
+        Account a = new Account(Name = 'No Case Account');
+        insert a;
+
+        Test.startTest();
+        String origin = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(a.Id);
+        Test.stopTest();
+
+        System.assertEquals(null, origin);
+    }
 }
