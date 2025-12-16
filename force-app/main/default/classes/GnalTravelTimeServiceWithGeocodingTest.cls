@@ -23,8 +23,8 @@ private class GnalTravelTimeServiceWithGeocodingTest {
                 // Minimal Route Matrix response shape: list of entries
                 // Destination 0 -> 600s, Destination 1 -> 1200s
                 res.setBody('[' +
-                    '{"originIndex":0,"destinationIndex":0,"status":"OK","distanceMeters":1609.344,"duration":"600s"},' +
-                    '{"originIndex":0,"destinationIndex":1,"status":"OK","distanceMeters":3218.688,"duration":"1200s"}' +
+                    '{"originIndex":0.0,"destinationIndex":0.0,"status":"OK","distanceMeters":1609.344,"duration":"600s"},' +
+                    '{"originIndex":0.0,"destinationIndex":1.0,"status":"OK","distanceMeters":3218.688,"duration":"1200s"}' +
                 ']');
                 return res;
             }

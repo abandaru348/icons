@@ -55,8 +55,8 @@ private class GnalFacilitySearchControllerTest {
                 List<Object> payload = new List<Object>();
                 for (Integer i = 0; i < n; i++) {
                     payload.add(new Map<String, Object>{
-                        'originIndex' => 0,
-                        'destinationIndex' => i,
+                        'originIndex' => 0.0,
+                        'destinationIndex' => (Double) i,
                         'status' => 'OK',
                         'distanceMeters' => (Double) (1609.344 * (i + 1)),
                         'duration' => '600s'
