@@ -142,7 +142,7 @@ public with sharing class GnalFacilitySearchController {
         if (userFields != null && userFields.containsKey('ContactId')) selectFields.add('ContactId');
 
         String userSoql = 'SELECT ' + String.join(selectFields, ', ') + ' FROM User WHERE Id = :userId LIMIT 1';
-        User u = (User) Database.query(userSoql);
+        User u = (User) Database.queryWithBinds(userSoql, new Map<String, Object>{ 'userId' => userId });
 
         Id resolvedAccountId;
         // 1) If the org actually has User.AccountId, prefer it.
@@ -609,7 +609,13 @@ public with sharing class GnalFacilitySearchController {
             ' WHERE Origin_Address__c = :originAddress' +
             ' AND Destination_Address__c IN :destinationAddresses';
 
-        return (List<GeocodeCache__c>) Database.query(soql);
+        return (List<GeocodeCache__c>) Database.queryWithBinds(
+            soql,
+            new Map<String, Object>{
+                'originAddress' => originAddress,
+                'destinationAddresses' => destinationAddresses
+            }
+        );
     }
 
     private static LatLng extractOriginLatLng(SObject cacheRow) {
@@ -648,14 +654,15 @@ public with sharing class GnalFacilitySearchController {
     private static LatLng getOriginLatLngFromAnyCacheRow(String originAddress) {
         if (String.isBlank(originAddress)) return null;
         // Pull a single cache row for this origin and extract origin lat/lng using schema-safe logic.
-        List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.query(
+        List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.queryWithBinds(
             'SELECT Id, Origin_Address__c, Destination_Address__c' +
             // optional fields will only be selected if present
             OPTIONAL_ORIGIN_FIELDS_SELECT +
             ' FROM GeocodeCache__c' +
             ' WHERE Origin_Address__c = :originAddress' +
             ' AND Destination_Location__c != null' +
-            ' ORDER BY LastModifiedDate DESC LIMIT 1'
+            ' ORDER BY LastModifiedDate DESC LIMIT 1',
+            new Map<String, Object>{ 'originAddress' => originAddress }
         );
         if (rows.isEmpty()) return null;
         return extractOriginLatLng(rows[0]);
