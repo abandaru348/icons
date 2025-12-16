@@ -19,7 +19,7 @@ public with sharing class GnalFacilitySearchController {
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new AuraHandledException('Facility search failed: ' + ex.getMessage());
+            throw new AuraHandledException(formatExceptionForClient('Facility search failed', ex));
         }
     }
 
@@ -30,7 +30,7 @@ public with sharing class GnalFacilitySearchController {
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new AuraHandledException('Facility search failed: ' + ex.getMessage());
+            throw new AuraHandledException(formatExceptionForClient('Facility search failed', ex));
         }
     }
 
@@ -429,6 +429,30 @@ public with sharing class GnalFacilitySearchController {
                 }
             }
         }
+    }
+
+    private static String formatExceptionForClient(String prefix, Exception ex) {
+        if (ex == null) {
+            return prefix + ': Unknown error';
+        }
+        String typeName;
+        try { typeName = ex.getTypeName(); } catch (Exception ignore) { typeName = 'Exception'; }
+        Integer lineNo;
+        try { lineNo = ex.getLineNumber(); } catch (Exception ignore) { lineNo = null; }
+        String msg;
+        try { msg = ex.getMessage(); } catch (Exception ignore) { msg = null; }
+        String stack;
+        try { stack = ex.getStackTraceString(); } catch (Exception ignore) { stack = null; }
+
+        // Keep it readable in a toast.
+        if (stack != null && stack.length() > 900) {
+            stack = stack.substring(0, 900) + '...';
+        }
+        List<String> parts = new List<String>();
+        parts.add(prefix + ': ' + typeName + (lineNo != null ? (' (line ' + String.valueOf(lineNo) + ')') : ''));
+        if (!String.isBlank(msg)) parts.add(msg);
+        if (!String.isBlank(stack)) parts.add(stack);
+        return String.join(parts, ' | ');
     }
 
     // --- Schema-safe origin coordinate support (avoids hard-referencing fields that may not exist) ---
