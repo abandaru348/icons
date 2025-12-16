@@ -154,6 +154,28 @@ public with sharing class GnalFacilitySearchController {
         return casesWithOrigin.isEmpty() ? null : casesWithOrigin[0].GNAL_Origin_Location__c;
     }
 
+    // Preferred overload for this LWC: the component lives on an Account record page,
+    // so we can reliably query the latest Case for that Account.
+    @AuraEnabled(cacheable=true)
+    public static String getLatestCaseOriginAddressForAccount(Id accountId) {
+        if (accountId == null) {
+            return null;
+        }
+
+        List<Case> casesWithOrigin = [
+            SELECT Id, GNAL_Origin_Location__c
+            FROM Case
+            WHERE AccountId = :accountId
+            AND Origin = 'Phone'
+            AND Status = 'New'
+            AND GNAL_Origin_Location__c != null
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+
+        return casesWithOrigin.isEmpty() ? null : casesWithOrigin[0].GNAL_Origin_Location__c;
+    }
+
     private static List<ServiceTerritory> getDistinctTerritories() {
         List<ServiceTerritory> queriedTerritories = [
             SELECT Id, Name, IsActive, Street, City, State, PostalCode, Country, ParentTerritoryId,

@@ -51,6 +51,7 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
         String originAddress,
         List<String> destinationAddresses
     ) {
+        validateGoogleConfig();
         if (String.isBlank(originAddress)) {
             throw new AuraHandledException('Origin address is required.');
         }
@@ -113,7 +114,12 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
 
         HttpRequest routeRequest = buildPostRequest(ROUTE_MATRIX_URL, reqBody, ROUTE_FIELD_MASK);
         Http http = new Http();
-        HTTPResponse routeResponse = http.send(routeRequest);
+        HTTPResponse routeResponse;
+        try {
+            routeResponse = http.send(routeRequest);
+        } catch (Exception ex) {
+            throw new AuraHandledException('Google Route Matrix callout failed: ' + ex.getMessage());
+        }
 
         if (routeResponse.getStatusCode() != 200) {
             throw new AuraHandledException('Route API error: ' + routeResponse.getStatusCode() + ' - ' + routeResponse.getBody());
@@ -159,31 +165,43 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
             return null;
         }
 
+        validateGoogleConfig();
+        String encodedAddr = EncodingUtil.urlEncode(address, 'UTF-8');
+        String url = GEOCODE_URL + '?address=' + encodedAddr + '&key=' + API_KEY;
+        HttpRequest request = buildGetRequest(url);
+        HttpResponse response;
         try {
-            String encodedAddr = EncodingUtil.urlEncode(address, 'UTF-8');
-            String url = GEOCODE_URL + '?address=' + encodedAddr + '&key=' + API_KEY;
-            HttpRequest request = buildGetRequest(url);
-            HttpResponse response = new Http().send(request);
-
-            if (response.getStatusCode() != 200) {
-                return null;
-            }
-
-            Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-            List<Object> results = (List<Object>) body.get('results');
-            if (results == null || results.isEmpty()) {
-                return null;
-            }
-
-            Map<String, Object> firstResult = (Map<String, Object>) results[0];
-            Map<String, Object> geometry = (Map<String, Object>) firstResult.get('geometry');
-            Map<String, Object> location = (Map<String, Object>) geometry.get('location');
-            return new Map<String, Double>{
-                'lat' => (Double) location.get('lat'),
-                'lng' => (Double) location.get('lng')
-            };
+            response = new Http().send(request);
         } catch (Exception ex) {
+            throw new AuraHandledException('Google Geocode callout failed: ' + ex.getMessage());
+        }
+
+        if (response.getStatusCode() != 200) {
+            throw new AuraHandledException('Geocode API error: ' + response.getStatusCode() + ' - ' + response.getBody());
+        }
+
+        Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+        List<Object> results = (List<Object>) body.get('results');
+        if (results == null || results.isEmpty()) {
             return null;
+        }
+
+        Map<String, Object> firstResult = (Map<String, Object>) results[0];
+        Map<String, Object> geometry = (Map<String, Object>) firstResult.get('geometry');
+        Map<String, Object> location = (Map<String, Object>) geometry.get('location');
+        return new Map<String, Double>{
+            'lat' => (Double) location.get('lat'),
+            'lng' => (Double) location.get('lng')
+        };
+    }
+
+    private static void validateGoogleConfig() {
+        List<String> missing = new List<String>();
+        if (String.isBlank(GEOCODE_URL)) missing.add('Google_Geocode_URL');
+        if (String.isBlank(ROUTE_MATRIX_URL)) missing.add('Google_Route_Matrix_URL');
+        if (String.isBlank(API_KEY)) missing.add('Google_Maps_API_Key');
+        if (!missing.isEmpty()) {
+            throw new AuraHandledException('Google Maps configuration missing: ' + String.join(missing, ', '));
         }
     }
 

@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import getAccountBillingAddress from '@salesforce/apex/GnalFacilitySearchController.getAccountBillingAddress';
-import getLatestCaseOriginAddress from '@salesforce/apex/GnalFacilitySearchController.getLatestCaseOriginAddress';
+import getLatestCaseOriginAddressForAccount from '@salesforce/apex/GnalFacilitySearchController.getLatestCaseOriginAddressForAccount';
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -40,7 +40,7 @@ export default class FindNearestFacilities extends LightningElement {
     initializeOriginAddress() {
         // Requirement: origin should be prepopulated from latest matching Case for logged-in user,
         // fallback to Account billing address.
-        getLatestCaseOriginAddress()
+        getLatestCaseOriginAddressForAccount({ accountId: this.recordId })
             .then((caseOrigin) => {
                 if (caseOrigin) {
                     this.originAddress = caseOrigin;
@@ -56,6 +56,9 @@ export default class FindNearestFacilities extends LightningElement {
             .catch((error) => {
                 // eslint-disable-next-line no-console
                 console.error('Error initializing origin address', error);
+                const msg = this.getErrorMessage(error);
+                this.lastErrorMessage = msg;
+                this.lastErrorDetails = this.getErrorDetails(error);
             });
     }
 
