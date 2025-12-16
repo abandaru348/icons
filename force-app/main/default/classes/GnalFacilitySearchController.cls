@@ -1,6 +1,9 @@
 public with sharing class GnalFacilitySearchController {
 
     private static final Double DEFAULT_RADIUS_MILES = 100;
+    // Prevent callout-limit failures when there are many facilities.
+    // We progressively warm the cache across searches instead of attempting to geocode everything at once.
+    private static final Integer MAX_DESTINATIONS_TO_CACHE_PER_REQUEST = 25;
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
 
@@ -78,10 +81,6 @@ public with sharing class GnalFacilitySearchController {
             cacheContext.originLongitude,
             effectiveRadius
         );
-
-        if (filteredCaches.isEmpty()) {
-            throw new AuraHandledException('No facilities found within the selected distance.');
-        }
 
         return formatCacheResults(filteredCaches);
     }
@@ -234,6 +233,10 @@ public with sharing class GnalFacilitySearchController {
 
         // Cache miss: call Google, then store results for future searches.
         if (!missingAddresses.isEmpty()) {
+            // Avoid exceeding callout limits (TravelTimeService currently geocodes each destination).
+            if (missingAddresses.size() > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST) {
+                missingAddresses = missingAddresses.subList(0, MAX_DESTINATIONS_TO_CACHE_PER_REQUEST);
+            }
             List<GnalTravelTimeServiceWithGeocoding.TravelTimeResult> freshResults =
                 GnalTravelTimeServiceWithGeocoding.getTravelTimesFromAddresses(originAddress, missingAddresses);
 

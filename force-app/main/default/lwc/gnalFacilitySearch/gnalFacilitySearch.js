@@ -144,7 +144,11 @@ export default class FindNearestFacilities extends LightningElement {
                 this.searchHasRun = true;
 
                 if (showToastOnSuccess) {
-                    this.showToast('Success', 'Nearest facilities found successfully.', 'success');
+                    if (normalized.length) {
+                        this.showToast('Success', 'Nearest facilities found successfully.', 'success');
+                    } else {
+                        this.showToast('Info', 'No facilities found within the selected distance.', 'info');
+                    }
                 }
             })
             .catch((error) => {
