@@ -226,7 +226,7 @@ export default class FindNearestFacilities extends LightningElement {
             .then((data = []) => {
                 const normalized = data.map((r) => ({
                     ...r,
-                    info: `${Math.round(r.minutes ?? 0)} mins (${(r.distanceMiles ?? 0).toFixed(1)} mi)`
+                    info: `${Math.round(Number(r.minutes ?? 0))} mins (${Number(r.distanceMiles ?? 0).toFixed(1)} mi)`
                 }));
 
                 this.allResults = normalized;
