@@ -17,6 +17,7 @@ export default class FindNearestFacilities extends LightningElement {
     @track mapCenter;
     @track selectedDistance = '15';
     @track lastErrorMessage = '';
+    @track lastErrorDetails = '';
     searchHasRun = false;
 
     get hasResults() {
@@ -135,8 +136,42 @@ export default class FindNearestFacilities extends LightningElement {
             // Try to extract something readable without blowing up on circular refs.
             return JSON.stringify(error, Object.getOwnPropertyNames(error));
         } catch (e) {
-            return 'Unknown error';
+            // Last resort: stringify via toString()
+            try {
+                const s = String(error);
+                return s && s !== '[object Object]' ? s : 'Unknown error';
+            } catch (e2) {
+                return 'Unknown error';
+            }
         }
+    }
+
+    getErrorDetails(error) {
+        const parts = [];
+        try {
+            parts.push(`type: ${typeof error}`);
+            parts.push(`string: ${String(error)}`);
+        } catch (e) {
+            // ignore
+        }
+        try {
+            const keys = error ? Object.keys(error) : [];
+            parts.push(`keys: ${keys.join(', ') || '(none)'}`);
+        } catch (e) {
+            parts.push('keys: (unavailable)');
+        }
+        try {
+            if (error?.status !== undefined) parts.push(`status: ${error.status}`);
+            if (error?.statusText) parts.push(`statusText: ${error.statusText}`);
+        } catch (e) {
+            // ignore
+        }
+        try {
+            parts.push(`body: ${JSON.stringify(error?.body, Object.getOwnPropertyNames(error?.body || {}))}`);
+        } catch (e) {
+            parts.push('body: (unavailable)');
+        }
+        return parts.join('\n');
     }
 
     executeSearch({ showToastOnSuccess }) {
@@ -147,6 +182,7 @@ export default class FindNearestFacilities extends LightningElement {
 
         this.isLoading = true;
         this.lastErrorMessage = '';
+        this.lastErrorDetails = '';
         const radius = Number(this.selectedDistance);
         const payload = {
             accountId: this.recordId,
@@ -181,6 +217,7 @@ export default class FindNearestFacilities extends LightningElement {
                 console.error('Error finding facilities:', error);
                 const msg = this.getErrorMessage(error);
                 this.lastErrorMessage = msg;
+                this.lastErrorDetails = this.getErrorDetails(error);
                 this.showToast('Error', msg, 'error');
             })
             .finally(() => {
