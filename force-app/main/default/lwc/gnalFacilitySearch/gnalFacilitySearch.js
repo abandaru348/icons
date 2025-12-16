@@ -16,6 +16,7 @@ export default class FindNearestFacilities extends LightningElement {
     @track mapMarkers = [];
     @track mapCenter;
     @track selectedDistance = '15';
+    @track lastErrorMessage = '';
     searchHasRun = false;
 
     get hasResults() {
@@ -145,6 +146,7 @@ export default class FindNearestFacilities extends LightningElement {
         }
 
         this.isLoading = true;
+        this.lastErrorMessage = '';
         const radius = Number(this.selectedDistance);
         const payload = {
             accountId: this.recordId,
@@ -177,7 +179,9 @@ export default class FindNearestFacilities extends LightningElement {
             .catch((error) => {
                 // eslint-disable-next-line no-console
                 console.error('Error finding facilities:', error);
-                this.showToast('Error', this.getErrorMessage(error), 'error');
+                const msg = this.getErrorMessage(error);
+                this.lastErrorMessage = msg;
+                this.showToast('Error', msg, 'error');
             })
             .finally(() => {
                 this.isLoading = false;
