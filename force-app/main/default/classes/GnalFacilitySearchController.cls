@@ -608,17 +608,22 @@ public with sharing class GnalFacilitySearchController {
         if (accountId == null) {
             return null;
         }
-        Account acc = [
-            SELECT BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry
-            FROM Account WHERE Id = :accountId
-            LIMIT 1
-        ];
-        List<String> parts = new List<String>();
-        if (acc.BillingStreet != null) parts.add(acc.BillingStreet);
-        if (acc.BillingCity != null) parts.add(acc.BillingCity);
-        if (acc.BillingState != null) parts.add(acc.BillingState);
-        if (acc.BillingPostalCode != null) parts.add(acc.BillingPostalCode);
-        if (acc.BillingCountry != null) parts.add(acc.BillingCountry);
-        return String.join(parts, ', ');
+        try {
+            Account acc = [
+                SELECT BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry
+                FROM Account WHERE Id = :accountId
+                LIMIT 1
+            ];
+            List<String> parts = new List<String>();
+            if (acc.BillingStreet != null) parts.add(acc.BillingStreet);
+            if (acc.BillingCity != null) parts.add(acc.BillingCity);
+            if (acc.BillingState != null) parts.add(acc.BillingState);
+            if (acc.BillingPostalCode != null) parts.add(acc.BillingPostalCode);
+            if (acc.BillingCountry != null) parts.add(acc.BillingCountry);
+            return parts.isEmpty() ? null : String.join(parts, ', ');
+        } catch (Exception ex) {
+            // Non-blocking fallback: allow caller to handle null/empty origin.
+            return null;
+        }
     }
 }
