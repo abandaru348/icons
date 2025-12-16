@@ -389,6 +389,8 @@ public with sharing class GnalFacilitySearchController {
         List<String> optional = new List<String>{
             'Origin_Location__Latitude__s',
             'Origin_Location__Longitude__s',
+            'Origin_Location_Latitude__c',
+            'Origin_Location_Longitude__c',
             'Origin_Latitude__c',
             'Origin_Longitude__c',
             'Origin_Lat__c',
@@ -428,6 +430,9 @@ public with sharing class GnalFacilitySearchController {
         }
 
         // 2) Numeric lat/lon fields (common fallback design)
+        LatLng locPair = extractNumericLatLng(cacheRow, 'Origin_Location_Latitude__c', 'Origin_Location_Longitude__c');
+        if (locPair != null) return locPair;
+
         LatLng numeric = extractNumericLatLng(cacheRow, 'Origin_Latitude__c', 'Origin_Longitude__c');
         if (numeric != null) return numeric;
 
@@ -461,6 +466,9 @@ public with sharing class GnalFacilitySearchController {
         }
 
         // Otherwise try numeric fields.
+        if (tryWriteNumericLatLng(record, 'Origin_Location_Latitude__c', 'Origin_Location_Longitude__c', lat, lon, isInsert)) {
+            return;
+        }
         if (tryWriteNumericLatLng(record, 'Origin_Latitude__c', 'Origin_Longitude__c', lat, lon, isInsert)) {
             return;
         }
