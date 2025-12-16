@@ -83,20 +83,50 @@ public with sharing class GnalFacilitySearchController {
      */
     @AuraEnabled(cacheable=true)
     public static String getLatestCaseOriginAddress() {
-        List<Case> casesWithOrigin = [
-            SELECT Id, GNAL_Origin_Location__c
-            FROM Case
-            WHERE AccountId IN (
-                SELECT AccountId
-                FROM User
-                WHERE Id = :UserInfo.getUserId()
-            )
-            AND Origin = 'Phone'
-            AND Status = 'New'
-            AND GNAL_Origin_Location__c != null
-            ORDER BY CreatedDate DESC
+        // Note: User does not have a standard AccountId field for internal users.
+        // Use User.ContactId -> Contact.AccountId when available.
+        Id resolvedAccountId;
+        User u = [
+            SELECT Id, Name, ContactId
+            FROM User
+            WHERE Id = :UserInfo.getUserId()
             LIMIT 1
         ];
+        if (u.ContactId != null) {
+            Contact c = [
+                SELECT AccountId
+                FROM Contact
+                WHERE Id = :u.ContactId
+                LIMIT 1
+            ];
+            resolvedAccountId = c.AccountId;
+        }
+
+        List<Case> casesWithOrigin;
+        if (resolvedAccountId != null) {
+            casesWithOrigin = [
+                SELECT Id, GNAL_Origin_Location__c
+                FROM Case
+                WHERE AccountId = :resolvedAccountId
+                AND Origin = 'Phone'
+                AND Status = 'New'
+                AND GNAL_Origin_Location__c != null
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ];
+        } else {
+            // Fallback for orgs where a User isn't tied to a Contact/Account.
+            casesWithOrigin = [
+                SELECT Id, GNAL_Origin_Location__c
+                FROM Case
+                WHERE Account.Name = :u.Name
+                AND Origin = 'Phone'
+                AND Status = 'New'
+                AND GNAL_Origin_Location__c != null
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ];
+        }
 
         return casesWithOrigin.isEmpty() ? null : casesWithOrigin[0].GNAL_Origin_Location__c;
     }
