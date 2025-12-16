@@ -83,23 +83,35 @@ public with sharing class GnalFacilitySearchController {
      */
     @AuraEnabled(cacheable=true)
     public static String getLatestCaseOriginAddress() {
-        // Note: User does not have a standard AccountId field for internal users.
-        // Use User.ContactId -> Contact.AccountId when available.
+        // Some orgs do not expose relationship fields like User.AccountId or User.ContactId.
+        // Use schema-aware dynamic SOQL to query only fields that exist, then derive an AccountId if possible.
+        Id userId = UserInfo.getUserId();
+        Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
+
+        List<String> selectFields = new List<String>{ 'Id', 'Name' };
+        if (userFields != null && userFields.containsKey('AccountId')) selectFields.add('AccountId');
+        if (userFields != null && userFields.containsKey('ContactId')) selectFields.add('ContactId');
+
+        String userSoql = 'SELECT ' + String.join(selectFields, ', ') + ' FROM User WHERE Id = :userId LIMIT 1';
+        User u = (User) Database.query(userSoql);
+
         Id resolvedAccountId;
-        User u = [
-            SELECT Id, Name, ContactId
-            FROM User
-            WHERE Id = :UserInfo.getUserId()
-            LIMIT 1
-        ];
-        if (u.ContactId != null) {
-            Contact c = [
-                SELECT AccountId
-                FROM Contact
-                WHERE Id = :u.ContactId
-                LIMIT 1
-            ];
-            resolvedAccountId = c.AccountId;
+        // 1) If the org actually has User.AccountId, prefer it.
+        if (userFields != null && userFields.containsKey('AccountId')) {
+            resolvedAccountId = (Id) u.get('AccountId');
+        }
+        // 2) If the org has User.ContactId, derive Contact.AccountId.
+        if (resolvedAccountId == null && userFields != null && userFields.containsKey('ContactId')) {
+            Id contactId = (Id) u.get('ContactId');
+            if (contactId != null) {
+                Contact c = [
+                    SELECT AccountId
+                    FROM Contact
+                    WHERE Id = :contactId
+                    LIMIT 1
+                ];
+                resolvedAccountId = c.AccountId;
+            }
         }
 
         List<Case> casesWithOrigin;
@@ -115,7 +127,7 @@ public with sharing class GnalFacilitySearchController {
                 LIMIT 1
             ];
         } else {
-            // Fallback for orgs where a User isn't tied to a Contact/Account.
+            // Fallback for orgs where a User isn't tied to a Contact/Account (or those fields don't exist).
             casesWithOrigin = [
                 SELECT Id, GNAL_Origin_Location__c
                 FROM Case
