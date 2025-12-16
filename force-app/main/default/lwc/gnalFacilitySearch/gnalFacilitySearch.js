@@ -1,7 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import getAccountBillingAddress from '@salesforce/apex/GnalFacilitySearchController.getAccountBillingAddress';
 import getLatestCaseOriginAddressForAccount from '@salesforce/apex/GnalFacilitySearchController.getLatestCaseOriginAddressForAccount';
-import findFacilitiesFromCacheWithRadius from '@salesforce/apex/GnalFacilitySearchController.findFacilitiesFromCacheWithRadius';
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -23,6 +22,7 @@ export default class FindNearestFacilities extends LightningElement {
         }
     }
     @track originAddress = '';
+    @track allResults = [];
     @track results = [];
     @track isLoading = false;
     @track showFinder = false;
@@ -82,6 +82,7 @@ export default class FindNearestFacilities extends LightningElement {
 
     handleCancel() {
         this.showFinder = false;
+        this.allResults = [];
         this.results = [];
         this.mapMarkers = [];
         this.mapCenter = undefined;
@@ -98,50 +99,19 @@ export default class FindNearestFacilities extends LightningElement {
         if (!this.searchHasRun || this.isLoading) {
             return;
         }
-        // Radius change must NOT call Google. Query only from GeocodeCache__c.
-        this.executeCacheOnlyRadiusSearch();
+        const radius = Number(this.selectedDistance);
+        this.applyRadiusFilter(isNaN(radius) ? null : radius);
     }
 
-    executeCacheOnlyRadiusSearch() {
-        if (!this.originAddress) {
-            this.showToast('Error', 'Please provide an origin address.', 'error');
-            return;
-        }
+    applyRadiusFilter(radiusMiles) {
+        const effectiveRadius = radiusMiles && radiusMiles > 0 ? radiusMiles : 100;
+        const filtered = (this.allResults || []).filter((r) => (r.distanceMiles ?? 0) <= effectiveRadius);
 
-        this.isLoading = true;
-        this.lastErrorMessage = '';
-        this.lastErrorDetails = '';
+        const listResults = filtered.slice(0, FindNearestFacilities.LIST_RESULT_LIMIT);
+        const markerResults = filtered.slice(0, FindNearestFacilities.MAP_MARKER_LIMIT);
 
-        const radius = Number(this.selectedDistance);
-        const payload = {
-            originAddress: this.originAddress,
-            radiusMiles: isNaN(radius) ? null : radius
-        };
-
-        findFacilitiesFromCacheWithRadius(payload)
-            .then((data = []) => {
-                const normalized = data.map((r) => ({
-                    ...r,
-                    info: `${Math.round(r.minutes ?? 0)} mins (${(r.distanceMiles ?? 0).toFixed(1)} mi)`
-                }));
-
-                const listResults = normalized.slice(0, FindNearestFacilities.LIST_RESULT_LIMIT);
-                const markerResults = normalized.slice(0, FindNearestFacilities.MAP_MARKER_LIMIT);
-
-                this.results = listResults;
-                this.updateMap(markerResults);
-            })
-            .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.error('Error filtering facilities from cache:', error);
-                const msg = this.getErrorMessage(error);
-                this.lastErrorMessage = msg;
-                this.lastErrorDetails = this.getErrorDetails(error);
-                this.showToast('Error', msg, 'error');
-            })
-            .finally(() => {
-                this.isLoading = false;
-            });
+        this.results = listResults;
+        this.updateMap(markerResults);
     }
 
     handleFind() {
@@ -243,10 +213,13 @@ export default class FindNearestFacilities extends LightningElement {
         this.lastErrorMessage = '';
         this.lastErrorDetails = '';
         const radius = Number(this.selectedDistance);
+        // Always warm cache with a 100-mile search once, then filter locally for 5/15/25/100.
+        // This prevents extra Apex/callout work on every radius change.
+        const warmRadius = 100;
         const payload = {
             accountId: this.recordId,
             originAddress: this.originAddress,
-            radiusMiles: isNaN(radius) ? null : radius
+            radiusMiles: warmRadius
         };
 
         findNearestFacilitiesWithRadius(payload)
@@ -256,15 +229,12 @@ export default class FindNearestFacilities extends LightningElement {
                     info: `${Math.round(r.minutes ?? 0)} mins (${(r.distanceMiles ?? 0).toFixed(1)} mi)`
                 }));
 
-                const listResults = normalized.slice(0, FindNearestFacilities.LIST_RESULT_LIMIT);
-                const markerResults = normalized.slice(0, FindNearestFacilities.MAP_MARKER_LIMIT);
-
-                this.results = listResults;
-                this.updateMap(markerResults);
+                this.allResults = normalized;
+                this.applyRadiusFilter(isNaN(radius) ? null : radius);
                 this.searchHasRun = true;
 
                 if (showToastOnSuccess) {
-                    if (normalized.length) {
+                    if (this.results.length) {
                         this.showToast('Success', 'Nearest facilities found successfully.', 'success');
                     } else {
                         this.showToast('Info', 'No facilities found within the selected distance.', 'info');
