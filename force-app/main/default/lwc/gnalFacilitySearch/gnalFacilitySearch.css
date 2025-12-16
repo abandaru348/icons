@@ -1,0 +1,39 @@
+p {
+    font-size: 0.9rem;
+}
+
+.results-map-layout {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.results-panel {
+    flex: 1 1 45%;
+}
+
+.map-panel {
+    flex: 1 1 45%;
+    min-width: 320px;
+    min-height: 320px;
+}
+
+.map-panel lightning-map {
+    width: 100%;
+    height: 100%;
+}
+
+.distance-filter {
+    max-width: 16rem;
+}
+
+@media (max-width: 768px) {
+    .results-map-layout {
+        flex-direction: column;
+    }
+
+    .results-panel,
+    .map-panel {
+        flex: 1 1 100%;
+    }
+}
