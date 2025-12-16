@@ -95,6 +95,8 @@ export default class FindNearestFacilities extends LightningElement {
             return msgs.length ? msgs.join(', ') : 'Unknown error';
         }
         if (typeof error === 'string') return error;
+        // Native JS errors
+        if (error instanceof Error && error.message) return error.message;
         if (error?.body) {
             if (typeof error.body === 'string') return error.body;
             if (Array.isArray(error.body)) {
@@ -102,6 +104,8 @@ export default class FindNearestFacilities extends LightningElement {
                 if (msgs.length) return msgs.join(', ');
             }
             if (error.body?.message) return error.body.message;
+            if (error.body?.exceptionMessage) return error.body.exceptionMessage;
+            if (error.body?.error) return error.body.error;
             // UI API / Apex sometimes nests errors under output
             if (error.body?.output?.errors?.length) {
                 const msgs = error.body.output.errors.map((e) => e?.message).filter(Boolean);
@@ -124,8 +128,11 @@ export default class FindNearestFacilities extends LightningElement {
             }
         }
         if (error?.message) return error.message;
+        if (error?.statusText) return error.statusText;
+        if (error?.status) return `Request failed (${error.status})`;
         try {
-            return JSON.stringify(error);
+            // Try to extract something readable without blowing up on circular refs.
+            return JSON.stringify(error, Object.getOwnPropertyNames(error));
         } catch (e) {
             return 'Unknown error';
         }
