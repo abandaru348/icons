@@ -87,6 +87,34 @@ export default class FindNearestFacilities extends LightningElement {
         this.executeSearch({ showToastOnSuccess: true });
     }
 
+    getErrorMessage(error) {
+        // Handles common Salesforce error shapes (Apex, LDS, network)
+        if (!error) return 'Unknown error';
+        if (typeof error === 'string') return error;
+        if (error?.body) {
+            if (typeof error.body === 'string') return error.body;
+            if (Array.isArray(error.body)) {
+                const msgs = error.body.map((e) => e?.message).filter(Boolean);
+                if (msgs.length) return msgs.join(', ');
+            }
+            if (error.body?.message) return error.body.message;
+            if (error.body?.pageErrors?.length) return error.body.pageErrors.map((e) => e?.message).filter(Boolean).join(', ');
+            if (error.body?.fieldErrors) {
+                const fieldMsgs = Object.values(error.body.fieldErrors)
+                    .flat()
+                    .map((e) => e?.message)
+                    .filter(Boolean);
+                if (fieldMsgs.length) return fieldMsgs.join(', ');
+            }
+        }
+        if (error?.message) return error.message;
+        try {
+            return JSON.stringify(error);
+        } catch (e) {
+            return 'Unknown error';
+        }
+    }
+
     executeSearch({ showToastOnSuccess }) {
         if (!this.originAddress) {
             this.showToast('Error', 'Please provide an origin address.', 'error');
@@ -122,7 +150,7 @@ export default class FindNearestFacilities extends LightningElement {
             .catch((error) => {
                 // eslint-disable-next-line no-console
                 console.error('Error finding facilities:', error);
-                this.showToast('Error', error?.body?.message || 'Unknown error', 'error');
+                this.showToast('Error', this.getErrorMessage(error), 'error');
             })
             .finally(() => {
                 this.isLoading = false;

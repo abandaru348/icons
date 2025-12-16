@@ -11,12 +11,24 @@ public with sharing class GnalFacilitySearchController {
         String originAddress,
         Double radiusMiles
     ) {
-        return findNearestFacilitiesInternal(accountId, originAddress, radiusMiles);
+        try {
+            return findNearestFacilitiesInternal(accountId, originAddress, radiusMiles);
+        } catch (AuraHandledException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new AuraHandledException('Facility search failed: ' + ex.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=false)
     public static List<Map<String, Object>> findNearestFacilities(Id accountId, String originAddress) {
-        return findNearestFacilitiesInternal(accountId, originAddress, null);
+        try {
+            return findNearestFacilitiesInternal(accountId, originAddress, null);
+        } catch (AuraHandledException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new AuraHandledException('Facility search failed: ' + ex.getMessage());
+        }
     }
 
     private static List<Map<String, Object>> findNearestFacilitiesInternal(
