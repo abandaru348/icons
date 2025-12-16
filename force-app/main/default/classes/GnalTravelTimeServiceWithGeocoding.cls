@@ -66,7 +66,13 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
 
         List<Map<String, Double>> destinationLatLngList = new List<Map<String, Double>>();
         List<String> routedDestinationAddresses = new List<String>();
+        // De-dupe destination addresses to avoid redundant geocode callouts.
+        Set<String> seenDestinations = new Set<String>();
         for (String destination : destinationAddresses) {
+            if (String.isBlank(destination) || seenDestinations.contains(destination)) {
+                continue;
+            }
+            seenDestinations.add(destination);
             Map<String, Double> destLatLng = getLatLngFromAddress(destination);
             if (destLatLng != null) {
                 destinationLatLngList.add(destLatLng);

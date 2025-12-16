@@ -9,6 +9,7 @@ export default class FindNearestFacilities extends LightningElement {
     static MAP_MARKER_LIMIT = 5;
 
     _recordId;
+    _didInitOrigin = false;
     @api
     get recordId() {
         return this._recordId;
@@ -17,7 +18,8 @@ export default class FindNearestFacilities extends LightningElement {
         this._recordId = value;
         // On record pages, recordId may be undefined during connectedCallback.
         // Initialize only once we actually have an Account Id.
-        if (this._recordId) {
+        if (this._recordId && !this._didInitOrigin) {
+            this._didInitOrigin = true;
             this.initializeOriginAddress();
         }
     }
@@ -88,6 +90,8 @@ export default class FindNearestFacilities extends LightningElement {
         this.mapCenter = undefined;
         this.searchHasRun = false;
         this.selectedDistance = '15';
+        this.lastErrorMessage = '';
+        this.lastErrorDetails = '';
     }
 
     handleAddressChange(event) {
@@ -101,6 +105,22 @@ export default class FindNearestFacilities extends LightningElement {
         }
         const radius = Number(this.selectedDistance);
         this.applyRadiusFilter(isNaN(radius) ? null : radius);
+    }
+
+    normalizeResults(data = []) {
+        return (data || []).map((r) => {
+            const minutesNum = Number(r?.minutes ?? 0);
+            const milesNum = Number(r?.distanceMiles ?? 0);
+            const safeMinutes = Number.isFinite(minutesNum) ? minutesNum : 0;
+            const safeMiles = Number.isFinite(milesNum) ? milesNum : 0;
+
+            return {
+                ...r,
+                minutes: safeMinutes,
+                distanceMiles: safeMiles,
+                info: `${Math.round(safeMinutes)} mins (${safeMiles.toFixed(1)} mi)`
+            };
+        });
     }
 
     applyRadiusFilter(radiusMiles) {
@@ -224,10 +244,7 @@ export default class FindNearestFacilities extends LightningElement {
 
         findNearestFacilitiesWithRadius(payload)
             .then((data = []) => {
-                const normalized = data.map((r) => ({
-                    ...r,
-                    info: `${Math.round(Number(r.minutes ?? 0))} mins (${Number(r.distanceMiles ?? 0).toFixed(1)} mi)`
-                }));
+                const normalized = this.normalizeResults(data);
 
                 this.allResults = normalized;
                 this.applyRadiusFilter(isNaN(radius) ? null : radius);

@@ -6,6 +6,7 @@ public with sharing class GnalFacilitySearchController {
     private static final Integer MAX_DESTINATIONS_TO_CACHE_PER_REQUEST = 25;
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
+    private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -311,7 +312,7 @@ public with sharing class GnalFacilitySearchController {
             // Avoid exceeding callout limits (TravelTimeService currently geocodes each destination).
             if (missingAddresses.size() > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST) {
                 List<String> limited = new List<String>();
-                Integer limitSize = MAX_DESTINATIONS_TO_CACHE_PER_REQUEST;
+                Integer limitSize = Math.min(MAX_DESTINATIONS_TO_CACHE_PER_REQUEST, missingAddresses.size());
                 for (Integer i = 0; i < limitSize; i++) {
                     limited.add(missingAddresses[i]);
                 }
@@ -645,7 +646,7 @@ public with sharing class GnalFacilitySearchController {
         List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.query(
             'SELECT Id, Origin_Address__c, Destination_Address__c' +
             // optional fields will only be selected if present
-            buildOptionalOriginFieldsSelect() +
+            OPTIONAL_ORIGIN_FIELDS_SELECT +
             ' FROM GeocodeCache__c' +
             ' WHERE Origin_Address__c = :originAddress' +
             ' AND Destination_Location__c != null' +
@@ -655,7 +656,7 @@ public with sharing class GnalFacilitySearchController {
         return extractOriginLatLng(rows[0]);
     }
 
-    private static String buildOptionalOriginFieldsSelect() {
+    private static String initOptionalOriginFieldsSelect() {
         List<String> optional = new List<String>();
         List<String> candidates = new List<String>{
             'Origin_Location__Latitude__s',
