@@ -90,6 +90,10 @@ export default class FindNearestFacilities extends LightningElement {
     getErrorMessage(error) {
         // Handles common Salesforce error shapes (Apex, LDS, network)
         if (!error) return 'Unknown error';
+        if (Array.isArray(error)) {
+            const msgs = error.map((e) => this.getErrorMessage(e)).filter(Boolean);
+            return msgs.length ? msgs.join(', ') : 'Unknown error';
+        }
         if (typeof error === 'string') return error;
         if (error?.body) {
             if (typeof error.body === 'string') return error.body;
@@ -98,6 +102,18 @@ export default class FindNearestFacilities extends LightningElement {
                 if (msgs.length) return msgs.join(', ');
             }
             if (error.body?.message) return error.body.message;
+            // UI API / Apex sometimes nests errors under output
+            if (error.body?.output?.errors?.length) {
+                const msgs = error.body.output.errors.map((e) => e?.message).filter(Boolean);
+                if (msgs.length) return msgs.join(', ');
+            }
+            if (error.body?.output?.fieldErrors) {
+                const fieldMsgs = Object.values(error.body.output.fieldErrors)
+                    .flat()
+                    .map((e) => e?.message)
+                    .filter(Boolean);
+                if (fieldMsgs.length) return fieldMsgs.join(', ');
+            }
             if (error.body?.pageErrors?.length) return error.body.pageErrors.map((e) => e?.message).filter(Boolean).join(', ');
             if (error.body?.fieldErrors) {
                 const fieldMsgs = Object.values(error.body.fieldErrors)
