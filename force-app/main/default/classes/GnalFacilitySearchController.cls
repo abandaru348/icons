@@ -49,9 +49,7 @@ public with sharing class GnalFacilitySearchController {
             throw new AuraHandledException('No facilities found with addresses.');
         }
 
-        // Make ordering deterministic to avoid flaky indexing/mapping.
         List<String> destinationAddresses = new List<String>(destinationAddressSet);
-        destinationAddresses.sort();
 
         CacheContext cacheContext = ensureCacheCoverage(originAddress, destinationAddresses);
         if (cacheContext.originLatitude == null || cacheContext.originLongitude == null) {
@@ -280,32 +278,9 @@ public with sharing class GnalFacilitySearchController {
             return;
         }
 
-        // For custom geolocation fields, the compound field itself is not always marked createable,
-        // but the backing latitude/longitude subfields usually are. Populate whichever is writable
-        // so that DISTANCE() filters work reliably.
         Schema.SObjectField field = CACHE_FIELD_MAP != null ? CACHE_FIELD_MAP.get(fieldApiName) : null;
-        Boolean wroteAny = false;
-
         if (field != null && field.getDescribe().isCreateable()) {
             record.put(fieldApiName, Location.newInstance(latitude, longitude));
-            wroteAny = true;
-        }
-
-        if (!wroteAny && fieldApiName.endsWith('__c')) {
-            String latFieldApiName = fieldApiName.substring(0, fieldApiName.length() - 3) + '__Latitude__s';
-            String lonFieldApiName = fieldApiName.substring(0, fieldApiName.length() - 3) + '__Longitude__s';
-
-            Schema.SObjectField latField = CACHE_FIELD_MAP != null ? CACHE_FIELD_MAP.get(latFieldApiName) : null;
-            Schema.SObjectField lonField = CACHE_FIELD_MAP != null ? CACHE_FIELD_MAP.get(lonFieldApiName) : null;
-
-            if (latField != null && latField.getDescribe().isCreateable()) {
-                record.put(latFieldApiName, latitude);
-                wroteAny = true;
-            }
-            if (lonField != null && lonField.getDescribe().isCreateable()) {
-                record.put(lonFieldApiName, longitude);
-                wroteAny = true;
-            }
         }
     }
 
