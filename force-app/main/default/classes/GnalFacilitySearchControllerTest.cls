@@ -137,9 +137,16 @@ private class GnalFacilitySearchControllerTest {
     static void findNearestFacilitiesWithRadius_cacheHit_returnsResults() {
         // Create a facility (ServiceTerritory) with an address.
         // Note: ServiceTerritory exists in orgs with Field Service; if unavailable, this test will need org support.
+        OperatingHours oh = new OperatingHours(
+            Name = 'Test Hours',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
         ServiceTerritory st = new ServiceTerritory(
             Name = 'Facility A',
             IsActive = true,
+            OperatingHoursId = oh.Id,
             Street = '1 Facility Way',
             City = 'Austin',
             State = 'TX',
@@ -190,6 +197,8 @@ private class GnalFacilitySearchControllerTest {
             GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, null, 5);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException');
+        } catch (AuraHandledException ex) {
+            System.assert(String.valueOf(ex.getMessage()).contains('Origin address is required'));
         } catch (Exception ex) {
             System.assert(String.valueOf(ex.getMessage()).contains('Origin address is required'));
         }
