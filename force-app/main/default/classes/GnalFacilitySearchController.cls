@@ -235,7 +235,12 @@ public with sharing class GnalFacilitySearchController {
         if (!missingAddresses.isEmpty()) {
             // Avoid exceeding callout limits (TravelTimeService currently geocodes each destination).
             if (missingAddresses.size() > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST) {
-                missingAddresses = missingAddresses.subList(0, MAX_DESTINATIONS_TO_CACHE_PER_REQUEST);
+                List<String> limited = new List<String>();
+                Integer limitSize = MAX_DESTINATIONS_TO_CACHE_PER_REQUEST;
+                for (Integer i = 0; i < limitSize; i++) {
+                    limited.add(missingAddresses[i]);
+                }
+                missingAddresses = limited;
             }
             List<GnalTravelTimeServiceWithGeocoding.TravelTimeResult> freshResults =
                 GnalTravelTimeServiceWithGeocoding.getTravelTimesFromAddresses(originAddress, missingAddresses);
