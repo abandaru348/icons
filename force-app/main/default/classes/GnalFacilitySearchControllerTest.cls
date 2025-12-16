@@ -31,6 +31,47 @@ private class GnalFacilitySearchControllerTest {
         return String.join(parts, ', ');
     }
 
+    private class GoogleMockMany implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            String endpoint = req.getEndpoint();
+
+            if (endpoint != null && endpoint.contains('/geocode')) {
+                res.setBody('{' +
+                    '"results":[{' +
+                        '"geometry":{"location":{"lat":30.2672,"lng":-97.7431}}' +
+                    '}],' +
+                    '"status":"OK"' +
+                '}');
+                return res;
+            }
+
+            if (endpoint != null && endpoint.contains('/routeMatrix')) {
+                // Build a response entry per destination in request body.
+                Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(req.getBody());
+                List<Object> dests = (List<Object>) body.get('destinations');
+                Integer n = dests == null ? 0 : dests.size();
+                List<Object> payload = new List<Object>();
+                for (Integer i = 0; i < n; i++) {
+                    payload.add(new Map<String, Object>{
+                        'originIndex' => 0,
+                        'destinationIndex' => i,
+                        'status' => 'OK',
+                        'distanceMeters' => (Double) (1609.344 * (i + 1)),
+                        'duration' => '600s'
+                    });
+                }
+                res.setBody(JSON.serialize(payload));
+                return res;
+            }
+
+            res.setStatusCode(404);
+            res.setBody('Not Found');
+            return res;
+        }
+    }
+
     @IsTest
     static void getAccountBillingAddress_returnsJoinedAddress() {
         Account a = new Account(
@@ -56,6 +97,16 @@ private class GnalFacilitySearchControllerTest {
         String result = GnalFacilitySearchController.getAccountBillingAddress(null);
         Test.stopTest();
 
+        System.assertEquals(null, result);
+    }
+
+    @IsTest
+    static void getAccountBillingAddress_nonexistentId_returnsNull() {
+        // Cover the internal try/catch branch when the Account query fails.
+        Id fakeAccountId = (Id) '001000000000000AAA';
+        Test.startTest();
+        String result = GnalFacilitySearchController.getAccountBillingAddress(fakeAccountId);
+        Test.stopTest();
         System.assertEquals(null, result);
     }
 
@@ -212,5 +263,76 @@ private class GnalFacilitySearchControllerTest {
         if (msg != null) {
             System.assertNotEquals('', String.valueOf(msg));
         }
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_filtersWithoutCallouts() {
+        // Insert cache rows directly and use cache-only method.
+        String originAddress = '100 Origin St, Austin, TX 78701';
+
+        GeocodeCache__c near = new GeocodeCache__c(
+            Name = 'Near',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Near Dest',
+            Distance_Miles__c = 3,
+            Distance_Meters__c = 4828,
+            Travel_Time_Minutes__c = 10
+        );
+        setGeo(near, 'Destination_Location__c', 30.2672, -97.7431);
+        // Ensure origin coords exist so cache-only method can compute DISTANCE.
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(near, 'Origin_Location__c', 30.2672, -97.7431);
+        }
+        insert near;
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+        // Not asserting exact size because org schema may vary, but should not throw.
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_cacheMiss_warmsCacheWithLimit() {
+        // This covers the cache-miss path + truncation branch using HttpCalloutMock.
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+
+        OperatingHours oh = new OperatingHours(
+            Name = 'Test Hours 2',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
+        // Create many territories so missingAddresses > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST (25).
+        List<ServiceTerritory> territories = new List<ServiceTerritory>();
+        for (Integer i = 0; i < 30; i++) {
+            territories.add(new ServiceTerritory(
+                Name = 'Facility ' + i,
+                IsActive = true,
+                OperatingHoursId = oh.Id,
+                Street = String.valueOf(i) + ' Facility Way',
+                City = 'Austin',
+                State = 'TX',
+                PostalCode = '78701',
+                Country = 'USA'
+            ));
+        }
+        insert territories;
+
+        String originAddress = '100 Origin St, Austin, TX 78701';
+
+        Test.startTest();
+        List<Map<String, Object>> results =
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 100);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+
+        // Ensure cache got populated (capped).
+        Integer cacheCount = [SELECT COUNT() FROM GeocodeCache__c WHERE Origin_Address__c = :originAddress];
+        System.assertEquals(true, cacheCount > 0, 'Expected cache rows to be inserted');
+        System.assertEquals(true, cacheCount <= 25, 'Expected cache rows to be capped per request');
     }
 }

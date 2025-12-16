@@ -440,12 +440,17 @@ public with sharing class GnalFacilitySearchController {
             return cacheRecords;
         }
 
+        Long nowMillis = DateTime.now().getTime();
+        Integer seq = 0;
         for (GnalTravelTimeServiceWithGeocoding.TravelTimeResult travelTime : travelTimes) {
             if (travelTime == null || String.isBlank(travelTime.address)) {
                 continue;
             }
 
             GeocodeCache__c cacheRecord = new GeocodeCache__c();
+            // Many orgs use Text Name fields, which are required. Keep deterministic + short.
+            seq++;
+            cacheRecord.Name = ('Geocode ' + String.valueOf(nowMillis) + '-' + String.valueOf(seq)).left(80);
             cacheRecord.Origin_Address__c = originAddress;
             cacheRecord.Destination_Address__c = travelTime.address;
             cacheRecord.Distance_Miles__c = travelTime.distanceMiles;
