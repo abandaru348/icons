@@ -141,8 +141,11 @@ public with sharing class GnalFacilitySearchController {
         if (userFields != null && userFields.containsKey('AccountId')) selectFields.add('AccountId');
         if (userFields != null && userFields.containsKey('ContactId')) selectFields.add('ContactId');
 
-        String userSoql = 'SELECT ' + String.join(selectFields, ', ') + ' FROM User WHERE Id = :userId LIMIT 1';
-        User u = (User) Database.queryWithBinds(userSoql, new Map<String, Object>{ 'userId' => userId });
+        String userSoql =
+            'SELECT ' + String.join(selectFields, ', ') +
+            ' FROM User WHERE Id = ' + quoteSoql(String.valueOf(userId)) +
+            ' LIMIT 1';
+        User u = (User) Database.query(userSoql);
 
         Id resolvedAccountId;
         // 1) If the org actually has User.AccountId, prefer it.
@@ -606,16 +609,10 @@ public with sharing class GnalFacilitySearchController {
         String soql =
             'SELECT ' + String.join(fields, ', ') +
             ' FROM GeocodeCache__c' +
-            ' WHERE Origin_Address__c = :originAddress' +
-            ' AND Destination_Address__c IN :destinationAddresses';
+            ' WHERE Origin_Address__c = ' + quoteSoql(originAddress) +
+            ' AND Destination_Address__c IN ' + toSoqlInList(destinationAddresses);
 
-        return (List<GeocodeCache__c>) Database.queryWithBinds(
-            soql,
-            new Map<String, Object>{
-                'originAddress' => originAddress,
-                'destinationAddresses' => destinationAddresses
-            }
-        );
+        return (List<GeocodeCache__c>) Database.query(soql);
     }
 
     private static LatLng extractOriginLatLng(SObject cacheRow) {
@@ -654,18 +651,33 @@ public with sharing class GnalFacilitySearchController {
     private static LatLng getOriginLatLngFromAnyCacheRow(String originAddress) {
         if (String.isBlank(originAddress)) return null;
         // Pull a single cache row for this origin and extract origin lat/lng using schema-safe logic.
-        List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.queryWithBinds(
+        List<GeocodeCache__c> rows = (List<GeocodeCache__c>) Database.query(
             'SELECT Id, Origin_Address__c, Destination_Address__c' +
             // optional fields will only be selected if present
             OPTIONAL_ORIGIN_FIELDS_SELECT +
             ' FROM GeocodeCache__c' +
-            ' WHERE Origin_Address__c = :originAddress' +
+            ' WHERE Origin_Address__c = ' + quoteSoql(originAddress) +
             ' AND Destination_Location__c != null' +
-            ' ORDER BY LastModifiedDate DESC LIMIT 1',
-            new Map<String, Object>{ 'originAddress' => originAddress }
+            ' ORDER BY LastModifiedDate DESC LIMIT 1'
         );
         if (rows.isEmpty()) return null;
         return extractOriginLatLng(rows[0]);
+    }
+
+    private static String quoteSoql(String value) {
+        return value == null ? 'NULL' : '\'' + String.escapeSingleQuotes(value) + '\'';
+    }
+
+    private static String toSoqlInList(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            // Empty IN lists are invalid SOQL; return a clause that matches nothing.
+            return '(\'\')';
+        }
+        List<String> quoted = new List<String>();
+        for (String v : values) {
+            quoted.add(quoteSoql(v));
+        }
+        return '(' + String.join(quoted, ',') + ')';
     }
 
     private static String initOptionalOriginFieldsSelect() {
