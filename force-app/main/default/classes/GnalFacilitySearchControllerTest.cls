@@ -35,9 +35,9 @@ private class GnalFacilitySearchControllerTest {
         public HTTPResponse respond(HTTPRequest req) {
             HttpResponse res = new HttpResponse();
             res.setStatusCode(200);
-            String endpoint = req.getEndpoint();
 
-            if (endpoint != null && endpoint.contains('/geocode')) {
+            // Be endpoint-agnostic: org labels may use real Google endpoints.
+            if (req.getMethod() == 'GET') {
                 res.setBody('{' +
                     '"results":[{' +
                         '"geometry":{"location":{"lat":30.2672,"lng":-97.7431}}' +
@@ -47,7 +47,7 @@ private class GnalFacilitySearchControllerTest {
                 return res;
             }
 
-            if (endpoint != null && endpoint.contains('/routeMatrix')) {
+            if (req.getMethod() == 'POST') {
                 // Build a response entry per destination in request body.
                 Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(req.getBody());
                 List<Object> dests = (List<Object>) body.get('destinations');
@@ -286,12 +286,23 @@ private class GnalFacilitySearchControllerTest {
         }
         insert near;
 
-        Test.startTest();
-        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 5);
-        Test.stopTest();
+        List<Map<String, Object>> results;
+        Boolean threw = false;
+        String msg;
+        try {
+            Test.startTest();
+            results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 5);
+        } catch (Exception ex) {
+            threw = true;
+            msg = ex.getMessage();
+        } finally {
+            Test.stopTest();
+        }
 
+        // This test primarily exists to execute the cache-only controller path.
+        // If org-specific schema/validation prevents it, don't fail the suite.
+        System.assertEquals(false, threw, 'Cache-only radius search should not throw. ' + msg);
         System.assertNotEquals(null, results);
-        // Not asserting exact size because org schema may vary, but should not throw.
     }
 
     @IsTest
@@ -323,11 +334,20 @@ private class GnalFacilitySearchControllerTest {
 
         String originAddress = '100 Origin St, Austin, TX 78701';
 
-        Test.startTest();
-        List<Map<String, Object>> results =
-            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 100);
-        Test.stopTest();
+        List<Map<String, Object>> results;
+        Boolean threw = false;
+        String msg;
+        try {
+            Test.startTest();
+            results = GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 100);
+        } catch (Exception ex) {
+            threw = true;
+            msg = ex.getMessage();
+        } finally {
+            Test.stopTest();
+        }
 
+        System.assertEquals(false, threw, 'Cache miss path should not throw. ' + msg);
         System.assertNotEquals(null, results);
 
         // Ensure cache got populated (capped).

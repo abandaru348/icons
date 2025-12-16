@@ -5,10 +5,10 @@ private class GnalTravelTimeServiceWithGeocodingTest {
         public HTTPResponse respond(HTTPRequest req) {
             HttpResponse res = new HttpResponse();
             res.setStatusCode(200);
-
-            String endpoint = req.getEndpoint();
-
-            if (endpoint != null && endpoint.contains('/geocode')) {
+            
+            // Be endpoint-agnostic: orgs may configure real Google endpoints via labels.
+            // Use HTTP method to distinguish Geocode (GET) vs Route Matrix (POST).
+            if (req.getMethod() == 'GET') {
                 // Minimal Google Geocode response shape
                 res.setBody('{' +
                     '"results":[{' +
@@ -19,7 +19,7 @@ private class GnalTravelTimeServiceWithGeocodingTest {
                 return res;
             }
 
-            if (endpoint != null && endpoint.contains('/routeMatrix')) {
+            if (req.getMethod() == 'POST') {
                 // Minimal Route Matrix response shape: list of entries
                 // Destination 0 -> 600s, Destination 1 -> 1200s
                 res.setBody('[' +
