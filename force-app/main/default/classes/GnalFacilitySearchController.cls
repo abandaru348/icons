@@ -157,23 +157,17 @@ public with sharing class GnalFacilitySearchController {
         }
 
         Map<String, GeocodeCache__c> existingCacheByAddress = new Map<String, GeocodeCache__c>();
-        List<GeocodeCache__c> existingCacheRecords = [
-            SELECT Id,
-                   Origin_Address__c,
-                   Destination_Address__c,
-                   Origin_Location__Latitude__s,
-                   Origin_Location__Longitude__s
-            FROM GeocodeCache__c
-            WHERE Origin_Address__c = :originAddress
-            AND Destination_Address__c IN :destinationAddresses
-        ];
+        List<GeocodeCache__c> existingCacheRecords = queryExistingCaches(originAddress, destinationAddresses);
 
         // If any cached row includes origin coordinates, reuse them.
         for (GeocodeCache__c cacheRecord : existingCacheRecords) {
             existingCacheByAddress.put(cacheRecord.Destination_Address__c, cacheRecord);
-            if (context.originLatitude == null && cacheRecord.Origin_Location__Latitude__s != null) {
-                context.originLatitude = cacheRecord.Origin_Location__Latitude__s;
-                context.originLongitude = cacheRecord.Origin_Location__Longitude__s;
+            if (context.originLatitude == null || context.originLongitude == null) {
+                LatLng cachedOrigin = extractOriginLatLng(cacheRecord);
+                if (cachedOrigin != null) {
+                    context.originLatitude = cachedOrigin.lat;
+                    context.originLongitude = cachedOrigin.lng;
+                }
             }
         }
 
@@ -209,9 +203,10 @@ public with sharing class GnalFacilitySearchController {
 
                 List<GeocodeCache__c> toUpdate = new List<GeocodeCache__c>();
                 for (GeocodeCache__c existingRow : existingCacheRecords) {
-                    if (existingRow.Origin_Location__Latitude__s == null || existingRow.Origin_Location__Longitude__s == null) {
+                    LatLng existingOrigin = extractOriginLatLng(existingRow);
+                    if (existingOrigin == null) {
                         GeocodeCache__c updateRow = new GeocodeCache__c(Id = existingRow.Id);
-                        setLocationField(updateRow, 'Origin_Location__c', context.originLatitude, context.originLongitude, false);
+                        writeOriginLatLng(updateRow, context.originLatitude, context.originLongitude, false);
                         toUpdate.add(updateRow);
                     }
                 }
@@ -290,7 +285,7 @@ public with sharing class GnalFacilitySearchController {
             cacheRecord.Travel_Time_Minutes__c = travelTime.minutes;
 
             if (travelTime.originLatitude != null && travelTime.originLongitude != null) {
-                setLocationField(cacheRecord, 'Origin_Location__c', travelTime.originLatitude, travelTime.originLongitude, true);
+                writeOriginLatLng(cacheRecord, travelTime.originLatitude, travelTime.originLongitude, true);
             }
 
             if (travelTime.latitude != null && travelTime.longitude != null) {
@@ -372,6 +367,131 @@ public with sharing class GnalFacilitySearchController {
                 }
             }
         }
+    }
+
+    // --- Schema-safe origin coordinate support (avoids hard-referencing fields that may not exist) ---
+
+    private class LatLng {
+        Double lat;
+        Double lng;
+        LatLng(Double lat, Double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
+    }
+
+    private static List<GeocodeCache__c> queryExistingCaches(String originAddress, List<String> destinationAddresses) {
+        // Always include required fields.
+        List<String> fields = new List<String>{ 'Id', 'Origin_Address__c', 'Destination_Address__c' };
+
+        // Optional origin coordinate fields (different orgs/package versions may store these differently).
+        // Prefer geolocation subfields when present, else numeric lat/lon fields.
+        List<String> optional = new List<String>{
+            'Origin_Location__Latitude__s',
+            'Origin_Location__Longitude__s',
+            'Origin_Latitude__c',
+            'Origin_Longitude__c',
+            'Origin_Lat__c',
+            'Origin_Lng__c'
+        };
+        for (String f : optional) {
+            if (CACHE_FIELD_MAP != null && CACHE_FIELD_MAP.containsKey(f)) {
+                fields.add(f);
+            }
+        }
+
+        String soql =
+            'SELECT ' + String.join(fields, ', ') +
+            ' FROM GeocodeCache__c' +
+            ' WHERE Origin_Address__c = :originAddress' +
+            ' AND Destination_Address__c IN :destinationAddresses';
+
+        return (List<GeocodeCache__c>) Database.query(soql);
+    }
+
+    private static LatLng extractOriginLatLng(SObject cacheRow) {
+        if (cacheRow == null || CACHE_FIELD_MAP == null) {
+            return null;
+        }
+
+        // 1) Geolocation subfields (if Origin_Location__c exists as a geolocation compound field)
+        if (CACHE_FIELD_MAP.containsKey('Origin_Location__Latitude__s') && CACHE_FIELD_MAP.containsKey('Origin_Location__Longitude__s')) {
+            Object latVal = cacheRow.get('Origin_Location__Latitude__s');
+            Object lonVal = cacheRow.get('Origin_Location__Longitude__s');
+            if (latVal instanceof Double && lonVal instanceof Double) {
+                Double lat = (Double) latVal;
+                Double lon = (Double) lonVal;
+                if (lat != null && lon != null) {
+                    return new LatLng(lat, lon);
+                }
+            }
+        }
+
+        // 2) Numeric lat/lon fields (common fallback design)
+        LatLng numeric = extractNumericLatLng(cacheRow, 'Origin_Latitude__c', 'Origin_Longitude__c');
+        if (numeric != null) return numeric;
+
+        // 3) Alternate short names
+        return extractNumericLatLng(cacheRow, 'Origin_Lat__c', 'Origin_Lng__c');
+    }
+
+    private static LatLng extractNumericLatLng(SObject row, String latField, String lonField) {
+        if (row == null || CACHE_FIELD_MAP == null) return null;
+        if (!CACHE_FIELD_MAP.containsKey(latField) || !CACHE_FIELD_MAP.containsKey(lonField)) return null;
+        Object latVal = row.get(latField);
+        Object lonVal = row.get(lonField);
+        if (latVal instanceof Double && lonVal instanceof Double) {
+            Double lat = (Double) latVal;
+            Double lon = (Double) lonVal;
+            return (lat != null && lon != null) ? new LatLng(lat, lon) : null;
+        }
+        return null;
+    }
+
+    private static void writeOriginLatLng(SObject record, Double lat, Double lon, Boolean isInsert) {
+        if (record == null || lat == null || lon == null || CACHE_FIELD_MAP == null) {
+            return;
+        }
+
+        // Prefer geolocation compound field when available.
+        if (CACHE_FIELD_MAP.containsKey('Origin_Location__c')) {
+            setLocationField(record, 'Origin_Location__c', lat, lon, isInsert);
+            // If compound wasn't writable, setLocationField will try __Latitude__s/__Longitude__s automatically.
+            return;
+        }
+
+        // Otherwise try numeric fields.
+        if (tryWriteNumericLatLng(record, 'Origin_Latitude__c', 'Origin_Longitude__c', lat, lon, isInsert)) {
+            return;
+        }
+        tryWriteNumericLatLng(record, 'Origin_Lat__c', 'Origin_Lng__c', lat, lon, isInsert);
+    }
+
+    private static Boolean tryWriteNumericLatLng(
+        SObject record,
+        String latField,
+        String lonField,
+        Double lat,
+        Double lon,
+        Boolean isInsert
+    ) {
+        if (CACHE_FIELD_MAP == null || !CACHE_FIELD_MAP.containsKey(latField) || !CACHE_FIELD_MAP.containsKey(lonField)) {
+            return false;
+        }
+
+        Schema.SObjectField latF = CACHE_FIELD_MAP.get(latField);
+        Schema.SObjectField lonF = CACHE_FIELD_MAP.get(lonField);
+        if (latF == null || lonF == null) return false;
+
+        Schema.DescribeFieldResult latD = latF.getDescribe();
+        Schema.DescribeFieldResult lonD = lonF.getDescribe();
+        Boolean canWriteLat = isInsert ? latD.isCreateable() : latD.isUpdateable();
+        Boolean canWriteLon = isInsert ? lonD.isCreateable() : lonD.isUpdateable();
+        if (!canWriteLat || !canWriteLon) return false;
+
+        record.put(latField, lat);
+        record.put(lonField, lon);
+        return true;
     }
 
     private class CacheContext {
