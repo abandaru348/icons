@@ -22,19 +22,22 @@
                 </div>
 
                 <div class="slds-m-top_small">
-                    <lightning-button
-                        label="Find"
-                        variant="brand"
-                        onclick={handleFind}
-                        disabled={isLoading}
-                    ></lightning-button>
-                    <lightning-button
-                        class="slds-m-left_x-small"
-                        label="Cancel"
-                        variant="neutral"
-                        onclick={handleCancel}
-                        disabled={isLoading}
-                    ></lightning-button>
+                    <div class="action-row">
+                        <lightning-button
+                            class="action-button"
+                            label="Find"
+                            variant="brand"
+                            onclick={handleFind}
+                            disabled={isLoading}
+                        ></lightning-button>
+                        <lightning-button
+                            class="action-button"
+                            label="Cancel"
+                            variant="neutral"
+                            onclick={handleCancel}
+                            disabled={isLoading}
+                        ></lightning-button>
+                    </div>
                 </div>
 
                 <div class="slds-m-top_small">

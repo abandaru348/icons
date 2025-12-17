@@ -4,7 +4,7 @@
     gap: 1rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
     .results-map-layout {
         grid-template-columns: 1fr 1fr;
     }
@@ -12,13 +12,30 @@
 
 .results-panel {
     min-width: 0;
+    overflow: auto;
 }
 
 .map-panel {
     min-width: 0;
-    height: 420px;
+    height: 320px;
+}
+
+@media (min-width: 768px) {
+    .map-panel {
+        height: 420px;
+    }
 }
 
 .distance-filter {
     width: 100%;
+}
+
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.action-button {
+    flex: 1 1 140px;
 }
