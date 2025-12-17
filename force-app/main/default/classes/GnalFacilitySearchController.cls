@@ -657,7 +657,6 @@ public with sharing class GnalFacilitySearchController {
             OPTIONAL_ORIGIN_FIELDS_SELECT +
             ' FROM GeocodeCache__c' +
             ' WHERE Origin_Address__c = ' + quoteSoql(originAddress) +
-            ' AND Destination_Location__c != null' +
             ' ORDER BY LastModifiedDate DESC LIMIT 1'
         );
         if (rows.isEmpty()) return null;
