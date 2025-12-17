@@ -21,30 +21,32 @@
                     </div>
                 </div>
 
-                <div class="slds-m-top_small">
-                    <lightning-button
-                        label="Find"
-                        variant="brand"
-                        onclick={handleFind}
-                        disabled={isLoading}
-                    ></lightning-button>
-                    <lightning-button
-                        class="slds-m-left_x-small"
-                        label="Cancel"
-                        variant="neutral"
-                        onclick={handleCancel}
-                        disabled={isLoading}
-                    ></lightning-button>
-                </div>
+                <div class="slds-grid slds-wrap slds-gutters slds-m-top_small">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-button
+                            label="Find"
+                            variant="brand"
+                            onclick={handleFind}
+                            disabled={isLoading}
+                        ></lightning-button>
+                        <lightning-button
+                            class="slds-m-left_x-small"
+                            label="Cancel"
+                            variant="neutral"
+                            onclick={handleCancel}
+                            disabled={isLoading}
+                        ></lightning-button>
+                    </div>
 
-                <div class="slds-m-top_small">
-                    <lightning-combobox
-                        class="distance-filter"
-                        label="Distance"
-                        value={selectedDistance}
-                        options={distanceOptions}
-                        onchange={handleDistanceChange}
-                    ></lightning-combobox>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-m-top_small">
+                        <lightning-combobox
+                            class="distance-filter"
+                            label="Distance"
+                            value={selectedDistance}
+                            options={distanceOptions}
+                            onchange={handleDistanceChange}
+                        ></lightning-combobox>
+                    </div>
                 </div>
 
                 <template if:true={isLoading}>
