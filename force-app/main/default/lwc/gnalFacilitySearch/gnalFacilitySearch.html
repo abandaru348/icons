@@ -19,15 +19,6 @@
                             onchange={handleAddressChange}
                         ></lightning-input>
                     </div>
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                        <lightning-combobox
-                            class="distance-filter"
-                            label="Distance"
-                            value={selectedDistance}
-                            options={distanceOptions}
-                            onchange={handleDistanceChange}
-                        ></lightning-combobox>
-                    </div>
                 </div>
 
                 <div class="slds-m-top_small">
@@ -44,15 +35,16 @@
                         onclick={handleCancel}
                         disabled={isLoading}
                     ></lightning-button>
+                </div>
 
-                    <template if:true={googleMapSearchUrl}>
-                        <lightning-button
-                            class="slds-m-left_x-small"
-                            label="Open in Google Maps"
-                            variant="neutral"
-                            onclick={handleOpenInMaps}
-                        ></lightning-button>
-                    </template>
+                <div class="slds-m-top_small">
+                    <lightning-combobox
+                        class="distance-filter"
+                        label="Distance"
+                        value={selectedDistance}
+                        options={distanceOptions}
+                        onchange={handleDistanceChange}
+                    ></lightning-combobox>
                 </div>
 
                 <template if:true={isLoading}>
@@ -92,7 +84,12 @@
                         </div>
 
                         <div class="map-panel">
-                            <lightning-map map-markers={mapMarkers} center={mapCenter} zoom-level="10"></lightning-map>
+                            <lightning-map
+                                map-markers={mapMarkers}
+                                center={mapCenter}
+                                zoom-level="10"
+                                onmarkerselect={handleMarkerSelect}
+                            ></lightning-map>
                         </div>
                     </div>
                 </template>

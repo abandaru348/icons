@@ -291,7 +291,8 @@ export default class FindNearestFacilities extends LightningElement {
                     : { Street: result.address },
                 value: `${result.address}-${index}`,
                 title: `Facility ${index + 1}`,
-                description: result.info
+                description: result.info,
+                address: result.address
             };
         });
 
@@ -315,16 +316,19 @@ export default class FindNearestFacilities extends LightningElement {
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 
-    get googleMapSearchUrl() {
-        if (!this.hasResults) return null;
-        const address = this.results[0].address;
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    getGoogleMapsDirectionsUrl(destinationAddress) {
+        if (!destinationAddress) return null;
+        const origin = this.originAddress ? `&origin=${encodeURIComponent(this.originAddress)}` : '';
+        return `https://www.google.com/maps/dir/?api=1${origin}&destination=${encodeURIComponent(destinationAddress)}`;
     }
 
-    handleOpenInMaps() {
-        const url = this.googleMapSearchUrl;
-        if (url) {
-            window.open(url, '_blank');
-        }
+    handleMarkerSelect(event) {
+        const selectedValue = event?.detail?.selectedMarkerValue;
+        if (!selectedValue || !this.mapMarkers?.length) return;
+
+        const marker = this.mapMarkers.find((m) => m.value === selectedValue);
+        const address = marker?.address;
+        const url = this.getGoogleMapsDirectionsUrl(address);
+        if (url) window.open(url, '_blank');
     }
 }
