@@ -29,13 +29,3 @@
 .distance-filter {
     width: 100%;
 }
-
-.action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.action-button {
-    flex: 1 1 140px;
-}

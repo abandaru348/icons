@@ -19,35 +19,31 @@
                             onchange={handleAddressChange}
                         ></lightning-input>
                     </div>
-                </div>
-
-                <div class="slds-m-top_small">
-                    <div class="action-row">
-                        <lightning-button
-                            class="action-button"
-                            label="Find"
-                            variant="brand"
-                            onclick={handleFind}
-                            disabled={isLoading}
-                        ></lightning-button>
-                        <lightning-button
-                            class="action-button"
-                            label="Cancel"
-                            variant="neutral"
-                            onclick={handleCancel}
-                            disabled={isLoading}
-                        ></lightning-button>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                        <lightning-combobox
+                            class="distance-filter"
+                            label="Distance"
+                            value={selectedDistance}
+                            options={distanceOptions}
+                            onchange={handleDistanceChange}
+                        ></lightning-combobox>
                     </div>
                 </div>
 
                 <div class="slds-m-top_small">
-                    <lightning-combobox
-                        class="distance-filter"
-                        label="Distance"
-                        value={selectedDistance}
-                        options={distanceOptions}
-                        onchange={handleDistanceChange}
-                    ></lightning-combobox>
+                    <lightning-button
+                        label="Find"
+                        variant="brand"
+                        onclick={handleFind}
+                        disabled={isLoading}
+                    ></lightning-button>
+                    <lightning-button
+                        class="slds-m-left_x-small"
+                        label="Cancel"
+                        variant="neutral"
+                        onclick={handleCancel}
+                        disabled={isLoading}
+                    ></lightning-button>
                 </div>
 
                 <template if:true={isLoading}>
