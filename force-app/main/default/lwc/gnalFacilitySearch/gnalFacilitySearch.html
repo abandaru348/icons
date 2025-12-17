@@ -19,15 +19,6 @@
                             onchange={handleAddressChange}
                         ></lightning-input>
                     </div>
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                        <lightning-combobox
-                            class="distance-filter"
-                            label="Distance"
-                            value={selectedDistance}
-                            options={distanceOptions}
-                            onchange={handleDistanceChange}
-                        ></lightning-combobox>
-                    </div>
                 </div>
 
                 <div class="slds-m-top_small">
@@ -44,6 +35,16 @@
                         onclick={handleCancel}
                         disabled={isLoading}
                     ></lightning-button>
+                </div>
+
+                <div class="slds-m-top_small">
+                    <lightning-combobox
+                        class="distance-filter"
+                        label="Distance"
+                        value={selectedDistance}
+                        options={distanceOptions}
+                        onchange={handleDistanceChange}
+                    ></lightning-combobox>
                 </div>
 
                 <template if:true={isLoading}>
