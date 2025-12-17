@@ -71,6 +71,37 @@ private class GnalTravelTimeServiceWithGeocodingTest {
         }
     }
 
+    private class GoogleMockThrowsOnGeocode implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            if (req.getMethod() == 'GET') {
+                // Simulate a callout exception inside the mock
+                throw new Exception('boom geocode');
+            }
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setBody('[]');
+            return res;
+        }
+    }
+
+    private class GoogleMockThrowsOnRoute implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            if (req.getMethod() == 'GET') {
+                HttpResponse res = new HttpResponse();
+                res.setStatusCode(200);
+                res.setBody('{' +
+                    '"results":[{' +
+                        '"geometry":{"location":{"lat":30.0001,"lng":-97.0001}}' +
+                    '}],' +
+                    '"status":"OK"' +
+                '}');
+                return res;
+            }
+            // POST
+            throw new Exception('boom route');
+        }
+    }
+
     @IsTest
     static void getLatLngFromAddress_returnsLatLng() {
         Test.setMock(HttpCalloutMock.class, new GoogleMock());
@@ -137,6 +168,38 @@ private class GnalTravelTimeServiceWithGeocodingTest {
         } catch (Exception ex) {
             threw = true;
             System.assert(String.valueOf(ex.getMessage()).contains('Route API error'));
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
+
+    @IsTest
+    static void getLatLngFromAddress_calloutException_isWrapped() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockThrowsOnGeocode());
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress('Austin, TX');
+        } catch (Exception ex) {
+            threw = true;
+            System.assert(String.valueOf(ex.getMessage()).contains('Google Geocode callout failed'));
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
+
+    @IsTest
+    static void getTravelTimesFromAddresses_calloutException_isWrapped() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockThrowsOnRoute());
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalTravelTimeServiceWithGeocoding.getTravelTimesFromAddresses('Origin', new List<String>{ 'Dest A' });
+        } catch (Exception ex) {
+            threw = true;
+            System.assert(String.valueOf(ex.getMessage()).contains('Google Route Matrix callout failed'));
         } finally {
             Test.stopTest();
         }

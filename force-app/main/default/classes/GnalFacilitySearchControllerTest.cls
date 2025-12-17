@@ -428,4 +428,27 @@ private class GnalFacilitySearchControllerTest {
 
         System.assertNotEquals(null, results);
     }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_noTerritories_throws() {
+        // With no ServiceTerritory records in test context, controller should throw early.
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, 'Some Origin', 5);
+        } catch (Exception ex) {
+            threw = true;
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
+
+    @IsTest
+    static void getLatestCaseOriginAddressForAccount_null_returnsNull() {
+        Test.startTest();
+        String origin = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(null);
+        Test.stopTest();
+        System.assertEquals(null, origin);
+    }
 }
