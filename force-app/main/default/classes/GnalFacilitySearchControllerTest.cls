@@ -122,6 +122,29 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void getLatestCaseOriginAddress_accountNameFallback_returnsValue() {
+        // Covers the fallback branch in getLatestCaseOriginAddress() where it queries
+        // Case by Account.Name = running User.Name.
+        String userName = UserInfo.getName();
+        Account a = new Account(Name = userName);
+        insert a;
+
+        Case c = new Case(
+            AccountId = a.Id,
+            Origin = 'Phone',
+            Status = 'New',
+            GNAL_Origin_Location__c = 'From Case GNAL Origin'
+        );
+        insert c;
+
+        Test.startTest();
+        String origin = GnalFacilitySearchController.getLatestCaseOriginAddress();
+        Test.stopTest();
+
+        System.assertEquals('From Case GNAL Origin', origin);
+    }
+
+    @IsTest
     static void getLatestCaseOriginAddressForAccount_noCases_returnsNull() {
         Account a = new Account(Name = 'No Case Account');
         insert a;
@@ -239,6 +262,85 @@ private class GnalFacilitySearchControllerTest {
 
         System.assertNotEquals(null, results);
         System.assertEquals(true, results.size() >= 1, 'Should return at least one cached facility');
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_noTerritoryAddresses_throws() {
+        // Covers the branch where territories exist but have no address parts.
+        OperatingHours oh = new OperatingHours(
+            Name = 'Hours No Address',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Facility No Address',
+            IsActive = true,
+            OperatingHoursId = oh.Id
+            // No Street/City/State/Postal/Country -> formatted address should be null
+        );
+        insert st;
+
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, 'Some Origin', 5);
+        } catch (Exception ex) {
+            threw = true;
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_radiusDefaultsWhenNullOrNegative() {
+        // Covers default radius logic paths without invoking callouts (cache hit).
+        OperatingHours oh = new OperatingHours(
+            Name = 'Test Hours Default Radius',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Facility Radius Default',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '2 Facility Way',
+            City = 'Austin',
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
+        );
+        insert st;
+
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String originAddress = '100 Origin St, Austin, TX 78701';
+
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'Cache-DefaultRadius',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 3,
+            Distance_Meters__c = 4828,
+            Travel_Time_Minutes__c = 12
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        }
+        insert cache;
+
+        Test.startTest();
+        List<Map<String, Object>> r1 = GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, null);
+        List<Map<String, Object>> r2 = GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, -5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, r1);
+        System.assertNotEquals(null, r2);
     }
 
     @IsTest
