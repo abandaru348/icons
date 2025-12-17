@@ -1,0 +1,31 @@
+.results-map-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+    .results-map-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.results-panel {
+    min-width: 0;
+    overflow: auto;
+}
+
+.map-panel {
+    min-width: 0;
+    height: 320px;
+}
+
+@media (min-width: 768px) {
+    .map-panel {
+        height: 420px;
+    }
+}
+
+.distance-filter {
+    width: 100%;
+}
