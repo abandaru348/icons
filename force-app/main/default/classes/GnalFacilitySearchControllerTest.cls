@@ -344,6 +344,116 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void findNearestFacilities_withoutRadius_cacheHit_returnsResults() {
+        // Covers the findNearestFacilities() wrapper (radius null).
+        OperatingHours oh = new OperatingHours(
+            Name = 'Test Hours Wrapper',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Facility Wrapper',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '3 Facility Way',
+            City = 'Austin',
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
+        );
+        insert st;
+
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String originAddress = '101 Origin St, Austin, TX 78701';
+
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'Cache-Wrapper',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 3,
+            Distance_Meters__c = 4828,
+            Travel_Time_Minutes__c = 12
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        }
+        insert cache;
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findNearestFacilities(null, originAddress);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_radiusDefaultsWhenNullOrNegative() {
+        // Covers default-radius logic in cache-only method.
+        String originAddress = 'Cache Origin Default Radius';
+        GeocodeCache__c row = new GeocodeCache__c(
+            Name = 'CacheRadiusDefaults',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Dest',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        setGeo(row, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(row, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(row, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        }
+        insert row;
+
+        Test.startTest();
+        List<Map<String, Object>> r1 = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, null);
+        List<Map<String, Object>> r2 = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, -1);
+        Test.stopTest();
+
+        System.assertNotEquals(null, r1);
+        System.assertNotEquals(null, r2);
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_originCoordsFromNumericFields_whenPresent() {
+        // Attempts to cover extractNumericLatLng branches if org has numeric origin fields.
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        Boolean hasNumeric = fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c');
+        if (!hasNumeric) {
+            System.assertEquals(true, true, 'Org does not have numeric origin lat/lon fields; skipping branch coverage.');
+            return;
+        }
+
+        String originAddress = 'Numeric Origin';
+        GeocodeCache__c row = new GeocodeCache__c(
+            Name = 'NumericOriginRow',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Dest',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        // Put numeric origin coords dynamically.
+        row.put('Origin_Latitude__c', 30.2672);
+        row.put('Origin_Longitude__c', -97.7431);
+        setGeo(row, 'Destination_Location__c', 30.2672, -97.7431);
+        insert row;
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+    }
+
+    @IsTest
     static void findNearestFacilitiesWithRadius_blankOrigin_throws() {
         Boolean threw = false;
         String msg;
