@@ -310,6 +310,30 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void findFacilitiesFromCacheWithRadius_blankOrigin_throws() {
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('', 5);
+        } catch (Exception ex) {
+            threw = true;
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_noOriginCoords_returnsEmpty() {
+        // No cache rows for this origin, so it should return empty list (no Google callouts).
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('No Cache Origin', 15);
+        Test.stopTest();
+        System.assertNotEquals(null, results);
+        System.assertEquals(0, results.size());
+    }
+
+    @IsTest
     static void findNearestFacilitiesWithRadius_cacheMiss_warmsCacheWithLimit() {
         // This covers the cache-miss path + truncation branch using HttpCalloutMock.
         Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
@@ -358,5 +382,50 @@ private class GnalFacilitySearchControllerTest {
         Integer cacheCount = [SELECT COUNT() FROM GeocodeCache__c WHERE Origin_Address__c = :originAddress];
         System.assertEquals(true, cacheCount > 0, 'Expected cache rows to be inserted');
         System.assertEquals(true, cacheCount <= 25, 'Expected cache rows to be capped per request');
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_existingCache_backfillsOriginCoords() {
+        // Covers the branch where cache rows exist but origin coords are missing; controller geocodes origin once and updates cache.
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+
+        OperatingHours oh = new OperatingHours(
+            Name = 'Test Hours 3',
+            TimeZone = 'America/Chicago'
+        );
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Facility Backfill',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '9 Facility Way',
+            City = 'Austin',
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
+        );
+        insert st;
+
+        String originAddress = '100 Origin St, Austin, TX 78701';
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+
+        // Insert cache row with destination coords but no origin coords.
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'BackfillRow',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        insert cache;
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
     }
 }
