@@ -2,7 +2,6 @@ import { LightningElement, api } from 'lwc';
 import getAccountBillingAddress from '@salesforce/apex/GnalFacilitySearchController.getAccountBillingAddress';
 import getLatestCaseOriginAddressForAccount from '@salesforce/apex/GnalFacilitySearchController.getLatestCaseOriginAddressForAccount';
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
-import LightningAlert from 'lightning/alert';
 
 export default class FindNearestFacilities extends LightningElement {
     static LIST_RESULT_LIMIT = 8;
@@ -37,7 +36,24 @@ export default class FindNearestFacilities extends LightningElement {
     selectedDistance = FindNearestFacilities.DEFAULT_SELECTED_DISTANCE_MILES;
     lastErrorMessage = '';
     lastErrorDetails = '';
+    noticeTitle = '';
+    noticeMessage = '';
+    noticeVariant = ''; // success | info | warning | error
     searchHasRun = false;
+
+    get hasNotice() {
+        return !!this.noticeMessage;
+    }
+
+    get noticeClass() {
+        const base = 'slds-m-top_medium slds-notify slds-notify_alert slds-theme_alert-texture';
+        const variant = (this.noticeVariant || '').toLowerCase();
+        if (variant === 'success') return `${base} slds-theme_success`;
+        if (variant === 'warning') return `${base} slds-theme_warning`;
+        if (variant === 'error') return `${base} slds-theme_error`;
+        // default/info
+        return `${base} slds-theme_info`;
+    }
 
     get hasResults() {
         return this.results && this.results.length > 0;
@@ -94,6 +110,7 @@ export default class FindNearestFacilities extends LightningElement {
         this.selectedDistance = FindNearestFacilities.DEFAULT_SELECTED_DISTANCE_MILES;
         this.lastErrorMessage = '';
         this.lastErrorDetails = '';
+        this.clearNotice();
     }
 
     handleAddressChange(event) {
@@ -232,13 +249,14 @@ export default class FindNearestFacilities extends LightningElement {
         if (!this.originAddress) {
             this.lastErrorMessage = 'Please provide an origin address.';
             this.lastErrorDetails = '';
-            this.showAlert('Error', this.lastErrorMessage, 'error');
+            this.setNotice('Error', this.lastErrorMessage, 'error');
             return;
         }
 
         this.isLoading = true;
         this.lastErrorMessage = '';
         this.lastErrorDetails = '';
+        this.clearNotice();
         this.searchHasRun = false;
         const radius = Number(this.selectedDistance);
         const payload = {
@@ -257,9 +275,9 @@ export default class FindNearestFacilities extends LightningElement {
 
                 if (showToastOnSuccess) {
                     if (this.results.length) {
-                        this.showAlert('Success', 'Nearest facilities found successfully.', 'success');
+                        this.setNotice('Success', 'Nearest facilities found successfully.', 'success');
                     } else {
-                        this.showAlert('Info', 'No facilities found within the selected distance.', 'info');
+                        this.setNotice('Info', 'No facilities found within the selected distance.', 'info');
                     }
                 }
             })
@@ -269,7 +287,7 @@ export default class FindNearestFacilities extends LightningElement {
                 const msg = this.getErrorMessage(error);
                 this.lastErrorMessage = msg;
                 this.lastErrorDetails = this.getErrorDetails(error);
-                this.showAlert('Error', msg, 'error');
+                this.setNotice('Error', msg, 'error');
             })
             .finally(() => {
                 this.isLoading = false;
@@ -317,16 +335,16 @@ export default class FindNearestFacilities extends LightningElement {
             : undefined;
     }
 
-    showAlert(title, message, theme) {
-        // `lightning/platformShowToastEvent` is not supported in Experience Cloud.
-        // Use `lightning/alert` which works across supported LWC runtimes.
-        LightningAlert.open({
-            label: title,
-            message,
-            theme
-        }).catch(() => {
-            // If alerts aren't supported in a given runtime, fail silently.
-        });
+    clearNotice() {
+        this.noticeTitle = '';
+        this.noticeMessage = '';
+        this.noticeVariant = '';
+    }
+
+    setNotice(title, message, variant) {
+        this.noticeTitle = title || '';
+        this.noticeMessage = message || '';
+        this.noticeVariant = variant || 'info';
     }
 
     getGoogleMapsDirectionsUrl(destinationAddress) {
