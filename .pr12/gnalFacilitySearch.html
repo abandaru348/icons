@@ -1,0 +1,89 @@
+<template>
+    <lightning-card title="Nearest Facilities">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small">
+            <template lwc:if={showFinder}>
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3">
+                        <lightning-input
+                            type="text"
+                            label="Origin address"
+                            value={originAddress}
+                            onchange={handleAddressChange}
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                        <lightning-combobox
+                            class="distance-filter"
+                            label="Distance"
+                            value={selectedDistance}
+                            options={distanceOptions}
+                            onchange={handleDistanceChange}
+                        ></lightning-combobox>
+                    </div>
+                </div>
+
+                <div class="slds-m-top_small">
+                    <lightning-button
+                        label="Find"
+                        variant="brand"
+                        onclick={handleFind}
+                        disabled={isLoading}
+                    ></lightning-button>
+                    <lightning-button
+                        class="slds-m-left_x-small"
+                        label="Cancel"
+                        variant="neutral"
+                        onclick={handleCancel}
+                        disabled={isLoading}
+                    ></lightning-button>
+
+                    <template lwc:if={googleMapSearchUrl}>
+                        <lightning-button
+                            class="slds-m-left_x-small"
+                            label="Open in Google Maps"
+                            variant="neutral"
+                            onclick={handleOpenInMaps}
+                        ></lightning-button>
+                    </template>
+                </div>
+
+                <template lwc:if={isLoading}>
+                    <div class="slds-m-top_medium">
+                        <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template lwc:if={hasResults}>
+                    <div class="results-map-layout slds-m-top_medium">
+                        <div class="results-panel">
+                            <p class="slds-text-title_bold slds-m-bottom_x-small">Results</p>
+                            <ul class="slds-has-dividers_bottom-space">
+                                <template for:each={results} for:item="r">
+                                    <li key={r.address} class="slds-item slds-p-vertical_small">
+                                        <div class="slds-text-heading_small">{r.address}</div>
+                                        <div class="slds-text-body_small">{r.info}</div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <div class="map-panel">
+                            <lightning-map map-markers={mapMarkers} center={mapCenter} zoom-level="10"></lightning-map>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:elseif={searchHasRun}>
+                    <p class="slds-m-top_medium">No facilities found.</p>
+                </template>
+            </template>
+            <template lwc:else>
+                <lightning-button
+                    label="Find Nearest Facilities"
+                    variant="brand"
+                    onclick={handleShowFinder}
+                ></lightning-button>
+            </template>
+        </div>
+    </lightning-card>
+</template>
