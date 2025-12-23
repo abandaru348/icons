@@ -19,6 +19,7 @@ public with sharing class GnalFacilitySearchController {
         Double radiusMiles
     ) {
         try {
+            originAddress = normalizeOriginAddress(originAddress);
             return findNearestFacilitiesInternal(accountId, originAddress, radiusMiles);
         } catch (AuraHandledException ex) {
             throw ex;
@@ -34,6 +35,7 @@ public with sharing class GnalFacilitySearchController {
         Double radiusMiles
     ) {
         try {
+            originAddress = normalizeOriginAddress(originAddress);
             if (String.isBlank(originAddress)) {
                 throw new AuraHandledException('Origin address is required.');
             }
@@ -67,6 +69,7 @@ public with sharing class GnalFacilitySearchController {
     @AuraEnabled(cacheable=false)
     public static List<Map<String, Object>> findNearestFacilities(Id accountId, String originAddress) {
         try {
+            originAddress = normalizeOriginAddress(originAddress);
             return findNearestFacilitiesInternal(accountId, originAddress, null);
         } catch (AuraHandledException ex) {
             throw ex;
@@ -80,6 +83,7 @@ public with sharing class GnalFacilitySearchController {
         String originAddress,
         Double radiusMiles
     ) {
+        originAddress = normalizeOriginAddress(originAddress);
         if (String.isBlank(originAddress)) {
             throw new AuraHandledException('Origin address is required.');
         }
@@ -653,6 +657,11 @@ public with sharing class GnalFacilitySearchController {
 
     private static String quoteSoql(String value) {
         return value == null ? 'NULL' : '\'' + String.escapeSingleQuotes(value) + '\'';
+    }
+
+    private static String normalizeOriginAddress(String originAddress) {
+        // Keep cache keys stable across user input variations (e.g., trailing spaces).
+        return originAddress == null ? null : originAddress.trim();
     }
 
     private static String toSoqlInList(List<String> values) {

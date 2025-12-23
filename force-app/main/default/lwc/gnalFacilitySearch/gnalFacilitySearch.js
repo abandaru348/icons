@@ -114,7 +114,7 @@ export default class FindNearestFacilities extends LightningElement {
     }
 
     handleAddressChange(event) {
-        this.originAddress = event.target.value;
+        this.originAddress = (event.target.value || '').trim();
     }
 
     handleDistanceChange(event) {
@@ -246,7 +246,9 @@ export default class FindNearestFacilities extends LightningElement {
     }
 
     executeSearch({ showToastOnSuccess }) {
-        if (!this.originAddress) {
+        const normalizedOrigin = (this.originAddress || '').trim();
+        this.originAddress = normalizedOrigin;
+        if (!normalizedOrigin) {
             this.lastErrorMessage = 'Please provide an origin address.';
             this.lastErrorDetails = '';
             this.setNotice('Error', this.lastErrorMessage, 'error');
@@ -261,7 +263,7 @@ export default class FindNearestFacilities extends LightningElement {
         const radius = Number(this.selectedDistance);
         const payload = {
             accountId: this.recordId,
-            originAddress: this.originAddress,
+            originAddress: normalizedOrigin,
             radiusMiles: FindNearestFacilities.WARM_CACHE_RADIUS_MILES
         };
 
