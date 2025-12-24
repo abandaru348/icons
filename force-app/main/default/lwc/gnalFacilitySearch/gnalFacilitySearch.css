@@ -29,3 +29,19 @@
 .distance-filter {
     width: 100%;
 }
+
+.toastContainer {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10000;
+    max-width: 40rem;
+}
+
+@media (max-width: 480px) {
+    .toastContainer {
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+    }
+}

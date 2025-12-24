@@ -42,12 +42,26 @@
                 </div>
 
                 <template lwc:if={hasNotice}>
-                    <div class={noticeClass} role="alert">
-                        <span class="slds-assistive-text">{noticeVariant}</span>
-                        <h2>
-                            <span class="slds-text-title_bold">{noticeTitle}</span>
-                            <span class="slds-m-left_x-small">{noticeMessage}</span>
-                        </h2>
+                    <div class="toastContainer">
+                        <div class={noticeClass} role="status">
+                            <span class="slds-assistive-text">{noticeVariant}</span>
+                            <div class="slds-notify__content">
+                                <h2 class="slds-text-heading_small">
+                                    <span class="slds-text-title_bold">{noticeTitle}</span>
+                                    <span class="slds-m-left_x-small">{noticeMessage}</span>
+                                </h2>
+                            </div>
+                            <div class="slds-notify__close">
+                                <button
+                                    class="slds-button slds-button_icon slds-button_icon-inverse"
+                                    title="Close"
+                                    onclick={handleCloseNotice}
+                                    type="button"
+                                >
+                                    <lightning-icon icon-name="utility:close" size="x-small" alternative-text="Close"></lightning-icon>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </template>
 
