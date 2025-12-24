@@ -669,7 +669,13 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static String initOptionalCaseOriginFieldsSelect() {
-        // GNAL_Origin_Location__c is a compound Address field in some orgs. Query subfields instead of the compound.
+        // GNAL_Origin_Location__c may be either:
+        // - Text (preferred/simple): query the field directly
+        // - Compound Address (in some orgs): query subfields instead of the compound
+        if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey('GNAL_Origin_Location__c')) {
+            return ', GNAL_Origin_Location__c';
+        }
+
         List<String> candidates = new List<String>{
             'GNAL_Origin_Location__Street__s',
             'GNAL_Origin_Location__City__s',
@@ -687,6 +693,11 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static String initCaseOriginNotNullWhere() {
+        // Prefer filtering on the Text field when present.
+        if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey('GNAL_Origin_Location__c')) {
+            return 'GNAL_Origin_Location__c != null';
+        }
+
         // Address compound fields cannot be filtered directly. Filter on subfields instead.
         List<String> candidates = new List<String>{
             'GNAL_Origin_Location__Street__s',
@@ -706,6 +717,13 @@ public with sharing class GnalFacilitySearchController {
 
     private static String formatCaseOriginAddress(SObject caseRow) {
         if (caseRow == null) return null;
+
+        Object raw = caseRow.get('GNAL_Origin_Location__c');
+        if (raw instanceof String) {
+            String s = (String) raw;
+            if (!String.isBlank(s)) return s;
+        }
+
         List<String> parts = new List<String>();
         parts.add((String) caseRow.get('GNAL_Origin_Location__Street__s'));
         parts.add((String) caseRow.get('GNAL_Origin_Location__City__s'));

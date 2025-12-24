@@ -134,8 +134,13 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Phone',
             Status = 'New'
         );
-        // GNAL_Origin_Location__c is a compound Address field in some orgs; set subfields instead of the compound.
-        c.put('GNAL_Origin_Location__Street__s', 'From Case GNAL Origin');
+        // GNAL_Origin_Location__c may be Text or a compound Address depending on org.
+        Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
+            c.put('GNAL_Origin_Location__c', 'From Case GNAL Origin');
+        } else {
+            c.put('GNAL_Origin_Location__Street__s', 'From Case GNAL Origin');
+        }
         insert c;
 
         Test.startTest();
@@ -168,7 +173,12 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Email',
             Status = 'Working'
         );
-        cFallback.put('GNAL_Origin_Location__Street__s', 'Fallback Address');
+        Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
+            cFallback.put('GNAL_Origin_Location__c', 'Fallback Address');
+        } else {
+            cFallback.put('GNAL_Origin_Location__Street__s', 'Fallback Address');
+        }
         insert cFallback;
 
         // Strict match case (should win even if older/newer ordering differs by CreatedDate)
@@ -177,7 +187,11 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Phone',
             Status = 'New'
         );
-        cStrict.put('GNAL_Origin_Location__Street__s', 'Strict Address');
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
+            cStrict.put('GNAL_Origin_Location__c', 'Strict Address');
+        } else {
+            cStrict.put('GNAL_Origin_Location__Street__s', 'Strict Address');
+        }
         insert cStrict;
 
         Test.startTest();
@@ -198,7 +212,11 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Web',
             Status = 'Closed'
         );
-        c.put('GNAL_Origin_Location__Street__s', 'Only Available Address');
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
+            c.put('GNAL_Origin_Location__c', 'Only Available Address');
+        } else {
+            c.put('GNAL_Origin_Location__Street__s', 'Only Available Address');
+        }
         insert c;
 
         Test.startTest();
