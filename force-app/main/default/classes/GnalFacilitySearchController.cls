@@ -9,7 +9,11 @@ public with sharing class GnalFacilitySearchController {
     private static final Integer MAX_DESTINATIONS_TO_CACHE_PER_REQUEST = 25;
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
+    private static final Map<String, Schema.SObjectField> CASE_FIELD_MAP =
+        Schema.SObjectType.Case.fields.getMap();
     private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
+    private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
+    private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -177,31 +181,31 @@ public with sharing class GnalFacilitySearchController {
 
         List<Case> casesWithOrigin;
         if (resolvedAccountId != null) {
-            casesWithOrigin = [
-                SELECT Id, GNAL_Origin_Location__c
-                FROM Case
-                WHERE AccountId = :resolvedAccountId
-                AND Origin = 'Phone'
-                AND Status = 'New'
-                AND GNAL_Origin_Location__c != null
-                ORDER BY CreatedDate DESC
-                LIMIT 1
-            ];
+            casesWithOrigin = (List<Case>) Database.query(
+                'SELECT Id' + OPTIONAL_CASE_ORIGIN_FIELDS_SELECT +
+                ' FROM Case' +
+                ' WHERE AccountId = ' + quoteSoql(String.valueOf(resolvedAccountId)) +
+                ' AND Origin = \'Phone\'' +
+                ' AND Status = \'New\'' +
+                ' AND (' + CASE_ORIGIN_NOT_NULL_WHERE + ')' +
+                ' ORDER BY CreatedDate DESC' +
+                ' LIMIT 1'
+            );
         } else {
             // Fallback for orgs where a User isn't tied to a Contact/Account (or those fields don't exist).
-            casesWithOrigin = [
-                SELECT Id, GNAL_Origin_Location__c
-                FROM Case
-                WHERE Account.Name = :u.Name
-                AND Origin = 'Phone'
-                AND Status = 'New'
-                AND GNAL_Origin_Location__c != null
-                ORDER BY CreatedDate DESC
-                LIMIT 1
-            ];
+            casesWithOrigin = (List<Case>) Database.query(
+                'SELECT Id' + OPTIONAL_CASE_ORIGIN_FIELDS_SELECT +
+                ' FROM Case' +
+                ' WHERE Account.Name = ' + quoteSoql(u.Name) +
+                ' AND Origin = \'Phone\'' +
+                ' AND Status = \'New\'' +
+                ' AND (' + CASE_ORIGIN_NOT_NULL_WHERE + ')' +
+                ' ORDER BY CreatedDate DESC' +
+                ' LIMIT 1'
+            );
         }
 
-        return casesWithOrigin.isEmpty() ? null : casesWithOrigin[0].GNAL_Origin_Location__c;
+        return casesWithOrigin.isEmpty() ? null : formatCaseOriginAddress(casesWithOrigin[0]);
     }
 
     // Preferred overload for this LWC: the component lives on an Account record page,
@@ -213,33 +217,33 @@ public with sharing class GnalFacilitySearchController {
         }
 
         // First try the strict requirement filters.
-        List<Case> casesWithOrigin = [
-            SELECT Id, GNAL_Origin_Location__c
-            FROM Case
-            WHERE AccountId = :accountId
-            AND Origin = 'Phone'
-            AND Status = 'New'
-            AND GNAL_Origin_Location__c != null
-            ORDER BY CreatedDate DESC
-            LIMIT 1
-        ];
+        List<Case> casesWithOrigin = (List<Case>) Database.query(
+            'SELECT Id' + OPTIONAL_CASE_ORIGIN_FIELDS_SELECT +
+            ' FROM Case' +
+            ' WHERE AccountId = ' + quoteSoql(String.valueOf(accountId)) +
+            ' AND Origin = \'Phone\'' +
+            ' AND Status = \'New\'' +
+            ' AND (' + CASE_ORIGIN_NOT_NULL_WHERE + ')' +
+            ' ORDER BY CreatedDate DESC' +
+            ' LIMIT 1'
+        );
 
         if (!casesWithOrigin.isEmpty()) {
-            return casesWithOrigin[0].GNAL_Origin_Location__c;
+            return formatCaseOriginAddress(casesWithOrigin[0]);
         }
 
         // Fallback: orgs often have different picklist values for Origin/Status.
         // Still prefer the latest Case on the Account that has GNAL origin populated.
-        List<Case> anyWithOrigin = [
-            SELECT Id, GNAL_Origin_Location__c
-            FROM Case
-            WHERE AccountId = :accountId
-            AND GNAL_Origin_Location__c != null
-            ORDER BY CreatedDate DESC
-            LIMIT 1
-        ];
+        List<Case> anyWithOrigin = (List<Case>) Database.query(
+            'SELECT Id' + OPTIONAL_CASE_ORIGIN_FIELDS_SELECT +
+            ' FROM Case' +
+            ' WHERE AccountId = ' + quoteSoql(String.valueOf(accountId)) +
+            ' AND (' + CASE_ORIGIN_NOT_NULL_WHERE + ')' +
+            ' ORDER BY CreatedDate DESC' +
+            ' LIMIT 1'
+        );
 
-        return anyWithOrigin.isEmpty() ? null : anyWithOrigin[0].GNAL_Origin_Location__c;
+        return anyWithOrigin.isEmpty() ? null : formatCaseOriginAddress(anyWithOrigin[0]);
     }
 
     private static List<ServiceTerritory> getDistinctTerritories() {
@@ -662,6 +666,58 @@ public with sharing class GnalFacilitySearchController {
     private static String normalizeOriginAddress(String originAddress) {
         // Keep cache keys stable across user input variations (e.g., trailing spaces).
         return originAddress == null ? null : originAddress.trim();
+    }
+
+    private static String initOptionalCaseOriginFieldsSelect() {
+        // GNAL_Origin_Location__c is a compound Address field in some orgs. Query subfields instead of the compound.
+        List<String> candidates = new List<String>{
+            'GNAL_Origin_Location__Street__s',
+            'GNAL_Origin_Location__City__s',
+            'GNAL_Origin_Location__State__s',
+            'GNAL_Origin_Location__PostalCode__s',
+            'GNAL_Origin_Location__Country__s'
+        };
+        List<String> fields = new List<String>();
+        for (String f : candidates) {
+            if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey(f)) {
+                fields.add(f);
+            }
+        }
+        return fields.isEmpty() ? '' : (', ' + String.join(fields, ', '));
+    }
+
+    private static String initCaseOriginNotNullWhere() {
+        // Address compound fields cannot be filtered directly. Filter on subfields instead.
+        List<String> candidates = new List<String>{
+            'GNAL_Origin_Location__Street__s',
+            'GNAL_Origin_Location__City__s',
+            'GNAL_Origin_Location__PostalCode__s',
+            'GNAL_Origin_Location__Country__s'
+        };
+        List<String> clauses = new List<String>();
+        for (String f : candidates) {
+            if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey(f)) {
+                clauses.add(f + ' != null');
+            }
+        }
+        // If fields don't exist (unexpected), return a clause that matches nothing rather than failing compilation.
+        return clauses.isEmpty() ? 'Id = null' : String.join(clauses, ' OR ');
+    }
+
+    private static String formatCaseOriginAddress(SObject caseRow) {
+        if (caseRow == null) return null;
+        List<String> parts = new List<String>();
+        parts.add((String) caseRow.get('GNAL_Origin_Location__Street__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__City__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__State__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__PostalCode__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__Country__s'));
+
+        List<String> cleaned = new List<String>();
+        for (String p : parts) {
+            if (!String.isBlank(p)) cleaned.add(p);
+        }
+        return cleaned.isEmpty() ? null : String.join(cleaned, ', ');
     }
 
     private static String toSoqlInList(List<String> values) {
