@@ -205,6 +205,7 @@ private class GnalFacilitySearchControllerTest {
     static void getLatestCaseOriginAddressForAccount_fallbacksWhenPicklistsDiffer() {
         Account a = new Account(Name = 'Case Fallback Account');
         insert a;
+        Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
 
         // No strict match, but GNAL origin is populated.
         Case c = new Case(
