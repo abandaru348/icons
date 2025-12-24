@@ -39,7 +39,6 @@ export default class FindNearestFacilities extends LightningElement {
     noticeTitle = '';
     noticeMessage = '';
     noticeVariant = ''; // success | info | warning | error
-    _noticeTimeoutId;
     searchHasRun = false;
 
     get hasNotice() {
@@ -47,7 +46,7 @@ export default class FindNearestFacilities extends LightningElement {
     }
 
     get noticeClass() {
-        const base = 'slds-notify slds-notify_toast slds-theme_alert-texture';
+        const base = 'slds-m-top_medium slds-notify slds-notify_alert slds-theme_alert-texture';
         const variant = (this.noticeVariant || '').toLowerCase();
         if (variant === 'success') return `${base} slds-theme_success`;
         if (variant === 'warning') return `${base} slds-theme_warning`;
@@ -111,10 +110,6 @@ export default class FindNearestFacilities extends LightningElement {
         this.selectedDistance = FindNearestFacilities.DEFAULT_SELECTED_DISTANCE_MILES;
         this.lastErrorMessage = '';
         this.lastErrorDetails = '';
-        this.clearNotice();
-    }
-
-    handleCloseNotice() {
         this.clearNotice();
     }
 
@@ -343,30 +338,15 @@ export default class FindNearestFacilities extends LightningElement {
     }
 
     clearNotice() {
-        if (this._noticeTimeoutId) {
-            window.clearTimeout(this._noticeTimeoutId);
-            this._noticeTimeoutId = undefined;
-        }
         this.noticeTitle = '';
         this.noticeMessage = '';
         this.noticeVariant = '';
     }
 
     setNotice(title, message, variant) {
-        if (this._noticeTimeoutId) {
-            window.clearTimeout(this._noticeTimeoutId);
-            this._noticeTimeoutId = undefined;
-        }
         this.noticeTitle = title || '';
         this.noticeMessage = message || '';
         this.noticeVariant = variant || 'info';
-
-        // Auto-dismiss non-error notices to behave like a toast.
-        if ((this.noticeVariant || '').toLowerCase() !== 'error') {
-            this._noticeTimeoutId = window.setTimeout(() => {
-                this.clearNotice();
-            }, 3500);
-        }
     }
 
     getGoogleMapsDirectionsUrl(destinationAddress) {
