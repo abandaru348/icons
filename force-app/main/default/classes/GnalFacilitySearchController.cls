@@ -14,6 +14,7 @@ public with sharing class GnalFacilitySearchController {
     private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
     private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
     private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
+    private static final Map<String, String> US_STATE_ABBREVIATIONS = initUsStateAbbreviations();
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -774,7 +775,7 @@ public with sharing class GnalFacilitySearchController {
         // Subfields vary by org/package version; only access fields that actually exist.
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Street__s'));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__City__s'));
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__State__s'));
+        parts.add(normalizeUsState(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__State__s')));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__PostalCode__s'));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Country__s'));
 
@@ -968,7 +969,8 @@ public with sharing class GnalFacilitySearchController {
         List<String> parts = new List<String>();
         if (!String.isBlank(territory.Street))     parts.add(territory.Street);
         if (!String.isBlank(territory.City))       parts.add(territory.City);
-        if (!String.isBlank(territory.State))      parts.add(territory.State);
+        String st = normalizeUsState(territory.State);
+        if (!String.isBlank(st))                   parts.add(st);
         if (!String.isBlank(territory.PostalCode)) parts.add(territory.PostalCode);
         if (!String.isBlank(territory.Country))    parts.add(territory.Country);
         return parts.isEmpty() ? null : String.join(parts, ', ');
@@ -988,7 +990,7 @@ public with sharing class GnalFacilitySearchController {
             List<String> parts = new List<String>();
             if (acc.BillingStreet != null) parts.add(acc.BillingStreet);
             if (acc.BillingCity != null) parts.add(acc.BillingCity);
-            if (acc.BillingState != null) parts.add(acc.BillingState);
+            if (acc.BillingState != null) parts.add(normalizeUsState(acc.BillingState));
             if (acc.BillingPostalCode != null) parts.add(acc.BillingPostalCode);
             if (acc.BillingCountry != null) parts.add(acc.BillingCountry);
             return parts.isEmpty() ? null : String.join(parts, ', ');
@@ -996,6 +998,78 @@ public with sharing class GnalFacilitySearchController {
             // Non-blocking fallback: allow caller to handle null/empty origin.
             return null;
         }
+    }
+
+    private static String normalizeUsState(String stateOrProvince) {
+        if (String.isBlank(stateOrProvince)) return null;
+        String s = stateOrProvince.trim();
+        if (s.length() == 2) return s.toUpperCase();
+        String key = s.toUpperCase();
+        // Common punctuation variants (e.g., "D.C.")
+        key = key.replace('.', '');
+        if (US_STATE_ABBREVIATIONS != null && US_STATE_ABBREVIATIONS.containsKey(key)) {
+            return US_STATE_ABBREVIATIONS.get(key);
+        }
+        // If unknown, keep original trimmed value.
+        return s;
+    }
+
+    private static Map<String, String> initUsStateAbbreviations() {
+        // Full US state names -> USPS abbreviations (plus DC).
+        return new Map<String, String>{
+            'ALABAMA' => 'AL',
+            'ALASKA' => 'AK',
+            'ARIZONA' => 'AZ',
+            'ARKANSAS' => 'AR',
+            'CALIFORNIA' => 'CA',
+            'COLORADO' => 'CO',
+            'CONNECTICUT' => 'CT',
+            'DELAWARE' => 'DE',
+            'DISTRICT OF COLUMBIA' => 'DC',
+            'DC' => 'DC',
+            'FLORIDA' => 'FL',
+            'GEORGIA' => 'GA',
+            'HAWAII' => 'HI',
+            'IDAHO' => 'ID',
+            'ILLINOIS' => 'IL',
+            'INDIANA' => 'IN',
+            'IOWA' => 'IA',
+            'KANSAS' => 'KS',
+            'KENTUCKY' => 'KY',
+            'LOUISIANA' => 'LA',
+            'MAINE' => 'ME',
+            'MARYLAND' => 'MD',
+            'MASSACHUSETTS' => 'MA',
+            'MICHIGAN' => 'MI',
+            'MINNESOTA' => 'MN',
+            'MISSISSIPPI' => 'MS',
+            'MISSOURI' => 'MO',
+            'MONTANA' => 'MT',
+            'NEBRASKA' => 'NE',
+            'NEVADA' => 'NV',
+            'NEW HAMPSHIRE' => 'NH',
+            'NEW JERSEY' => 'NJ',
+            'NEW MEXICO' => 'NM',
+            'NEW YORK' => 'NY',
+            'NORTH CAROLINA' => 'NC',
+            'NORTH DAKOTA' => 'ND',
+            'OHIO' => 'OH',
+            'OKLAHOMA' => 'OK',
+            'OREGON' => 'OR',
+            'PENNSYLVANIA' => 'PA',
+            'RHODE ISLAND' => 'RI',
+            'SOUTH CAROLINA' => 'SC',
+            'SOUTH DAKOTA' => 'SD',
+            'TENNESSEE' => 'TN',
+            'TEXAS' => 'TX',
+            'UTAH' => 'UT',
+            'VERMONT' => 'VT',
+            'VIRGINIA' => 'VA',
+            'WASHINGTON' => 'WA',
+            'WEST VIRGINIA' => 'WV',
+            'WISCONSIN' => 'WI',
+            'WYOMING' => 'WY'
+        };
     }
 
     // --- Private data holders (keep all inner classes together for readability) ---
