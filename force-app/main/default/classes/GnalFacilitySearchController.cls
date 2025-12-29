@@ -15,6 +15,7 @@ public with sharing class GnalFacilitySearchController {
     private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
     private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
     private static final Map<String, String> US_STATE_ABBREVIATIONS = initUsStateAbbreviations();
+    private static final Map<String, String> US_STATE_FULL_NAMES = initUsStateFullNames();
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -1000,15 +1001,28 @@ public with sharing class GnalFacilitySearchController {
         }
     }
 
+    // Normalizes US state values to full names (e.g., "TX" -> "Texas") for consistent cache keys/display.
     private static String normalizeUsState(String stateOrProvince) {
         if (String.isBlank(stateOrProvince)) return null;
         String s = stateOrProvince.trim();
-        if (s.length() == 2) return s.toUpperCase();
+        if (s.length() == 2) {
+            String abbr = s.toUpperCase();
+            if (US_STATE_FULL_NAMES != null && US_STATE_FULL_NAMES.containsKey(abbr)) {
+                return US_STATE_FULL_NAMES.get(abbr);
+            }
+            return abbr;
+        }
+
         String key = s.toUpperCase();
         // Common punctuation variants (e.g., "D.C.")
         key = key.replace('.', '');
+        // If caller already provided a full name, normalize casing consistently.
         if (US_STATE_ABBREVIATIONS != null && US_STATE_ABBREVIATIONS.containsKey(key)) {
-            return US_STATE_ABBREVIATIONS.get(key);
+            String abbr = US_STATE_ABBREVIATIONS.get(key);
+            if (US_STATE_FULL_NAMES != null && US_STATE_FULL_NAMES.containsKey(abbr)) {
+                return US_STATE_FULL_NAMES.get(abbr);
+            }
+            return abbr;
         }
         // If unknown, keep original trimmed value.
         return s;
@@ -1069,6 +1083,63 @@ public with sharing class GnalFacilitySearchController {
             'WEST VIRGINIA' => 'WV',
             'WISCONSIN' => 'WI',
             'WYOMING' => 'WY'
+        };
+    }
+
+    private static Map<String, String> initUsStateFullNames() {
+        // USPS abbreviations -> full US state names (plus DC).
+        return new Map<String, String>{
+            'AL' => 'Alabama',
+            'AK' => 'Alaska',
+            'AZ' => 'Arizona',
+            'AR' => 'Arkansas',
+            'CA' => 'California',
+            'CO' => 'Colorado',
+            'CT' => 'Connecticut',
+            'DE' => 'Delaware',
+            'DC' => 'District of Columbia',
+            'FL' => 'Florida',
+            'GA' => 'Georgia',
+            'HI' => 'Hawaii',
+            'ID' => 'Idaho',
+            'IL' => 'Illinois',
+            'IN' => 'Indiana',
+            'IA' => 'Iowa',
+            'KS' => 'Kansas',
+            'KY' => 'Kentucky',
+            'LA' => 'Louisiana',
+            'ME' => 'Maine',
+            'MD' => 'Maryland',
+            'MA' => 'Massachusetts',
+            'MI' => 'Michigan',
+            'MN' => 'Minnesota',
+            'MS' => 'Mississippi',
+            'MO' => 'Missouri',
+            'MT' => 'Montana',
+            'NE' => 'Nebraska',
+            'NV' => 'Nevada',
+            'NH' => 'New Hampshire',
+            'NJ' => 'New Jersey',
+            'NM' => 'New Mexico',
+            'NY' => 'New York',
+            'NC' => 'North Carolina',
+            'ND' => 'North Dakota',
+            'OH' => 'Ohio',
+            'OK' => 'Oklahoma',
+            'OR' => 'Oregon',
+            'PA' => 'Pennsylvania',
+            'RI' => 'Rhode Island',
+            'SC' => 'South Carolina',
+            'SD' => 'South Dakota',
+            'TN' => 'Tennessee',
+            'TX' => 'Texas',
+            'UT' => 'Utah',
+            'VT' => 'Vermont',
+            'VA' => 'Virginia',
+            'WA' => 'Washington',
+            'WV' => 'West Virginia',
+            'WI' => 'Wisconsin',
+            'WY' => 'Wyoming'
         };
     }
 
