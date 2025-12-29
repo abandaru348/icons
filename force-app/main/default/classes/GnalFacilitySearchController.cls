@@ -14,8 +14,9 @@ public with sharing class GnalFacilitySearchController {
     private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
     private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
     private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
-    private static final Map<String, String> US_STATE_ABBREVIATIONS = initUsStateAbbreviations();
-    private static final Map<String, String> US_STATE_FULL_NAMES = initUsStateFullNames();
+    // Loaded from Custom Metadata (GnalStateMapping__mdt). Cached for the transaction.
+    private static Map<String, String> STATE_FULL_NAME_BY_ABBR;
+    private static Map<String, String> STATE_FULL_NAME_BY_UPPER_NAME;
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -1007,140 +1008,38 @@ public with sharing class GnalFacilitySearchController {
         String s = stateOrProvince.trim();
         if (s.length() == 2) {
             String abbr = s.toUpperCase();
-            if (US_STATE_FULL_NAMES != null && US_STATE_FULL_NAMES.containsKey(abbr)) {
-                return US_STATE_FULL_NAMES.get(abbr);
-            }
+            ensureStateMapsLoaded();
+            if (STATE_FULL_NAME_BY_ABBR != null && STATE_FULL_NAME_BY_ABBR.containsKey(abbr)) return STATE_FULL_NAME_BY_ABBR.get(abbr);
             return abbr;
         }
 
         String key = s.toUpperCase();
         // Common punctuation variants (e.g., "D.C.")
         key = key.replace('.', '');
-        // If caller already provided a full name, normalize casing consistently.
-        if (US_STATE_ABBREVIATIONS != null && US_STATE_ABBREVIATIONS.containsKey(key)) {
-            String abbr = US_STATE_ABBREVIATIONS.get(key);
-            if (US_STATE_FULL_NAMES != null && US_STATE_FULL_NAMES.containsKey(abbr)) {
-                return US_STATE_FULL_NAMES.get(abbr);
-            }
-            return abbr;
+        ensureStateMapsLoaded();
+        if (STATE_FULL_NAME_BY_UPPER_NAME != null && STATE_FULL_NAME_BY_UPPER_NAME.containsKey(key)) {
+            return STATE_FULL_NAME_BY_UPPER_NAME.get(key);
         }
         // If unknown, keep original trimmed value.
         return s;
     }
 
-    private static Map<String, String> initUsStateAbbreviations() {
-        // Full US state names -> USPS abbreviations (plus DC).
-        return new Map<String, String>{
-            'ALABAMA' => 'AL',
-            'ALASKA' => 'AK',
-            'ARIZONA' => 'AZ',
-            'ARKANSAS' => 'AR',
-            'CALIFORNIA' => 'CA',
-            'COLORADO' => 'CO',
-            'CONNECTICUT' => 'CT',
-            'DELAWARE' => 'DE',
-            'DISTRICT OF COLUMBIA' => 'DC',
-            'DC' => 'DC',
-            'FLORIDA' => 'FL',
-            'GEORGIA' => 'GA',
-            'HAWAII' => 'HI',
-            'IDAHO' => 'ID',
-            'ILLINOIS' => 'IL',
-            'INDIANA' => 'IN',
-            'IOWA' => 'IA',
-            'KANSAS' => 'KS',
-            'KENTUCKY' => 'KY',
-            'LOUISIANA' => 'LA',
-            'MAINE' => 'ME',
-            'MARYLAND' => 'MD',
-            'MASSACHUSETTS' => 'MA',
-            'MICHIGAN' => 'MI',
-            'MINNESOTA' => 'MN',
-            'MISSISSIPPI' => 'MS',
-            'MISSOURI' => 'MO',
-            'MONTANA' => 'MT',
-            'NEBRASKA' => 'NE',
-            'NEVADA' => 'NV',
-            'NEW HAMPSHIRE' => 'NH',
-            'NEW JERSEY' => 'NJ',
-            'NEW MEXICO' => 'NM',
-            'NEW YORK' => 'NY',
-            'NORTH CAROLINA' => 'NC',
-            'NORTH DAKOTA' => 'ND',
-            'OHIO' => 'OH',
-            'OKLAHOMA' => 'OK',
-            'OREGON' => 'OR',
-            'PENNSYLVANIA' => 'PA',
-            'RHODE ISLAND' => 'RI',
-            'SOUTH CAROLINA' => 'SC',
-            'SOUTH DAKOTA' => 'SD',
-            'TENNESSEE' => 'TN',
-            'TEXAS' => 'TX',
-            'UTAH' => 'UT',
-            'VERMONT' => 'VT',
-            'VIRGINIA' => 'VA',
-            'WASHINGTON' => 'WA',
-            'WEST VIRGINIA' => 'WV',
-            'WISCONSIN' => 'WI',
-            'WYOMING' => 'WY'
-        };
-    }
-
-    private static Map<String, String> initUsStateFullNames() {
-        // USPS abbreviations -> full US state names (plus DC).
-        return new Map<String, String>{
-            'AL' => 'Alabama',
-            'AK' => 'Alaska',
-            'AZ' => 'Arizona',
-            'AR' => 'Arkansas',
-            'CA' => 'California',
-            'CO' => 'Colorado',
-            'CT' => 'Connecticut',
-            'DE' => 'Delaware',
-            'DC' => 'District of Columbia',
-            'FL' => 'Florida',
-            'GA' => 'Georgia',
-            'HI' => 'Hawaii',
-            'ID' => 'Idaho',
-            'IL' => 'Illinois',
-            'IN' => 'Indiana',
-            'IA' => 'Iowa',
-            'KS' => 'Kansas',
-            'KY' => 'Kentucky',
-            'LA' => 'Louisiana',
-            'ME' => 'Maine',
-            'MD' => 'Maryland',
-            'MA' => 'Massachusetts',
-            'MI' => 'Michigan',
-            'MN' => 'Minnesota',
-            'MS' => 'Mississippi',
-            'MO' => 'Missouri',
-            'MT' => 'Montana',
-            'NE' => 'Nebraska',
-            'NV' => 'Nevada',
-            'NH' => 'New Hampshire',
-            'NJ' => 'New Jersey',
-            'NM' => 'New Mexico',
-            'NY' => 'New York',
-            'NC' => 'North Carolina',
-            'ND' => 'North Dakota',
-            'OH' => 'Ohio',
-            'OK' => 'Oklahoma',
-            'OR' => 'Oregon',
-            'PA' => 'Pennsylvania',
-            'RI' => 'Rhode Island',
-            'SC' => 'South Carolina',
-            'SD' => 'South Dakota',
-            'TN' => 'Tennessee',
-            'TX' => 'Texas',
-            'UT' => 'Utah',
-            'VT' => 'Vermont',
-            'VA' => 'Virginia',
-            'WA' => 'Washington',
-            'WV' => 'West Virginia',
-            'WI' => 'Wisconsin',
-            'WY' => 'Wyoming'
-        };
+    private static void ensureStateMapsLoaded() {
+        if (STATE_FULL_NAME_BY_ABBR != null && STATE_FULL_NAME_BY_UPPER_NAME != null) return;
+        STATE_FULL_NAME_BY_ABBR = new Map<String, String>();
+        STATE_FULL_NAME_BY_UPPER_NAME = new Map<String, String>();
+        // Records are keyed by DeveloperName (e.g., TX) and store the full name in Full_Name__c.
+        for (GnalStateMapping__mdt m : [
+            SELECT DeveloperName, Full_Name__c
+            FROM GnalStateMapping__mdt
+        ]) {
+            if (m == null) continue;
+            String abbr = String.isBlank(m.DeveloperName) ? null : m.DeveloperName.trim().toUpperCase();
+            String fullName = String.isBlank(m.Full_Name__c) ? null : m.Full_Name__c.trim();
+            if (String.isBlank(abbr) || String.isBlank(fullName)) continue;
+            STATE_FULL_NAME_BY_ABBR.put(abbr, fullName);
+            STATE_FULL_NAME_BY_UPPER_NAME.put(fullName.toUpperCase(), fullName);
+        }
     }
 
     // --- Private data holders (keep all inner classes together for readability) ---
