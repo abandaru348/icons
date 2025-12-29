@@ -32,7 +32,7 @@ private class GnalTravelTimeServiceWithGeocodingTest {
 
     @IsTest
     static void getTravelTimesFromAddresses_sortsAndPopulatesLatLng() {
-        Test.setMock(HttpCalloutMock.class, new MockRouteMatrixCallout());
+        Test.setMock(HttpCalloutMock.class, new GnalTravelTimeServiceWithGeocodingTest.MockRouteMatrixCallout());
 
         String origin = '123 Main St';
         List<String> destinations = new List<String>{ 'Dest A', 'Dest B' };
@@ -56,7 +56,7 @@ private class GnalTravelTimeServiceWithGeocodingTest {
 
     @IsTest
     static void getTravelTimesFromAddresses_blankOrigin_throwsAuraHandledException() {
-        Test.setMock(HttpCalloutMock.class, new MockRouteMatrixCallout());
+        Test.setMock(HttpCalloutMock.class, new GnalTravelTimeServiceWithGeocodingTest.MockRouteMatrixCallout());
 
         Boolean threw = false;
         try {
