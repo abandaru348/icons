@@ -153,12 +153,6 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
             return null;
         }
 
-        // Never allow unmocked callouts from tests. Returning deterministic coordinates makes
-        // controller/test behavior consistent across orgs (QA may have different cache schema).
-        if (Test.isRunningTest()) {
-            return new Map<String, Double>{ 'lat' => 30.2672, 'lng' => -97.7431 };
-        }
-
         validateGoogleConfig();
         String encodedAddr = EncodingUtil.urlEncode(address, 'UTF-8');
         String url = getGeocodeUrlBase() + '?address=' + encodedAddr + '&key=' + API_KEY;
