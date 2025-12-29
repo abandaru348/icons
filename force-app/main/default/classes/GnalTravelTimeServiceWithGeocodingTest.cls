@@ -1,38 +1,9 @@
 @IsTest
 private class GnalTravelTimeServiceWithGeocodingTest {
 
-    /**
-     * Mocks the Route Matrix callout.
-     *
-     * Note: In tests, GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress() returns
-     * deterministic coordinates (no geocode callout), so the only callout here is the POST
-     * to the route-matrix endpoint.
-     */
-    private class MockRouteMatrixCallout implements HttpCalloutMock {
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
-
-            if (req != null && req.getMethod() == 'POST') {
-                res.setStatusCode(200);
-                // Two destinations: first is faster/shorter.
-                res.setBody(
-                    '[' +
-                        '{"originIndex":0,"destinationIndex":0,"status":"OK","duration":"100s","distanceMeters":5000},' +
-                        '{"originIndex":0,"destinationIndex":1,"status":"OK","duration":"200s","distanceMeters":7000}' +
-                    ']'
-                );
-                return res;
-            }
-
-            res.setStatusCode(400);
-            res.setBody('Unsupported request');
-            return res;
-        }
-    }
-
     @IsTest
     static void getTravelTimesFromAddresses_sortsAndPopulatesLatLng() {
-        Test.setMock(HttpCalloutMock.class, new GnalTravelTimeServiceWithGeocodingTest.MockRouteMatrixCallout());
+        Test.setMock(HttpCalloutMock.class, new GnalRouteMatrixCalloutMock());
 
         String origin = '123 Main St';
         List<String> destinations = new List<String>{ 'Dest A', 'Dest B' };
@@ -56,7 +27,7 @@ private class GnalTravelTimeServiceWithGeocodingTest {
 
     @IsTest
     static void getTravelTimesFromAddresses_blankOrigin_throwsAuraHandledException() {
-        Test.setMock(HttpCalloutMock.class, new GnalTravelTimeServiceWithGeocodingTest.MockRouteMatrixCallout());
+        Test.setMock(HttpCalloutMock.class, new GnalRouteMatrixCalloutMock());
 
         Boolean threw = false;
         try {
