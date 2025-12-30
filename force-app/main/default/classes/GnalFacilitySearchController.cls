@@ -981,35 +981,15 @@ public with sharing class GnalFacilitySearchController {
             return null;
         }
         try {
-            // Some orgs do not have State/Country picklists enabled, so BillingStateCode may not exist.
-            // Use schema-aware dynamic SOQL to avoid compile-time references to non-existent fields.
-            Map<String, Schema.SObjectField> accFields = Schema.SObjectType.Account.fields.getMap();
-            Boolean hasBillingStateCode = accFields != null && accFields.containsKey('BillingStateCode');
-
-            List<String> selectFields = new List<String>{
-                'BillingStreet',
-                'BillingCity',
-                'BillingPostalCode',
-                'BillingCountry'
-            };
-            // Prefer BillingStateCode when available; otherwise use BillingState.
-            selectFields.add(hasBillingStateCode ? 'BillingStateCode' : 'BillingState');
-
-            String soql =
-                'SELECT ' + String.join(selectFields, ', ') +
-                ' FROM Account WHERE Id = ' + quoteSoql(String.valueOf(accountId)) +
-                ' LIMIT 1';
-            Account acc = (Account) Database.query(soql);
-
+            Account acc = [
+                SELECT BillingStreet, BillingCity, BillingStateCode, BillingPostalCode, BillingCountry
+                FROM Account WHERE Id = :accountId
+                LIMIT 1
+            ];
             List<String> parts = new List<String>();
             if (acc.BillingStreet != null) parts.add(acc.BillingStreet);
             if (acc.BillingCity != null) parts.add(acc.BillingCity);
-            if (hasBillingStateCode) {
-                String code = (String) acc.get('BillingStateCode');
-                if (!String.isBlank(code)) parts.add(code);
-            } else {
-                if (acc.BillingState != null) parts.add(acc.BillingState);
-            }
+            if (acc.BillingStateCode != null) parts.add(acc.BillingStateCode);
             if (acc.BillingPostalCode != null) parts.add(acc.BillingPostalCode);
             if (acc.BillingCountry != null) parts.add(acc.BillingCountry);
             return parts.isEmpty() ? null : String.join(parts, ', ');
