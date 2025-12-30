@@ -79,8 +79,7 @@ private class GnalFacilitySearchControllerTest {
             BillingStreet = '123 Main St',
             BillingCity = 'Austin',
             BillingState = 'Texas',
-            BillingPostalCode = '78701',
-            BillingCountry = 'United States'
+            BillingPostalCode = '78701'
         );
         // State/Country picklists enabled: use BillingStateCode.
         a.put('BillingStateCode', 'TX');
@@ -91,7 +90,8 @@ private class GnalFacilitySearchControllerTest {
         Test.stopTest();
 
         // Controller uses BillingStateCode, so we expect the 2-letter code.
-        System.assertEquals('123 Main St, Austin, TX, 78701, United States', result);
+        // Do not set BillingCountry in tests (orgs can restrict enabled countries).
+        System.assertEquals('123 Main St, Austin, TX, 78701', result);
     }
 
     @IsTest
@@ -284,8 +284,7 @@ private class GnalFacilitySearchControllerTest {
             Street = '1 Facility Way',
             City = 'Austin',
             State = 'TX',
-            PostalCode = '78701',
-            Country = 'USA'
+            PostalCode = '78701'
         );
         insert st;
 
@@ -375,8 +374,7 @@ private class GnalFacilitySearchControllerTest {
             Street = '2 Facility Way',
             City = 'Austin',
             State = 'TX',
-            PostalCode = '78701',
-            Country = 'USA'
+            PostalCode = '78701'
         );
         insert st;
 
@@ -430,8 +428,7 @@ private class GnalFacilitySearchControllerTest {
             Street = '3 Facility Way',
             City = 'Austin',
             State = 'TX',
-            PostalCode = '78701',
-            Country = 'USA'
+            PostalCode = '78701'
         );
         insert st;
 
@@ -640,8 +637,7 @@ private class GnalFacilitySearchControllerTest {
                 Street = String.valueOf(i) + ' Facility Way',
                 City = 'Austin',
                 State = 'TX',
-                PostalCode = '78701',
-                Country = 'USA'
+                PostalCode = '78701'
             ));
         }
         insert territories;
@@ -688,8 +684,7 @@ private class GnalFacilitySearchControllerTest {
             Street = '9 Facility Way',
             City = 'Austin',
             State = 'TX',
-            PostalCode = '78701',
-            Country = 'USA'
+            PostalCode = '78701'
         );
         insert st;
 
