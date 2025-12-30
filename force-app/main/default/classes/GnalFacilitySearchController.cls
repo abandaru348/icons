@@ -49,18 +49,9 @@ public with sharing class GnalFacilitySearchController {
                 effectiveRadius = DEFAULT_RADIUS_MILES;
             }
 
-            LatLng origin = getOriginLatLngFromAnyCacheRow(originAddress);
-            if (origin == null || origin.lat == null || origin.lng == null) {
-                // No cached origin coordinates yet; user should run the main search to warm cache.
-                return new List<Map<String, Object>>();
-            }
-
-            List<GeocodeCache__c> filteredCaches = queryCachesWithinRadiusAllCached(
-                originAddress,
-                origin.lat,
-                origin.lng,
-                effectiveRadius
-            );
+            // Filter using cached driving distance (Distance_Miles__c). This avoids relying on
+            // geolocation/DISTANCE() behavior, which can vary by org configuration.
+            List<GeocodeCache__c> filteredCaches = queryCachesWithinRadiusAllCached(originAddress, effectiveRadius);
 
             return formatCacheResults(filteredCaches);
         } catch (AuraHandledException ex) {
@@ -119,10 +110,7 @@ public with sharing class GnalFacilitySearchController {
         destinationAddresses.sort();
 
         CacheContext cacheContext = ensureCacheCoverage(originAddress, destinationAddresses);
-        if (cacheContext.originLatitude == null || cacheContext.originLongitude == null) {
-            throw new AuraHandledException('Unable to determine origin coordinates.');
-        }
-
+        // We no longer require origin coordinates for radius filtering (we use cached driving miles instead).
         List<GeocodeCache__c> filteredCaches = queryCachesWithinRadius(
             originAddress,
             destinationAddresses,
@@ -348,37 +336,6 @@ public with sharing class GnalFacilitySearchController {
             }
         }
 
-        // Backfill origin coords into existing cache rows if missing (one-time Google call).
-        if ((context.originLatitude == null || context.originLongitude == null) && !existingCacheRecords.isEmpty()) {
-            Map<String, Double> originLatLng = GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress(originAddress);
-            if (originLatLng != null) {
-                context.originLatitude = originLatLng.get('lat');
-                context.originLongitude = originLatLng.get('lng');
-
-                List<GeocodeCache__c> toUpdate = new List<GeocodeCache__c>();
-                for (GeocodeCache__c existingRow : existingCacheRecords) {
-                    LatLng existingOrigin = extractOriginLatLng(existingRow);
-                    if (existingOrigin == null) {
-                        GeocodeCache__c updateRow = new GeocodeCache__c(Id = existingRow.Id);
-                        writeOriginLatLng(updateRow, context.originLatitude, context.originLongitude, false);
-                        toUpdate.add(updateRow);
-                    }
-                }
-                if (!toUpdate.isEmpty()) {
-                    update toUpdate;
-                }
-            }
-        }
-
-        // If there are no existing cache rows (should only happen when no destinations had addresses), last resort.
-        if (context.originLatitude == null || context.originLongitude == null) {
-            Map<String, Double> originLatLng = GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress(originAddress);
-            if (originLatLng != null) {
-                context.originLatitude = originLatLng.get('lat');
-                context.originLongitude = originLatLng.get('lng');
-            }
-        }
-
         return context;
     }
 
@@ -392,11 +349,6 @@ public with sharing class GnalFacilitySearchController {
         if (destinationAddresses == null || destinationAddresses.isEmpty()) {
             return new List<GeocodeCache__c>();
         }
-        if (originLatitude == null || originLongitude == null) {
-            return new List<GeocodeCache__c>();
-        }
-
-        Location originLocation = Location.newInstance(originLatitude, originLongitude);
         Double radiusFilter = radiusMiles + DISTANCE_EPSILON_MILES;
 
         return [
@@ -412,7 +364,7 @@ public with sharing class GnalFacilitySearchController {
             FROM GeocodeCache__c
             WHERE Origin_Address__c = :originAddress
             AND Destination_Address__c IN :destinationAddresses
-            AND DISTANCE(Destination_Location__c, :originLocation, 'mi') < :radiusFilter
+            AND (Distance_Miles__c = null OR Distance_Miles__c < :radiusFilter)
             ORDER BY Distance_Miles__c ASC NULLS LAST
         ];
     }
@@ -420,14 +372,9 @@ public with sharing class GnalFacilitySearchController {
     // Cache-only query (no destination IN list) for fast radius changes.
     private static List<GeocodeCache__c> queryCachesWithinRadiusAllCached(
         String originAddress,
-        Double originLatitude,
-        Double originLongitude,
         Double radiusMiles
     ) {
         if (String.isBlank(originAddress)) return new List<GeocodeCache__c>();
-        if (originLatitude == null || originLongitude == null) return new List<GeocodeCache__c>();
-
-        Location originLocation = Location.newInstance(originLatitude, originLongitude);
         Double radiusFilter = radiusMiles + DISTANCE_EPSILON_MILES;
 
         return [
@@ -442,7 +389,7 @@ public with sharing class GnalFacilitySearchController {
                    Destination_Location__c
             FROM GeocodeCache__c
             WHERE Origin_Address__c = :originAddress
-            AND DISTANCE(Destination_Location__c, :originLocation, 'mi') < :radiusFilter
+            AND (Distance_Miles__c = null OR Distance_Miles__c < :radiusFilter)
             ORDER BY Distance_Miles__c ASC NULLS LAST
         ];
     }
