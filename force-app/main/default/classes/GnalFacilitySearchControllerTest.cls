@@ -78,10 +78,16 @@ private class GnalFacilitySearchControllerTest {
             Name = 'Test Account',
             BillingStreet = '123 Main St',
             BillingCity = 'Austin',
-            BillingState = 'TX',
             BillingPostalCode = '78701',
             BillingCountry = 'USA'
         );
+        // Some orgs have State/Country picklists enabled (BillingStateCode exists); others do not.
+        Map<String, Schema.SObjectField> accFields = Schema.SObjectType.Account.fields.getMap();
+        if (accFields != null && accFields.containsKey('BillingStateCode')) {
+            a.put('BillingStateCode', 'TX');
+        } else {
+            a.BillingState = 'TX';
+        }
         insert a;
 
         Test.startTest();
