@@ -97,9 +97,12 @@ private class GnalFacilitySearchControllerTest {
         String result = GnalFacilitySearchController.getAccountBillingAddress(a.Id);
         Test.stopTest();
 
-        // Controller uses BillingStateCode, so we expect the 2-letter code.
-        // Do not set BillingCountry in tests (orgs can restrict enabled countries).
-        System.assertEquals('123 Main St, Austin, TX, 78701', result);
+        // Controller uses BillingStateCode. Country may be auto-derived from BillingCountryCode depending on org settings.
+        String base = '123 Main St, Austin, TX, 78701';
+        System.assert(
+            result == base || result == (base + ', United States'),
+            'Unexpected billing address: ' + result
+        );
     }
 
     @IsTest
