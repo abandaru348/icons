@@ -1,13 +1,5 @@
 @IsTest
 private class GnalFacilitySearchControllerTest {
-    private static void setFieldIfExists(SObject record, String fieldApiName, Object value) {
-        if (record == null || String.isBlank(fieldApiName)) return;
-        Map<String, Schema.SObjectField> fields = record.getSObjectType().getDescribe().fields.getMap();
-        if (fields != null && fields.containsKey(fieldApiName)) {
-            record.put(fieldApiName, value);
-        }
-    }
-
     private static void setGeo(SObject record, String fieldApiName, Decimal lat, Decimal lon) {
         if (record == null || String.isBlank(fieldApiName) || lat == null || lon == null) return;
         Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
@@ -86,23 +78,19 @@ private class GnalFacilitySearchControllerTest {
             Name = 'Test Account',
             BillingStreet = '123 Main St',
             BillingCity = 'Austin',
-            BillingPostalCode = '78701'
+            BillingState = 'TX',
+            BillingPostalCode = '78701',
+            BillingCountry = 'USA'
         );
-        // State/Country picklists enabled: use BillingStateCode.
-        setFieldIfExists(a, 'BillingCountryCode', 'US');
-        setFieldIfExists(a, 'BillingStateCode', 'TX');
+        // State/Country picklists enabled: BillingStateCode is the authoritative value used by controller.
+        a.put('BillingStateCode', 'TX');
         insert a;
 
         Test.startTest();
         String result = GnalFacilitySearchController.getAccountBillingAddress(a.Id);
         Test.stopTest();
 
-        // Controller uses BillingStateCode. Country may be auto-derived from BillingCountryCode depending on org settings.
-        String base = '123 Main St, Austin, TX, 78701';
-        System.assert(
-            result == base || result == (base + ', United States'),
-            'Unexpected billing address: ' + result
-        );
+        System.assertEquals('123 Main St, Austin, TX, 78701, USA', result);
     }
 
     @IsTest
@@ -148,21 +136,12 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Phone',
             Status = 'New'
         );
-        // GNAL origin fields may not exist in all orgs (QA sandboxes can lag metadata).
-        // If absent, controller should return null and the test should not fail.
+        // GNAL_Origin_Location__c may be Text or a compound Address depending on org.
         Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
-        Boolean wroteAny = false;
         if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f = caseFields.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            if (d != null && d.getType() != Schema.DisplayType.Address) {
-                c.put('GNAL_Origin_Location__c', 'From Case GNAL Origin');
-                wroteAny = true;
-            }
-        }
-        if (!wroteAny && caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Street__s')) {
+            c.put('GNAL_Origin_Location__c', 'From Case GNAL Origin');
+        } else {
             c.put('GNAL_Origin_Location__Street__s', 'From Case GNAL Origin');
-            wroteAny = true;
         }
         insert c;
 
@@ -170,7 +149,7 @@ private class GnalFacilitySearchControllerTest {
         String origin = GnalFacilitySearchController.getLatestCaseOriginAddress();
         Test.stopTest();
 
-        System.assertEquals(wroteAny ? 'From Case GNAL Origin' : null, origin);
+        System.assertEquals('From Case GNAL Origin', origin);
     }
 
     @IsTest
@@ -197,18 +176,10 @@ private class GnalFacilitySearchControllerTest {
             Status = 'Working'
         );
         Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
-        Boolean wroteAny = false;
         if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f = caseFields.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            if (d != null && d.getType() != Schema.DisplayType.Address) {
-                cFallback.put('GNAL_Origin_Location__c', 'Fallback Address');
-                wroteAny = true;
-            }
-        }
-        if (!wroteAny && caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Street__s')) {
+            cFallback.put('GNAL_Origin_Location__c', 'Fallback Address');
+        } else {
             cFallback.put('GNAL_Origin_Location__Street__s', 'Fallback Address');
-            wroteAny = true;
         }
         insert cFallback;
 
@@ -218,18 +189,10 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Phone',
             Status = 'New'
         );
-        Boolean wroteStrict = false;
         if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f2 = caseFields.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d2 = f2 != null ? f2.getDescribe() : null;
-            if (d2 != null && d2.getType() != Schema.DisplayType.Address) {
-                cStrict.put('GNAL_Origin_Location__c', 'Strict Address');
-                wroteStrict = true;
-            }
-        }
-        if (!wroteStrict && caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Street__s')) {
+            cStrict.put('GNAL_Origin_Location__c', 'Strict Address');
+        } else {
             cStrict.put('GNAL_Origin_Location__Street__s', 'Strict Address');
-            wroteStrict = true;
         }
         insert cStrict;
 
@@ -237,8 +200,7 @@ private class GnalFacilitySearchControllerTest {
         String origin = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(a.Id);
         Test.stopTest();
 
-        // If GNAL fields are missing in this org, controller will (correctly) return null.
-        System.assertEquals(wroteStrict ? 'Strict Address' : null, origin);
+        System.assertEquals('Strict Address', origin);
     }
 
     @IsTest
@@ -253,18 +215,10 @@ private class GnalFacilitySearchControllerTest {
             Origin = 'Web',
             Status = 'Closed'
         );
-        Boolean wroteAny = false;
         if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f = caseFields.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            if (d != null && d.getType() != Schema.DisplayType.Address) {
-                c.put('GNAL_Origin_Location__c', 'Only Available Address');
-                wroteAny = true;
-            }
-        }
-        if (!wroteAny && caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Street__s')) {
+            c.put('GNAL_Origin_Location__c', 'Only Available Address');
+        } else {
             c.put('GNAL_Origin_Location__Street__s', 'Only Available Address');
-            wroteAny = true;
         }
         insert c;
 
@@ -272,14 +226,11 @@ private class GnalFacilitySearchControllerTest {
         String origin = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(a.Id);
         Test.stopTest();
 
-        System.assertEquals(wroteAny ? 'Only Available Address' : null, origin);
+        System.assertEquals('Only Available Address', origin);
     }
 
     @IsTest
     static void findNearestFacilitiesWithRadius_cacheHit_returnsResults() {
-        // Be resilient if the controller unexpectedly needs to warm origin coords (QA schema differences).
-        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
-
         // Create a facility (ServiceTerritory) with an address.
         // Note: ServiceTerritory exists in orgs with Field Service; if unavailable, this test will need org support.
         OperatingHours oh = new OperatingHours(
@@ -294,14 +245,13 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '1 Facility Way',
             City = 'Austin',
-            PostalCode = '78701'
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
         );
-        // Avoid State/Country label validation issues in orgs with restricted picklists.
-        setFieldIfExists(st, 'CountryCode', 'US');
-        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
         String originAddress = '100 Origin St, Austin, TX 78701';
 
         // Insert a cache row that matches (origin, destination) so the controller does NOT call Google.
@@ -323,10 +273,6 @@ private class GnalFacilitySearchControllerTest {
         } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
             // In some orgs these were created as (redundant) geolocation fields; set the point.
             setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
-        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
-            // Numeric origin coords (if present) are also supported by the controller.
-            cache.put('Origin_Latitude__c', 30.2672);
-            cache.put('Origin_Longitude__c', -97.7431);
         }
 
         insert cache;
@@ -371,8 +317,6 @@ private class GnalFacilitySearchControllerTest {
 
     @IsTest
     static void findNearestFacilitiesWithRadius_radiusDefaultsWhenNullOrNegative() {
-        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
-
         // Covers default radius logic paths without invoking callouts (cache hit).
         OperatingHours oh = new OperatingHours(
             Name = 'Test Hours Default Radius',
@@ -386,13 +330,13 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '2 Facility Way',
             City = 'Austin',
-            PostalCode = '78701'
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
         );
-        setFieldIfExists(st, 'CountryCode', 'US');
-        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
         String originAddress = '100 Origin St, Austin, TX 78701';
 
         GeocodeCache__c cache = new GeocodeCache__c(
@@ -409,9 +353,6 @@ private class GnalFacilitySearchControllerTest {
             setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
         } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
             setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
-        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
-            cache.put('Origin_Latitude__c', 30.2672);
-            cache.put('Origin_Longitude__c', -97.7431);
         }
         insert cache;
 
@@ -426,8 +367,6 @@ private class GnalFacilitySearchControllerTest {
 
     @IsTest
     static void findNearestFacilities_withoutRadius_cacheHit_returnsResults() {
-        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
-
         // Covers the findNearestFacilities() wrapper (radius null).
         OperatingHours oh = new OperatingHours(
             Name = 'Test Hours Wrapper',
@@ -441,13 +380,13 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '3 Facility Way',
             City = 'Austin',
-            PostalCode = '78701'
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
         );
-        setFieldIfExists(st, 'CountryCode', 'US');
-        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
         String originAddress = '101 Origin St, Austin, TX 78701';
 
         GeocodeCache__c cache = new GeocodeCache__c(
@@ -464,9 +403,6 @@ private class GnalFacilitySearchControllerTest {
             setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
         } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
             setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
-        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
-            cache.put('Origin_Latitude__c', 30.2672);
-            cache.put('Origin_Longitude__c', -97.7431);
         }
         insert cache;
 
@@ -645,17 +581,16 @@ private class GnalFacilitySearchControllerTest {
         // Create many territories so missingAddresses > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST (25).
         List<ServiceTerritory> territories = new List<ServiceTerritory>();
         for (Integer i = 0; i < 30; i++) {
-            ServiceTerritory t = new ServiceTerritory(
+            territories.add(new ServiceTerritory(
                 Name = 'Facility ' + i,
                 IsActive = true,
                 OperatingHoursId = oh.Id,
                 Street = String.valueOf(i) + ' Facility Way',
                 City = 'Austin',
-                PostalCode = '78701'
-            );
-            setFieldIfExists(t, 'CountryCode', 'US');
-            setFieldIfExists(t, 'StateCode', 'TX');
-            territories.add(t);
+                State = 'TX',
+                PostalCode = '78701',
+                Country = 'USA'
+            ));
         }
         insert territories;
 
@@ -700,14 +635,14 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '9 Facility Way',
             City = 'Austin',
-            PostalCode = '78701'
+            State = 'TX',
+            PostalCode = '78701',
+            Country = 'USA'
         );
-        setFieldIfExists(st, 'CountryCode', 'US');
-        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
         String originAddress = '100 Origin St, Austin, TX 78701';
-        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
 
         // Insert cache row with destination coords but no origin coords.
         GeocodeCache__c cache = new GeocodeCache__c(

@@ -14,7 +14,6 @@ public with sharing class GnalFacilitySearchController {
     private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
     private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
     private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
-    // (State normalization removed; rely on platform State/Country picklists where available.)
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -48,11 +47,6 @@ public with sharing class GnalFacilitySearchController {
             Double effectiveRadius = radiusMiles;
             if (effectiveRadius == null || effectiveRadius <= 0) {
                 effectiveRadius = DEFAULT_RADIUS_MILES;
-            }
-
-            // Test fallback: allow cache-only filtering without requiring origin coordinates.
-            if (Test.isRunningTest()) {
-                return formatCacheResults(queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, effectiveRadius));
             }
 
             LatLng origin = getOriginLatLngFromAnyCacheRow(originAddress);
@@ -126,17 +120,6 @@ public with sharing class GnalFacilitySearchController {
 
         CacheContext cacheContext = ensureCacheCoverage(originAddress, destinationAddresses);
         if (cacheContext.originLatitude == null || cacheContext.originLongitude == null) {
-            // In some orgs (especially during tests), origin coordinates may not be stored in cache
-            // due to field-level writability or geolocation evaluation differences. In that case,
-            // fall back to filtering by the cached distance field instead of throwing.
-            if (Test.isRunningTest()) {
-                List<GeocodeCache__c> fallback = queryCachesWithinRadiusByMilesOnly(
-                    originAddress,
-                    destinationAddresses,
-                    effectiveRadius
-                );
-                return formatCacheResults(fallback);
-            }
             throw new AuraHandledException('Unable to determine origin coordinates.');
         }
 
@@ -367,11 +350,6 @@ public with sharing class GnalFacilitySearchController {
 
         // Backfill origin coords into existing cache rows if missing (one-time Google call).
         if ((context.originLatitude == null || context.originLongitude == null) && !existingCacheRecords.isEmpty()) {
-            // Tests should never require real geocoding callouts; upper layers can fall back to cached miles.
-            if (Test.isRunningTest()) {
-                return context;
-            }
-
             Map<String, Double> originLatLng = GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress(originAddress);
             if (originLatLng != null) {
                 context.originLatitude = originLatLng.get('lat');
@@ -394,9 +372,6 @@ public with sharing class GnalFacilitySearchController {
 
         // If there are no existing cache rows (should only happen when no destinations had addresses), last resort.
         if (context.originLatitude == null || context.originLongitude == null) {
-            if (Test.isRunningTest()) {
-                return context;
-            }
             Map<String, Double> originLatLng = GnalTravelTimeServiceWithGeocoding.getLatLngFromAddress(originAddress);
             if (originLatLng != null) {
                 context.originLatitude = originLatLng.get('lat');
@@ -416,10 +391,6 @@ public with sharing class GnalFacilitySearchController {
     ) {
         if (destinationAddresses == null || destinationAddresses.isEmpty()) {
             return new List<GeocodeCache__c>();
-        }
-        // Test fallback: avoid DISTANCE() flakiness/limitations and rely on cached miles instead.
-        if (Test.isRunningTest()) {
-            return queryCachesWithinRadiusByMilesOnly(originAddress, destinationAddresses, radiusMiles);
         }
         if (originLatitude == null || originLongitude == null) {
             return new List<GeocodeCache__c>();
@@ -454,10 +425,6 @@ public with sharing class GnalFacilitySearchController {
         Double radiusMiles
     ) {
         if (String.isBlank(originAddress)) return new List<GeocodeCache__c>();
-        // Test fallback: avoid requiring origin coords for DISTANCE().
-        if (Test.isRunningTest()) {
-            return queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, radiusMiles);
-        }
         if (originLatitude == null || originLongitude == null) return new List<GeocodeCache__c>();
 
         Location originLocation = Location.newInstance(originLatitude, originLongitude);
@@ -706,12 +673,7 @@ public with sharing class GnalFacilitySearchController {
         // - Text (preferred/simple): query the field directly
         // - Compound Address (in some orgs): query subfields instead of the compound
         if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f = CASE_FIELD_MAP.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            // Address compound fields are best handled via subfields (and cannot be filtered directly).
-            if (d != null && d.getType() != Schema.DisplayType.Address) {
-                return ', GNAL_Origin_Location__c';
-            }
+            return ', GNAL_Origin_Location__c';
         }
 
         List<String> candidates = new List<String>{
@@ -733,12 +695,7 @@ public with sharing class GnalFacilitySearchController {
     private static String initCaseOriginNotNullWhere() {
         // Prefer filtering on the Text field when present.
         if (CASE_FIELD_MAP != null && CASE_FIELD_MAP.containsKey('GNAL_Origin_Location__c')) {
-            Schema.SObjectField f = CASE_FIELD_MAP.get('GNAL_Origin_Location__c');
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            // Address compound fields cannot be filtered directly (Salesforce throws a QueryException).
-            if (d != null && d.getType() != Schema.DisplayType.Address) {
-                return 'GNAL_Origin_Location__c != null';
-            }
+            return 'GNAL_Origin_Location__c != null';
         }
 
         // Address compound fields cannot be filtered directly. Filter on subfields instead.
@@ -761,101 +718,24 @@ public with sharing class GnalFacilitySearchController {
     private static String formatCaseOriginAddress(SObject caseRow) {
         if (caseRow == null) return null;
 
-        // Accessing an unselected field throws SObjectException. Use populated-fields map first.
-        Map<String, Object> populated = caseRow.getPopulatedFieldsAsMap();
-        if (populated != null && populated.containsKey('GNAL_Origin_Location__c')) {
-            Object raw = populated.get('GNAL_Origin_Location__c');
-            if (raw instanceof String) {
-                String s = (String) raw;
-                if (!String.isBlank(s)) return s;
-            }
+        Object raw = caseRow.get('GNAL_Origin_Location__c');
+        if (raw instanceof String) {
+            String s = (String) raw;
+            if (!String.isBlank(s)) return s;
         }
 
         List<String> parts = new List<String>();
-        // Subfields vary by org/package version; only access fields that actually exist.
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Street__s'));
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__City__s'));
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__State__s'));
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__PostalCode__s'));
-        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Country__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__Street__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__City__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__State__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__PostalCode__s'));
+        parts.add((String) caseRow.get('GNAL_Origin_Location__Country__s'));
 
         List<String> cleaned = new List<String>();
         for (String p : parts) {
             if (!String.isBlank(p)) cleaned.add(p);
         }
         return cleaned.isEmpty() ? null : String.join(cleaned, ', ');
-    }
-
-    private static String getCaseStringIfPresent(SObject caseRow, String fieldApiName) {
-        if (caseRow == null || String.isBlank(fieldApiName) || CASE_FIELD_MAP == null) {
-            return null;
-        }
-        if (!CASE_FIELD_MAP.containsKey(fieldApiName)) {
-            return null;
-        }
-        Map<String, Object> populated = caseRow.getPopulatedFieldsAsMap();
-        if (populated == null || !populated.containsKey(fieldApiName)) {
-            // Field exists but wasn't selected in the SOQL; treat as absent.
-            return null;
-        }
-        Object v = populated.get(fieldApiName);
-        return (v instanceof String) ? (String) v : null;
-    }
-
-    /**
-     * Test-only fallback: filter cache rows using the precomputed Distance_Miles__c field.
-     * This avoids org-specific limitations around geolocation fields + DISTANCE() evaluation in tests.
-     */
-    @TestVisible
-    private static List<GeocodeCache__c> queryCachesWithinRadiusByMilesOnly(
-        String originAddress,
-        List<String> destinationAddresses,
-        Double radiusMiles
-    ) {
-        if (String.isBlank(originAddress) || destinationAddresses == null || destinationAddresses.isEmpty()) {
-            return new List<GeocodeCache__c>();
-        }
-        Double radiusFilter = (radiusMiles == null ? DEFAULT_RADIUS_MILES : radiusMiles) + DISTANCE_EPSILON_MILES;
-        return [
-            SELECT Id,
-                   Origin_Address__c,
-                   Destination_Address__c,
-                   Distance_Miles__c,
-                   Distance_Meters__c,
-                   Travel_Time_Minutes__c,
-                   Destination_Location__Latitude__s,
-                   Destination_Location__Longitude__s,
-                   Destination_Location__c
-            FROM GeocodeCache__c
-            WHERE Origin_Address__c = :originAddress
-            AND Destination_Address__c IN :destinationAddresses
-            AND Distance_Miles__c < :radiusFilter
-            ORDER BY Distance_Miles__c ASC NULLS LAST
-        ];
-    }
-
-    @TestVisible
-    private static List<GeocodeCache__c> queryCachesWithinRadiusAllCachedByMilesOnly(
-        String originAddress,
-        Double radiusMiles
-    ) {
-        if (String.isBlank(originAddress)) return new List<GeocodeCache__c>();
-        Double radiusFilter = (radiusMiles == null ? DEFAULT_RADIUS_MILES : radiusMiles) + DISTANCE_EPSILON_MILES;
-        return [
-            SELECT Id,
-                   Origin_Address__c,
-                   Destination_Address__c,
-                   Distance_Miles__c,
-                   Distance_Meters__c,
-                   Travel_Time_Minutes__c,
-                   Destination_Location__Latitude__s,
-                   Destination_Location__Longitude__s,
-                   Destination_Location__c
-            FROM GeocodeCache__c
-            WHERE Origin_Address__c = :originAddress
-            AND Distance_Miles__c < :radiusFilter
-            ORDER BY Distance_Miles__c ASC NULLS LAST
-        ];
     }
 
     private static String toSoqlInList(List<String> values) {
