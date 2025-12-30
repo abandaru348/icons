@@ -78,8 +78,9 @@ private class GnalFacilitySearchControllerTest {
             Name = 'Test Account',
             BillingStreet = '123 Main St',
             BillingCity = 'Austin',
+            BillingState = 'Texas',
             BillingPostalCode = '78701',
-            BillingCountry = 'USA'
+            BillingCountry = 'United States'
         );
         // State/Country picklists enabled: use BillingStateCode.
         a.put('BillingStateCode', 'TX');
@@ -89,7 +90,8 @@ private class GnalFacilitySearchControllerTest {
         String result = GnalFacilitySearchController.getAccountBillingAddress(a.Id);
         Test.stopTest();
 
-        System.assertEquals('123 Main St, Austin, TX, 78701, USA', result);
+        // Controller uses BillingStateCode, so we expect the 2-letter code.
+        System.assertEquals('123 Main St, Austin, TX, 78701, United States', result);
     }
 
     @IsTest
