@@ -14,9 +14,7 @@ public with sharing class GnalFacilitySearchController {
     private static final String OPTIONAL_ORIGIN_FIELDS_SELECT = initOptionalOriginFieldsSelect();
     private static final String OPTIONAL_CASE_ORIGIN_FIELDS_SELECT = initOptionalCaseOriginFieldsSelect();
     private static final String CASE_ORIGIN_NOT_NULL_WHERE = initCaseOriginNotNullWhere();
-    // Loaded from Custom Metadata (GnalStateMapping__mdt). Cached for the transaction.
-    private static Map<String, String> STATE_FULL_NAME_BY_ABBR;
-    private static Map<String, String> STATE_FULL_NAME_BY_UPPER_NAME;
+    // (State normalization removed; rely on platform State/Country picklists where available.)
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -777,7 +775,7 @@ public with sharing class GnalFacilitySearchController {
         // Subfields vary by org/package version; only access fields that actually exist.
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Street__s'));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__City__s'));
-        parts.add(normalizeUsState(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__State__s')));
+        parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__State__s'));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__PostalCode__s'));
         parts.add(getCaseStringIfPresent(caseRow, 'GNAL_Origin_Location__Country__s'));
 
@@ -971,8 +969,7 @@ public with sharing class GnalFacilitySearchController {
         List<String> parts = new List<String>();
         if (!String.isBlank(territory.Street))     parts.add(territory.Street);
         if (!String.isBlank(territory.City))       parts.add(territory.City);
-        String st = normalizeUsState(territory.State);
-        if (!String.isBlank(st))                   parts.add(st);
+        if (!String.isBlank(territory.State))      parts.add(territory.State);
         if (!String.isBlank(territory.PostalCode)) parts.add(territory.PostalCode);
         if (!String.isBlank(territory.Country))    parts.add(territory.Country);
         return parts.isEmpty() ? null : String.join(parts, ', ');
@@ -985,60 +982,20 @@ public with sharing class GnalFacilitySearchController {
         }
         try {
             Account acc = [
-                SELECT BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry
+                SELECT BillingStreet, BillingCity, BillingStateCode, BillingPostalCode, BillingCountry
                 FROM Account WHERE Id = :accountId
                 LIMIT 1
             ];
             List<String> parts = new List<String>();
             if (acc.BillingStreet != null) parts.add(acc.BillingStreet);
             if (acc.BillingCity != null) parts.add(acc.BillingCity);
-            if (acc.BillingState != null) parts.add(normalizeUsState(acc.BillingState));
+            if (acc.BillingStateCode != null) parts.add(acc.BillingStateCode);
             if (acc.BillingPostalCode != null) parts.add(acc.BillingPostalCode);
             if (acc.BillingCountry != null) parts.add(acc.BillingCountry);
             return parts.isEmpty() ? null : String.join(parts, ', ');
         } catch (Exception ex) {
             // Non-blocking fallback: allow caller to handle null/empty origin.
             return null;
-        }
-    }
-
-    // Normalizes US state values to full names (e.g., "TX" -> "Texas") for consistent cache keys/display.
-    private static String normalizeUsState(String stateOrProvince) {
-        if (String.isBlank(stateOrProvince)) return null;
-        String s = stateOrProvince.trim();
-        if (s.length() == 2) {
-            String abbr = s.toUpperCase();
-            ensureStateMapsLoaded();
-            if (STATE_FULL_NAME_BY_ABBR != null && STATE_FULL_NAME_BY_ABBR.containsKey(abbr)) return STATE_FULL_NAME_BY_ABBR.get(abbr);
-            return abbr;
-        }
-
-        String key = s.toUpperCase();
-        // Common punctuation variants (e.g., "D.C.")
-        key = key.replace('.', '');
-        ensureStateMapsLoaded();
-        if (STATE_FULL_NAME_BY_UPPER_NAME != null && STATE_FULL_NAME_BY_UPPER_NAME.containsKey(key)) {
-            return STATE_FULL_NAME_BY_UPPER_NAME.get(key);
-        }
-        // If unknown, keep original trimmed value.
-        return s;
-    }
-
-    private static void ensureStateMapsLoaded() {
-        if (STATE_FULL_NAME_BY_ABBR != null && STATE_FULL_NAME_BY_UPPER_NAME != null) return;
-        STATE_FULL_NAME_BY_ABBR = new Map<String, String>();
-        STATE_FULL_NAME_BY_UPPER_NAME = new Map<String, String>();
-        // Records are keyed by DeveloperName (e.g., TX) and store the full name in Full_Name__c.
-        for (GnalStateMapping__mdt m : [
-            SELECT DeveloperName, Full_Name__c
-            FROM GnalStateMapping__mdt
-        ]) {
-            if (m == null) continue;
-            String abbr = String.isBlank(m.DeveloperName) ? null : m.DeveloperName.trim().toUpperCase();
-            String fullName = String.isBlank(m.Full_Name__c) ? null : m.Full_Name__c.trim();
-            if (String.isBlank(abbr) || String.isBlank(fullName)) continue;
-            STATE_FULL_NAME_BY_ABBR.put(abbr, fullName);
-            STATE_FULL_NAME_BY_UPPER_NAME.put(fullName.toUpperCase(), fullName);
         }
     }
 

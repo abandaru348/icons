@@ -88,7 +88,7 @@ private class GnalFacilitySearchControllerTest {
         String result = GnalFacilitySearchController.getAccountBillingAddress(a.Id);
         Test.stopTest();
 
-        System.assertEquals('123 Main St, Austin, Texas, 78701, USA', result);
+        System.assertEquals('123 Main St, Austin, TX, 78701, USA', result);
     }
 
     @IsTest
