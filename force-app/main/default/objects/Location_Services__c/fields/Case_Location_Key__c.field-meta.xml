@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Case_Location_Key__c</fullName>
+    <label>Case Location Key</label>
+    <type>Text</type>
+    <length>255</length>
+    <required>true</required>
+    <unique>true</unique>
+    <externalId>true</externalId>
+    <caseSensitive>false</caseSensitive>
+    <description>Unique key to prevent duplicate Location Services per Case and Current Location.</description>
+</CustomField>
+
