@@ -1,5 +1,13 @@
 @IsTest
 private class GnalFacilitySearchControllerTest {
+    private static void setFieldIfExists(SObject record, String fieldApiName, Object value) {
+        if (record == null || String.isBlank(fieldApiName)) return;
+        Map<String, Schema.SObjectField> fields = record.getSObjectType().getDescribe().fields.getMap();
+        if (fields != null && fields.containsKey(fieldApiName)) {
+            record.put(fieldApiName, value);
+        }
+    }
+
     private static void setGeo(SObject record, String fieldApiName, Decimal lat, Decimal lon) {
         if (record == null || String.isBlank(fieldApiName) || lat == null || lon == null) return;
         Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
@@ -78,11 +86,11 @@ private class GnalFacilitySearchControllerTest {
             Name = 'Test Account',
             BillingStreet = '123 Main St',
             BillingCity = 'Austin',
-            BillingState = 'Texas',
             BillingPostalCode = '78701'
         );
         // State/Country picklists enabled: use BillingStateCode.
-        a.put('BillingStateCode', 'TX');
+        setFieldIfExists(a, 'BillingCountryCode', 'US');
+        setFieldIfExists(a, 'BillingStateCode', 'TX');
         insert a;
 
         Test.startTest();
@@ -283,12 +291,14 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '1 Facility Way',
             City = 'Austin',
-            State = 'TX',
             PostalCode = '78701'
         );
+        // Avoid State/Country label validation issues in orgs with restricted picklists.
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
         String originAddress = '100 Origin St, Austin, TX 78701';
 
         // Insert a cache row that matches (origin, destination) so the controller does NOT call Google.
@@ -373,12 +383,13 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '2 Facility Way',
             City = 'Austin',
-            State = 'TX',
             PostalCode = '78701'
         );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
         String originAddress = '100 Origin St, Austin, TX 78701';
 
         GeocodeCache__c cache = new GeocodeCache__c(
@@ -427,12 +438,13 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '3 Facility Way',
             City = 'Austin',
-            State = 'TX',
             PostalCode = '78701'
         );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
         String originAddress = '101 Origin St, Austin, TX 78701';
 
         GeocodeCache__c cache = new GeocodeCache__c(
@@ -630,15 +642,17 @@ private class GnalFacilitySearchControllerTest {
         // Create many territories so missingAddresses > MAX_DESTINATIONS_TO_CACHE_PER_REQUEST (25).
         List<ServiceTerritory> territories = new List<ServiceTerritory>();
         for (Integer i = 0; i < 30; i++) {
-            territories.add(new ServiceTerritory(
+            ServiceTerritory t = new ServiceTerritory(
                 Name = 'Facility ' + i,
                 IsActive = true,
                 OperatingHoursId = oh.Id,
                 Street = String.valueOf(i) + ' Facility Way',
                 City = 'Austin',
-                State = 'TX',
                 PostalCode = '78701'
-            ));
+            );
+            setFieldIfExists(t, 'CountryCode', 'US');
+            setFieldIfExists(t, 'StateCode', 'TX');
+            territories.add(t);
         }
         insert territories;
 
@@ -683,13 +697,14 @@ private class GnalFacilitySearchControllerTest {
             OperatingHoursId = oh.Id,
             Street = '9 Facility Way',
             City = 'Austin',
-            State = 'TX',
             PostalCode = '78701'
         );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
         String originAddress = '100 Origin St, Austin, TX 78701';
-        String destAddress = formatAddress(st.Street, st.City, st.State, st.PostalCode, st.Country);
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
 
         // Insert cache row with destination coords but no origin coords.
         GeocodeCache__c cache = new GeocodeCache__c(
