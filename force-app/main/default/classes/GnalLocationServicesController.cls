@@ -144,11 +144,34 @@ public with sharing class GnalLocationServicesController {
         Boolean hasStreet = fields != null && fields.containsKey('GNAL_Current_Location__Street__s');
 
         if (hasStreet) {
+            ParsedAddress parsed = parseNormalizedAddress(normalized);
+            // If parsing fails, fall back to matching on Street only.
+            String streetVal = (parsed != null && !String.isBlank(parsed.street)) ? parsed.street : normalized;
+
+            // Build a schema-aware query that matches on subfields when available.
+            List<String> whereClauses = new List<String>();
+            whereClauses.add('GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\'');
+            whereClauses.add('GNAL_Current_Location__Street__s = \'' + String.escapeSingleQuotes(streetVal) + '\'');
+
+            if (parsed != null) {
+                if (fields.containsKey('GNAL_Current_Location__City__s') && !String.isBlank(parsed.city)) {
+                    whereClauses.add('GNAL_Current_Location__City__s = \'' + String.escapeSingleQuotes(parsed.city) + '\'');
+                }
+                if (fields.containsKey('GNAL_Current_Location__State__s') && !String.isBlank(parsed.state)) {
+                    whereClauses.add('GNAL_Current_Location__State__s = \'' + String.escapeSingleQuotes(parsed.state) + '\'');
+                }
+                if (fields.containsKey('GNAL_Current_Location__PostalCode__s') && !String.isBlank(parsed.postal)) {
+                    whereClauses.add('GNAL_Current_Location__PostalCode__s = \'' + String.escapeSingleQuotes(parsed.postal) + '\'');
+                }
+                if (fields.containsKey('GNAL_Current_Location__Country__s') && !String.isBlank(parsed.country)) {
+                    whereClauses.add('GNAL_Current_Location__Country__s = \'' + String.escapeSingleQuotes(parsed.country) + '\'');
+                }
+            }
+
             List<GNAL_Location_Service__c> rows = (List<GNAL_Location_Service__c>) Database.query(
                 'SELECT Id' +
                 ' FROM GNAL_Location_Service__c' +
-                ' WHERE GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\'' +
-                ' AND GNAL_Current_Location__Street__s = \'' + String.escapeSingleQuotes(normalized) + '\'' +
+                ' WHERE ' + String.join(whereClauses, ' AND ') +
                 ' ORDER BY CreatedDate DESC' +
                 ' LIMIT 1'
             );
@@ -176,18 +199,29 @@ public with sharing class GnalLocationServicesController {
         Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
         if (fields == null) return;
 
-        putIfWriteable(ls, fields, 'GNAL_Current_Location__Street__s', normalized);
+        ParsedAddress parsed = parseNormalizedAddress(normalized);
 
-        List<String> parts = new List<String>();
-        for (String p : normalized.split(',')) {
-            String t = (p == null) ? null : p.trim();
-            if (!String.isBlank(t)) parts.add(t);
+        // Prefer writing to the compound subfields for clean display:
+        // Street
+        // City, State Postal
+        // Country
+        String streetVal = (parsed != null && !String.isBlank(parsed.street)) ? parsed.street : normalized;
+        putIfWriteable(ls, fields, 'GNAL_Current_Location__Street__s', streetVal);
+
+        if (parsed != null) {
+            if (!String.isBlank(parsed.city)) {
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__City__s', parsed.city);
+            }
+            if (!String.isBlank(parsed.state)) {
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__State__s', stateLabelFromCode(parsed.state));
+            }
+            if (!String.isBlank(parsed.postal)) {
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__PostalCode__s', parsed.postal);
+            }
+            if (!String.isBlank(parsed.country)) {
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__Country__s', countryLabelFromCode(parsed.country));
+            }
         }
-
-        if (parts.size() >= 2) putIfWriteable(ls, fields, 'GNAL_Current_Location__City__s', parts[1]);
-        if (parts.size() >= 3) putIfWriteable(ls, fields, 'GNAL_Current_Location__State__s', parts[2]);
-        if (parts.size() >= 4) putIfWriteable(ls, fields, 'GNAL_Current_Location__PostalCode__s', parts[3]);
-        if (parts.size() >= 5) putIfWriteable(ls, fields, 'GNAL_Current_Location__Country__s', parts[4]);
     }
 
     private static void putIfWriteable(SObject row, Map<String, Schema.SObjectField> fields, String api, Object val) {
@@ -285,6 +319,139 @@ public with sharing class GnalLocationServicesController {
         // Common best-effort default if picklists aren't enabled/configured.
         if (trimmed == 'US') return 'United States';
         return trimmed;
+    }
+
+    private class ParsedAddress {
+        String street;
+        String city;
+        String state;
+        String postal;
+        String country;
+    }
+
+    /**
+     * Best-effort parse of a single-line address string into parts that map to Salesforce Address subfields.
+     *
+     * Supports common shapes:
+     * - "street, city, state, postal, country"
+     * - "street, city, state postal, country"
+     * - "street, city state postal, country"
+     *
+     * If parsing is uncertain, we at least return Street=original string so data isn't lost.
+     */
+    private static ParsedAddress parseNormalizedAddress(String normalized) {
+        if (String.isBlank(normalized)) return null;
+
+        // Normalize whitespace and strip newlines for parsing.
+        String s = normalized.replace('\n', ' ').replace('\r', ' ');
+        while (s.contains('  ')) s = s.replace('  ', ' ');
+        s = s.trim();
+
+        List<String> tokens = new List<String>();
+        for (String raw : s.split(',')) {
+            String t = raw == null ? null : raw.trim();
+            if (!String.isBlank(t)) tokens.add(t);
+        }
+
+        ParsedAddress out = new ParsedAddress();
+        if (tokens.isEmpty()) {
+            out.street = s;
+            return out;
+        }
+
+        // Most common: street, city, state, postal, country (5 tokens)
+        if (tokens.size() >= 5) {
+            Integer n = tokens.size();
+            out.country = tokens[n - 1];
+            out.postal = tokens[n - 2];
+            out.state = tokens[n - 3];
+            out.city = tokens[n - 4];
+            // Street may itself contain commas (suite/building). Join the remaining prefix.
+            List<String> streetParts = new List<String>();
+            for (Integer i = 0; i <= n - 5; i++) streetParts.add(tokens[i]);
+            out.street = String.join(streetParts, ', ');
+            return out;
+        }
+
+        // Common: street, city, "state postal", country (4 tokens)
+        if (tokens.size() == 4) {
+            out.street = tokens[0];
+            out.city = tokens[1];
+            out.country = tokens[3];
+            String statePostal = tokens[2];
+            ParsedAddress sp = parseStatePostal(statePostal);
+            out.state = sp != null ? sp.state : null;
+            out.postal = sp != null ? sp.postal : null;
+            if (String.isBlank(out.state)) out.state = statePostal;
+            return out;
+        }
+
+        // Less common: street, "city state postal", country (3 tokens)
+        if (tokens.size() == 3) {
+            out.street = tokens[0];
+            out.country = tokens[2];
+            ParsedAddress csp = parseCityStatePostal(tokens[1]);
+            if (csp != null) {
+                out.city = csp.city;
+                out.state = csp.state;
+                out.postal = csp.postal;
+            } else {
+                out.city = tokens[1];
+            }
+            return out;
+        }
+
+        // Minimal: treat as Street-only.
+        out.street = s;
+        return out;
+    }
+
+    private static ParsedAddress parseStatePostal(String value) {
+        if (String.isBlank(value)) return null;
+        String v = value.trim();
+        List<String> parts = new List<String>();
+        for (String p : v.split(' ')) {
+            String t = p == null ? null : p.trim();
+            if (!String.isBlank(t)) parts.add(t);
+        }
+        if (parts.size() < 2) return null;
+        String last = parts[parts.size() - 1];
+        // Simple US ZIP check (5 digits)
+        if (!Pattern.matches('^[0-9]{5}$', last)) return null;
+
+        ParsedAddress out = new ParsedAddress();
+        out.postal = last;
+        List<String> stateParts = new List<String>();
+        for (Integer i = 0; i < parts.size() - 1; i++) stateParts.add(parts[i]);
+        out.state = String.join(stateParts, ' ');
+        return out;
+    }
+
+    private static ParsedAddress parseCityStatePostal(String value) {
+        if (String.isBlank(value)) return null;
+        String v = value.trim();
+
+        // Try "City State Postal" where postal is 5 digits.
+        List<String> parts = new List<String>();
+        for (String p : v.split(' ')) {
+            String t = p == null ? null : p.trim();
+            if (!String.isBlank(t)) parts.add(t);
+        }
+        if (parts.size() < 3) return null;
+
+        String postal = parts[parts.size() - 1];
+        if (!Pattern.matches('^[0-9]{5}$', postal)) return null;
+
+        String state = parts[parts.size() - 2];
+        List<String> cityParts = new List<String>();
+        for (Integer i = 0; i < parts.size() - 2; i++) cityParts.add(parts[i]);
+        String city = String.join(cityParts, ' ');
+
+        ParsedAddress out = new ParsedAddress();
+        out.city = city;
+        out.state = state;
+        out.postal = postal;
+        return out;
     }
 }
 
