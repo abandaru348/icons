@@ -52,16 +52,18 @@ public with sharing class GnalLocationServicesController {
         String street = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Street__s');
         String city = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__City__s');
 
+        // Prefer full State name over StateCode.
         String state = coalesceStr(
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__StateCode__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s')
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s'),
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__StateCode__s')
         );
 
         String postal = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__PostalCode__s');
 
+        // Prefer full Country name over CountryCode.
         String country = coalesceStr(
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__CountryCode__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s')
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s'),
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__CountryCode__s')
         );
 
         List<String> parts = new List<String>();
