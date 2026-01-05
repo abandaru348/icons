@@ -1,10 +1,12 @@
 public with sharing class GnalLocationServicesController {
 
     // Code->label maps for orgs where address fields store only codes (e.g., "VA", "US").
-    private static final Map<String, String> STATE_CODE_TO_LABEL = initStateCodeToLabel();
-    private static final Map<String, String> COUNTRY_CODE_TO_LABEL = initCountryCodeToLabel();
-    private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
-    private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
+    private static final Map<String, String> STATE_CODE_TO_LABEL =
+        buildCodeLabelMap(safeDescribe('Account', 'BillingStateCode'));
+    private static final Map<String, String> COUNTRY_CODE_TO_LABEL =
+        buildCodeLabelMap(safeDescribe('Account', 'BillingCountryCode'));
+    private static final Map<String, String> STATE_LABEL_TO_CODE = buildLabelCodeMap(STATE_CODE_TO_LABEL);
+    private static final Map<String, String> COUNTRY_LABEL_TO_CODE = buildLabelCodeMap(COUNTRY_CODE_TO_LABEL);
 
     public class LocationServiceUpsertResult {
         @AuraEnabled public Id locationServiceId;
@@ -273,43 +275,6 @@ public with sharing class GnalLocationServicesController {
         return null;
     }
 
-    private static Map<String, String> initStateCodeToLabel() {
-        Map<String, String> out = new Map<String, String>();
-        try {
-            // BillingStateCode is the canonical state-code picklist when State/Country Picklists are enabled.
-            Schema.DescribeFieldResult d = Account.BillingStateCode.getDescribe();
-            if (d != null) {
-                for (Schema.PicklistEntry e : d.getPicklistValues()) {
-                    if (e == null) continue;
-                    String code = e.getValue();
-                    String label = e.getLabel();
-                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
-                }
-            }
-        } catch (Exception ex) {
-            // ignore; fall back to raw codes
-        }
-        return out;
-    }
-
-    private static Map<String, String> initCountryCodeToLabel() {
-        Map<String, String> out = new Map<String, String>();
-        try {
-            Schema.DescribeFieldResult d = Account.BillingCountryCode.getDescribe();
-            if (d != null) {
-                for (Schema.PicklistEntry e : d.getPicklistValues()) {
-                    if (e == null) continue;
-                    String code = e.getValue();
-                    String label = e.getLabel();
-                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
-                }
-            }
-        } catch (Exception ex) {
-            // ignore; fall back to raw codes
-        }
-        return out;
-    }
-
     private static String stateLabelFromCode(String code) {
         if (String.isBlank(code)) return null;
         String trimmed = code.trim();
@@ -356,11 +321,39 @@ public with sharing class GnalLocationServicesController {
         return trimmed;
     }
 
-    private static Map<String, String> invertMapCaseInsensitive(Map<String, String> input) {
+    private static Schema.DescribeFieldResult safeDescribe(String sobjectApiName, String fieldApiName) {
+        try {
+            Schema.SObjectType t = Schema.getGlobalDescribe().get(sobjectApiName);
+            if (t == null) return null;
+            Map<String, Schema.SObjectField> m = t.getDescribe().fields.getMap();
+            if (m == null || !m.containsKey(fieldApiName)) return null;
+            return m.get(fieldApiName).getDescribe();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static Map<String, String> buildCodeLabelMap(Schema.DescribeFieldResult d) {
         Map<String, String> out = new Map<String, String>();
-        if (input == null) return out;
-        for (String code : input.keySet()) {
-            String label = input.get(code);
+        try {
+            if (d == null) return out;
+            for (Schema.PicklistEntry e : d.getPicklistValues()) {
+                if (e == null) continue;
+                String code = e.getValue();
+                String label = e.getLabel();
+                if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
+            }
+        } catch (Exception ex) {
+            // ignore; fall back to raw codes
+        }
+        return out;
+    }
+
+    private static Map<String, String> buildLabelCodeMap(Map<String, String> codeLabel) {
+        Map<String, String> out = new Map<String, String>();
+        if (codeLabel == null) return out;
+        for (String code : codeLabel.keySet()) {
+            String label = codeLabel.get(code);
             if (String.isBlank(code) || String.isBlank(label)) continue;
             out.put(label.toLowerCase(), code);
         }
@@ -393,17 +386,9 @@ public with sharing class GnalLocationServicesController {
         while (s.contains('  ')) s = s.replace('  ', ' ');
         s = s.trim();
 
-        List<String> tokens = new List<String>();
-        for (String raw : s.split(',')) {
-            String t = raw == null ? null : raw.trim();
-            if (!String.isBlank(t)) tokens.add(t);
-        }
-
         ParsedAddress out = new ParsedAddress();
-        if (tokens.isEmpty()) {
-            out.street = s;
-            return out;
-        }
+        List<String> tokens = splitTrim(s, ',');
+        if (tokens.isEmpty()) return withStreet(out, s);
 
         // Most common: street, city, state, postal, country (5 tokens)
         if (tokens.size() >= 5) {
@@ -424,11 +409,13 @@ public with sharing class GnalLocationServicesController {
             out.street = tokens[0];
             out.city = tokens[1];
             out.country = tokens[3];
-            String statePostal = tokens[2];
-            ParsedAddress sp = parseStatePostal(statePostal);
-            out.state = sp != null ? sp.state : null;
-            out.postal = sp != null ? sp.postal : null;
-            if (String.isBlank(out.state)) out.state = statePostal;
+            ParsedAddress sp = parseStatePostalTokens(splitTrim(tokens[2], ' '));
+            if (sp != null) {
+                out.state = sp.state;
+                out.postal = sp.postal;
+            } else {
+                out.state = tokens[2];
+            }
             return out;
         }
 
@@ -436,68 +423,68 @@ public with sharing class GnalLocationServicesController {
         if (tokens.size() == 3) {
             out.street = tokens[0];
             out.country = tokens[2];
-            ParsedAddress csp = parseCityStatePostal(tokens[1]);
-            if (csp != null) {
-                out.city = csp.city;
-                out.state = csp.state;
-                out.postal = csp.postal;
-            } else {
-                out.city = tokens[1];
-            }
+            ParsedAddress csp = parseCityStatePostalTokens(splitTrim(tokens[1], ' '));
+            if (csp == null) return withCity(out, tokens[1]);
+            out.city = csp.city;
+            out.state = csp.state;
+            out.postal = csp.postal;
             return out;
         }
 
         // Minimal: treat as Street-only.
-        out.street = s;
-        return out;
+        return withStreet(out, s);
     }
 
-    private static ParsedAddress parseStatePostal(String value) {
-        if (String.isBlank(value)) return null;
-        String v = value.trim();
-        List<String> parts = new List<String>();
-        for (String p : v.split(' ')) {
-            String t = p == null ? null : p.trim();
-            if (!String.isBlank(t)) parts.add(t);
-        }
-        if (parts.size() < 2) return null;
-        String last = parts[parts.size() - 1];
-        // Simple US ZIP check (5 digits)
-        if (!Pattern.matches('^[0-9]{5}$', last)) return null;
-
-        ParsedAddress out = new ParsedAddress();
-        out.postal = last;
-        List<String> stateParts = new List<String>();
-        for (Integer i = 0; i < parts.size() - 1; i++) stateParts.add(parts[i]);
-        out.state = String.join(stateParts, ' ');
-        return out;
-    }
-
-    private static ParsedAddress parseCityStatePostal(String value) {
-        if (String.isBlank(value)) return null;
-        String v = value.trim();
-
-        // Try "City State Postal" where postal is 5 digits.
-        List<String> parts = new List<String>();
-        for (String p : v.split(' ')) {
-            String t = p == null ? null : p.trim();
-            if (!String.isBlank(t)) parts.add(t);
-        }
-        if (parts.size() < 3) return null;
-
+    private static ParsedAddress parseStatePostalTokens(List<String> parts) {
+        if (parts == null || parts.size() < 2) return null;
         String postal = parts[parts.size() - 1];
-        if (!Pattern.matches('^[0-9]{5}$', postal)) return null;
-
-        String state = parts[parts.size() - 2];
-        List<String> cityParts = new List<String>();
-        for (Integer i = 0; i < parts.size() - 2; i++) cityParts.add(parts[i]);
-        String city = String.join(cityParts, ' ');
-
+        if (!isZip5(postal)) return null;
         ParsedAddress out = new ParsedAddress();
-        out.city = city;
-        out.state = state;
         out.postal = postal;
+        out.state = String.join(parts.subList(0, parts.size() - 1), ' ');
         return out;
+    }
+
+    private static ParsedAddress parseCityStatePostalTokens(List<String> parts) {
+        if (parts == null || parts.size() < 3) return null;
+        String postal = parts[parts.size() - 1];
+        if (!isZip5(postal)) return null;
+        ParsedAddress out = new ParsedAddress();
+        out.postal = postal;
+        out.state = parts[parts.size() - 2];
+        out.city = String.join(parts.subList(0, parts.size() - 2), ' ');
+        return out;
+    }
+
+    private static Boolean isZip5(String value) {
+        if (String.isBlank(value)) return false;
+        String v = value.trim();
+        if (v.length() != 5) return false;
+        for (Integer i = 0; i < 5; i++) {
+            String ch = v.substring(i, i + 1);
+            if (ch < '0' || ch > '9') return false;
+        }
+        return true;
+    }
+
+    private static List<String> splitTrim(String s, String delimiterChar) {
+        List<String> out = new List<String>();
+        if (String.isBlank(s) || String.isBlank(delimiterChar)) return out;
+        for (String raw : s.split(delimiterChar)) {
+            String t = raw == null ? null : raw.trim();
+            if (!String.isBlank(t)) out.add(t);
+        }
+        return out;
+    }
+
+    private static ParsedAddress withStreet(ParsedAddress a, String street) {
+        a.street = street;
+        return a;
+    }
+
+    private static ParsedAddress withCity(ParsedAddress a, String city) {
+        a.city = city;
+        return a;
     }
 }
 
