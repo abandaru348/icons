@@ -1,5 +1,9 @@
 public with sharing class GnalLocationServicesController {
 
+    // Code->label maps for orgs where address fields store only codes (e.g., "VA", "US").
+    private static final Map<String, String> STATE_CODE_TO_LABEL = initStateCodeToLabel();
+    private static final Map<String, String> COUNTRY_CODE_TO_LABEL = initCountryCodeToLabel();
+
     public class LocationServiceUpsertResult {
         @AuraEnabled public Id locationServiceId;
         @AuraEnabled public Integer searchCount;
@@ -52,19 +56,23 @@ public with sharing class GnalLocationServicesController {
         String street = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Street__s');
         String city = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__City__s');
 
-        // Prefer full State name over StateCode.
-        String state = coalesceStr(
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__StateCode__s')
-        );
+        String state = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s');
+        String stateCode = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__StateCode__s');
+        if (String.isBlank(state) && !String.isBlank(stateCode)) {
+            state = stateLabelFromCode(stateCode);
+        } else if (String.isBlank(state)) {
+            state = stateCode;
+        }
 
         String postal = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__PostalCode__s');
 
-        // Prefer full Country name over CountryCode.
-        String country = coalesceStr(
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__CountryCode__s')
-        );
+        String country = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s');
+        String countryCode = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__CountryCode__s');
+        if (String.isBlank(country) && !String.isBlank(countryCode)) {
+            country = countryLabelFromCode(countryCode);
+        } else if (String.isBlank(country)) {
+            country = countryCode;
+        }
 
         List<String> parts = new List<String>();
         if (!String.isBlank(street)) parts.add(street);
@@ -220,6 +228,63 @@ public with sharing class GnalLocationServicesController {
             if (v instanceof String && !String.isBlank((String) v)) return (String) v;
         }
         return null;
+    }
+
+    private static Map<String, String> initStateCodeToLabel() {
+        Map<String, String> out = new Map<String, String>();
+        try {
+            // BillingStateCode is the canonical state-code picklist when State/Country Picklists are enabled.
+            Schema.DescribeFieldResult d = Account.BillingStateCode.getDescribe();
+            if (d != null) {
+                for (Schema.PicklistEntry e : d.getPicklistValues()) {
+                    if (e == null) continue;
+                    String code = e.getValue();
+                    String label = e.getLabel();
+                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
+                }
+            }
+        } catch (Exception ex) {
+            // ignore; fall back to raw codes
+        }
+        return out;
+    }
+
+    private static Map<String, String> initCountryCodeToLabel() {
+        Map<String, String> out = new Map<String, String>();
+        try {
+            Schema.DescribeFieldResult d = Account.BillingCountryCode.getDescribe();
+            if (d != null) {
+                for (Schema.PicklistEntry e : d.getPicklistValues()) {
+                    if (e == null) continue;
+                    String code = e.getValue();
+                    String label = e.getLabel();
+                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
+                }
+            }
+        } catch (Exception ex) {
+            // ignore; fall back to raw codes
+        }
+        return out;
+    }
+
+    private static String stateLabelFromCode(String code) {
+        if (String.isBlank(code)) return null;
+        String trimmed = code.trim();
+        if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(trimmed)) {
+            return STATE_CODE_TO_LABEL.get(trimmed);
+        }
+        return trimmed;
+    }
+
+    private static String countryLabelFromCode(String code) {
+        if (String.isBlank(code)) return null;
+        String trimmed = code.trim();
+        if (COUNTRY_CODE_TO_LABEL != null && COUNTRY_CODE_TO_LABEL.containsKey(trimmed)) {
+            return COUNTRY_CODE_TO_LABEL.get(trimmed);
+        }
+        // Common best-effort default if picklists aren't enabled/configured.
+        if (trimmed == 'US') return 'United States';
+        return trimmed;
     }
 }
 
