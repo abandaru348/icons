@@ -38,16 +38,6 @@ public with sharing class GnalLocationServicesController {
             }
         }
 
-        // Always include Billing fields for fallback (and to avoid “not queried” errors).
-        List<String> billingFields = new List<String>{
-            'BillingStreet','BillingCity','BillingStateCode','BillingState','BillingPostalCode','BillingCountryCode','BillingCountry'
-        };
-        for (String f : billingFields) {
-            if (accFields != null && accFields.containsKey(f) && !selectFields.contains(f)) {
-                selectFields.add(f);
-            }
-        }
-
         Account a = (Account) Database.query(
             'SELECT ' + String.join(selectFields, ',') +
             ' FROM Account WHERE Id = \'' + String.escapeSingleQuotes(String.valueOf(c.AccountId)) + '\'' +
@@ -58,24 +48,20 @@ public with sharing class GnalLocationServicesController {
         String homeText = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__c');
         if (!String.isBlank(homeText)) return homeText;
 
-        // Otherwise build from available home subfields with Billing fallback.
-        String street = coalesceStr(getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Street__s'), a.BillingStreet);
-        String city = coalesceStr(getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__City__s'), a.BillingCity);
+        // Otherwise build from available home subfields only (no Billing fallback).
+        String street = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Street__s');
+        String city = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__City__s');
 
         String state = coalesceStr(
             getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__StateCode__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s'),
-            a.BillingStateCode,
-            a.BillingState
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__State__s')
         );
 
-        String postal = coalesceStr(getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__PostalCode__s'), a.BillingPostalCode);
+        String postal = getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__PostalCode__s');
 
         String country = coalesceStr(
             getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__CountryCode__s'),
-            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s'),
-            a.BillingCountryCode,
-            a.BillingCountry
+            getAccountStringIfSelected(a, accFields, 'GNAL_Home_Address__Country__s')
         );
 
         List<String> parts = new List<String>();

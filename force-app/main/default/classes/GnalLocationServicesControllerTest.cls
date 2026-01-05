@@ -158,7 +158,7 @@ private class GnalLocationServicesControllerTest {
     }
 
     @IsTest
-    static void getDefaultCurrentLocationForCase_prefersGnalHomeAddress_whenPossible_elseBilling() {
+    static void getDefaultCurrentLocationForCase_usesHomeAddressOnly_noBillingFallback() {
         Id personRtId = getPersonAccountRecordTypeId();
 
         Account a;
@@ -185,7 +185,7 @@ private class GnalLocationServicesControllerTest {
             a = new Account(Name = 'Business Account');
         }
 
-        // Always provide Billing fallback
+        // Billing fields should NOT affect the returned current location anymore.
         a.BillingStreet = '10 Billing St';
         a.BillingCity = 'Austin';
         a.BillingPostalCode = '78701';
@@ -201,12 +201,11 @@ private class GnalLocationServicesControllerTest {
         String addr = GnalLocationServicesController.getDefaultCurrentLocationForCase(c.Id);
         Test.stopTest();
 
-        System.assertNotEquals(null, addr);
-
         if (expectHome) {
+            System.assertNotEquals(null, addr);
             System.assert(addr.contains('99 Home St'), 'Expected GNAL Home Address. Actual: ' + addr);
         } else {
-            System.assert(addr.contains('10 Billing St'), 'Expected Billing fallback. Actual: ' + addr);
+            System.assertEquals(null, addr, 'Expected null when GNAL Home Address is unavailable (no Billing fallback).');
         }
     }
 }
