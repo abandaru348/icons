@@ -3,6 +3,8 @@ public with sharing class GnalLocationServicesController {
     // Code->label maps for orgs where address fields store only codes (e.g., "VA", "US").
     private static final Map<String, String> STATE_CODE_TO_LABEL = initStateCodeToLabel();
     private static final Map<String, String> COUNTRY_CODE_TO_LABEL = initCountryCodeToLabel();
+    private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
+    private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
 
     public class LocationServiceUpsertResult {
         @AuraEnabled public Id locationServiceId;
@@ -158,13 +160,17 @@ public with sharing class GnalLocationServicesController {
                     whereClauses.add('GNAL_Current_Location__City__s = \'' + String.escapeSingleQuotes(parsed.city) + '\'');
                 }
                 if (fields.containsKey('GNAL_Current_Location__State__s') && !String.isBlank(parsed.state)) {
-                    whereClauses.add('GNAL_Current_Location__State__s = \'' + String.escapeSingleQuotes(parsed.state) + '\'');
+                    whereClauses.add('GNAL_Current_Location__State__s = \'' + String.escapeSingleQuotes(stateLabelFromCode(parsed.state)) + '\'');
+                } else if (fields.containsKey('GNAL_Current_Location__StateCode__s') && !String.isBlank(parsed.state)) {
+                    whereClauses.add('GNAL_Current_Location__StateCode__s = \'' + String.escapeSingleQuotes(stateCodeFromInput(parsed.state)) + '\'');
                 }
                 if (fields.containsKey('GNAL_Current_Location__PostalCode__s') && !String.isBlank(parsed.postal)) {
                     whereClauses.add('GNAL_Current_Location__PostalCode__s = \'' + String.escapeSingleQuotes(parsed.postal) + '\'');
                 }
                 if (fields.containsKey('GNAL_Current_Location__Country__s') && !String.isBlank(parsed.country)) {
-                    whereClauses.add('GNAL_Current_Location__Country__s = \'' + String.escapeSingleQuotes(parsed.country) + '\'');
+                    whereClauses.add('GNAL_Current_Location__Country__s = \'' + String.escapeSingleQuotes(countryLabelFromCode(parsed.country)) + '\'');
+                } else if (fields.containsKey('GNAL_Current_Location__CountryCode__s') && !String.isBlank(parsed.country)) {
+                    whereClauses.add('GNAL_Current_Location__CountryCode__s = \'' + String.escapeSingleQuotes(countryCodeFromInput(parsed.country)) + '\'');
                 }
             }
 
@@ -213,13 +219,16 @@ public with sharing class GnalLocationServicesController {
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__City__s', parsed.city);
             }
             if (!String.isBlank(parsed.state)) {
+                // Some orgs expose State__s, some StateCode__s, some both. Write whatever exists.
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__State__s', stateLabelFromCode(parsed.state));
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__StateCode__s', stateCodeFromInput(parsed.state));
             }
             if (!String.isBlank(parsed.postal)) {
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__PostalCode__s', parsed.postal);
             }
             if (!String.isBlank(parsed.country)) {
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__Country__s', countryLabelFromCode(parsed.country));
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__CountryCode__s', countryCodeFromInput(parsed.country));
             }
         }
     }
@@ -310,6 +319,19 @@ public with sharing class GnalLocationServicesController {
         return trimmed;
     }
 
+    private static String stateCodeFromInput(String stateOrCode) {
+        if (String.isBlank(stateOrCode)) return null;
+        String trimmed = stateOrCode.trim();
+        // Already a code?
+        if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(trimmed)) return trimmed;
+        // Try label->code map (case-insensitive)
+        String key = trimmed.toLowerCase();
+        if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
+            return STATE_LABEL_TO_CODE.get(key);
+        }
+        return trimmed;
+    }
+
     private static String countryLabelFromCode(String code) {
         if (String.isBlank(code)) return null;
         String trimmed = code.trim();
@@ -319,6 +341,30 @@ public with sharing class GnalLocationServicesController {
         // Common best-effort default if picklists aren't enabled/configured.
         if (trimmed == 'US') return 'United States';
         return trimmed;
+    }
+
+    private static String countryCodeFromInput(String countryOrCode) {
+        if (String.isBlank(countryOrCode)) return null;
+        String trimmed = countryOrCode.trim();
+        if (COUNTRY_CODE_TO_LABEL != null && COUNTRY_CODE_TO_LABEL.containsKey(trimmed)) return trimmed;
+        String key = trimmed.toLowerCase();
+        if (COUNTRY_LABEL_TO_CODE != null && COUNTRY_LABEL_TO_CODE.containsKey(key)) {
+            return COUNTRY_LABEL_TO_CODE.get(key);
+        }
+        // Common best-effort default if picklists aren't enabled/configured.
+        if (trimmed == 'United States') return 'US';
+        return trimmed;
+    }
+
+    private static Map<String, String> invertMapCaseInsensitive(Map<String, String> input) {
+        Map<String, String> out = new Map<String, String>();
+        if (input == null) return out;
+        for (String code : input.keySet()) {
+            String label = input.get(code);
+            if (String.isBlank(code) || String.isBlank(label)) continue;
+            out.put(label.toLowerCase(), code);
+        }
+        return out;
     }
 
     private class ParsedAddress {
