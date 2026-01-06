@@ -1,10 +1,11 @@
 public with sharing class GnalLocationServicesController {
 
     // Code->label maps for orgs where address fields store only codes (e.g., "VA", "US").
-    private static final Map<String, String> STATE_CODE_TO_LABEL = initStateCodeToLabel();
-    private static final Map<String, String> COUNTRY_CODE_TO_LABEL = initCountryCodeToLabel();
+    private static final Map<String, String> STATE_CODE_TO_LABEL = initCodeToLabel(Account.BillingStateCode.getDescribe());
+    private static final Map<String, String> COUNTRY_CODE_TO_LABEL = initCodeToLabel(Account.BillingCountryCode.getDescribe());
     private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
     private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
+    private static final String ZIP5_REGEX = '^[0-9]{5}$';
 
     public class LocationServiceUpsertResult {
         @AuraEnabled public Id locationServiceId;
@@ -174,25 +175,25 @@ public with sharing class GnalLocationServicesController {
                 }
             }
 
-            List<GNAL_Location_Service__c> rows = (List<GNAL_Location_Service__c>) Database.query(
-                'SELECT Id' +
-                ' FROM GNAL_Location_Service__c' +
-                ' WHERE ' + String.join(whereClauses, ' AND ') +
-                ' ORDER BY CreatedDate DESC' +
-                ' LIMIT 1'
-            );
-            return rows.isEmpty() ? null : rows[0].Id;
+            return queryLatestLocationServiceId('WHERE ' + String.join(whereClauses, ' AND '));
         }
 
         // Fallback: preserve prior behavior (latest for Case), but this cannot satisfy address-based grouping.
-        List<GNAL_Location_Service__c> latest = (List<GNAL_Location_Service__c>) Database.query(
+        return queryLatestLocationServiceId(
+            'WHERE GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\''
+        );
+    }
+
+    private static Id queryLatestLocationServiceId(String whereClause) {
+        String w = String.isBlank(whereClause) ? '' : (' ' + whereClause.trim());
+        List<GNAL_Location_Service__c> rows = (List<GNAL_Location_Service__c>) Database.query(
             'SELECT Id' +
             ' FROM GNAL_Location_Service__c' +
-            ' WHERE GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\'' +
+            w +
             ' ORDER BY CreatedDate DESC' +
             ' LIMIT 1'
         );
-        return latest.isEmpty() ? null : latest[0].Id;
+        return rows.isEmpty() ? null : rows[0].Id;
     }
 
     /**
@@ -255,9 +256,8 @@ public with sharing class GnalLocationServicesController {
 
     private static String normalizeAddress(String address) {
         if (address == null) return null;
-        String s = address.trim();
-        while (s.contains('  ')) s = s.replace('  ', ' ');
-        return s;
+        // Collapse any repeated whitespace to a single space.
+        return address.trim().replaceAll('\\s+', ' ');
     }
 
     private static String coalesceStr(Object a, Object b) {
@@ -273,36 +273,15 @@ public with sharing class GnalLocationServicesController {
         return null;
     }
 
-    private static Map<String, String> initStateCodeToLabel() {
+    private static Map<String, String> initCodeToLabel(Schema.DescribeFieldResult describe) {
         Map<String, String> out = new Map<String, String>();
         try {
-            // BillingStateCode is the canonical state-code picklist when State/Country Picklists are enabled.
-            Schema.DescribeFieldResult d = Account.BillingStateCode.getDescribe();
-            if (d != null) {
-                for (Schema.PicklistEntry e : d.getPicklistValues()) {
-                    if (e == null) continue;
-                    String code = e.getValue();
-                    String label = e.getLabel();
-                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
-                }
-            }
-        } catch (Exception ex) {
-            // ignore; fall back to raw codes
-        }
-        return out;
-    }
-
-    private static Map<String, String> initCountryCodeToLabel() {
-        Map<String, String> out = new Map<String, String>();
-        try {
-            Schema.DescribeFieldResult d = Account.BillingCountryCode.getDescribe();
-            if (d != null) {
-                for (Schema.PicklistEntry e : d.getPicklistValues()) {
-                    if (e == null) continue;
-                    String code = e.getValue();
-                    String label = e.getLabel();
-                    if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
-                }
+            if (describe == null) return out;
+            for (Schema.PicklistEntry e : describe.getPicklistValues()) {
+                if (e == null) continue;
+                String code = e.getValue();
+                String label = e.getLabel();
+                if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
             }
         } catch (Exception ex) {
             // ignore; fall back to raw codes
@@ -389,15 +368,9 @@ public with sharing class GnalLocationServicesController {
         if (String.isBlank(normalized)) return null;
 
         // Normalize whitespace and strip newlines for parsing.
-        String s = normalized.replace('\n', ' ').replace('\r', ' ');
-        while (s.contains('  ')) s = s.replace('  ', ' ');
-        s = s.trim();
+        String s = normalized.replaceAll('[\\r\\n]+', ' ').trim().replaceAll('\\s+', ' ');
 
-        List<String> tokens = new List<String>();
-        for (String raw : s.split(',')) {
-            String t = raw == null ? null : raw.trim();
-            if (!String.isBlank(t)) tokens.add(t);
-        }
+        List<String> tokens = splitTrim(s, ',');
 
         ParsedAddress out = new ParsedAddress();
         if (tokens.isEmpty()) {
@@ -454,16 +427,11 @@ public with sharing class GnalLocationServicesController {
 
     private static ParsedAddress parseStatePostal(String value) {
         if (String.isBlank(value)) return null;
-        String v = value.trim();
-        List<String> parts = new List<String>();
-        for (String p : v.split(' ')) {
-            String t = p == null ? null : p.trim();
-            if (!String.isBlank(t)) parts.add(t);
-        }
+        List<String> parts = splitTrim(value, ' ');
         if (parts.size() < 2) return null;
         String last = parts[parts.size() - 1];
         // Simple US ZIP check (5 digits)
-        if (!Pattern.matches('^[0-9]{5}$', last)) return null;
+        if (!Pattern.matches(ZIP5_REGEX, last)) return null;
 
         ParsedAddress out = new ParsedAddress();
         out.postal = last;
@@ -475,18 +443,12 @@ public with sharing class GnalLocationServicesController {
 
     private static ParsedAddress parseCityStatePostal(String value) {
         if (String.isBlank(value)) return null;
-        String v = value.trim();
-
         // Try "City State Postal" where postal is 5 digits.
-        List<String> parts = new List<String>();
-        for (String p : v.split(' ')) {
-            String t = p == null ? null : p.trim();
-            if (!String.isBlank(t)) parts.add(t);
-        }
+        List<String> parts = splitTrim(value, ' ');
         if (parts.size() < 3) return null;
 
         String postal = parts[parts.size() - 1];
-        if (!Pattern.matches('^[0-9]{5}$', postal)) return null;
+        if (!Pattern.matches(ZIP5_REGEX, postal)) return null;
 
         String state = parts[parts.size() - 2];
         List<String> cityParts = new List<String>();
@@ -497,6 +459,16 @@ public with sharing class GnalLocationServicesController {
         out.city = city;
         out.state = state;
         out.postal = postal;
+        return out;
+    }
+
+    private static List<String> splitTrim(String raw, String delimiter) {
+        List<String> out = new List<String>();
+        if (String.isBlank(raw) || String.isBlank(delimiter)) return out;
+        for (String p : raw.split(delimiter)) {
+            String t = p == null ? null : p.trim();
+            if (!String.isBlank(t)) out.add(t);
+        }
         return out;
     }
 }

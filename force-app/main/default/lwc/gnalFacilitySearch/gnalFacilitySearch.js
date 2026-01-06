@@ -48,7 +48,9 @@ export default class FindNearestFacilities extends LightningElement {
                 }
             }
         } catch (e) {
-            // ignore
+            // Non-blocking: page state shapes vary by navigation entry point, and
+            // defaultFieldValues may be missing or malformed. If this fails, we fall back
+            // to other caseId detection methods below.
         }
 
         // 2) inContextOfRef (base64 JSON)
@@ -59,7 +61,8 @@ export default class FindNearestFacilities extends LightningElement {
                 return;
             }
         } catch (e) {
-            // ignore
+            // Non-blocking: inContextOfRef may be absent, not base64, or not JSON depending
+            // on how this component is launched. Safe to ignore and keep trying.
         }
 
         // 3) backgroundContext (string URL)
@@ -74,11 +77,12 @@ export default class FindNearestFacilities extends LightningElement {
                 }
             }
         } catch (e) {
-            // ignore
+            // Non-blocking: backgroundContext is optional and format varies; ignore parse errors.
         }
     }
 
     looksLikeCaseId(id) {
+        // Case is a standard object and its keyprefix is consistently "500" across orgs.
         return typeof id === 'string' && id.length >= 15 && id.startsWith('500');
     }
 
@@ -194,13 +198,13 @@ export default class FindNearestFacilities extends LightningElement {
                 this.applyRadiusFilter(isNaN(radius) ? null : radius);
                 this.searchHasRun = true;
 
-                this.setNotice(
-                    this.results.length ? 'Success' : 'Info',
-                    this.results.length
-                        ? 'Nearest facilities found successfully.'
-                        : 'No facilities found within the selected distance.',
-                    this.results.length ? 'success' : 'info'
-                );
+                const hasAnyResults = this.results.length > 0;
+                const title = hasAnyResults ? 'Success' : 'Info';
+                const message = hasAnyResults
+                    ? 'Nearest facilities found successfully.'
+                    : 'No facilities found within the selected distance.';
+                const variant = hasAnyResults ? 'success' : 'info';
+                this.setNotice(title, message, variant);
             })
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';
