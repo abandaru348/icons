@@ -1,0 +1,94 @@
+:host {
+    display: block;
+}
+
+.call-us-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    max-width: 360px;
+}
+
+.call-us-card__icon {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: #0a2c87;
+    align-items: center;
+    justify-content: center;
+}
+
+.call-us-card__icon img {
+    width: 18px;
+    height: 18px;
+    display: block;
+    filter: brightness(0) invert(1);
+}
+
+.call-us-card__title {
+    color: #0a2c87;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.call-us-card__subtitle {
+    color: #0a2c87;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.call-us-card__label {
+    color: #111827;
+    font-weight: 500;
+}
+
+.call-us-card__phone {
+    margin-top: 2px;
+}
+
+.call-us-card__phone-link {
+    color: #0a2c87;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.call-us-card__phone-link:hover,
+.call-us-card__phone-link:focus {
+    text-decoration: underline;
+}
+
+.call-us-card__clock {
+    --sds-c-icon-color-foreground-default: #6b7280;
+    --sds-c-icon-color-foreground: #6b7280;
+}
+
+.call-us-card__divider {
+    height: 1px;
+    background: #e5e7eb;
+}
+
+.call-us-card__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    background: #0a2c87;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.call-us-card__cta:hover,
+.call-us-card__cta:focus {
+    background: #08256f;
+}
+
+.call-us-card__cta-icon {
+    --sds-c-icon-color-foreground-default: #ffffff;
+    --sds-c-icon-color-foreground: #ffffff;
+}
