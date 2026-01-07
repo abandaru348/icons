@@ -12,6 +12,8 @@ export default class FindNearestFacilities extends LightningElement {
     static DEFAULT_SELECTED_DISTANCE_MILES = '15';
     static DEFAULT_FILTER_RADIUS_MILES = 100;
     static WARM_CACHE_RADIUS_MILES = 100;
+    // Case is a standard object; its keyprefix is consistently "500" across Salesforce orgs.
+    static CASE_KEY_PREFIX = '500';
 
     _recordId;
     _didInitOrigin = false;
@@ -51,6 +53,9 @@ export default class FindNearestFacilities extends LightningElement {
             // Non-blocking: page state shapes vary by navigation entry point, and
             // defaultFieldValues may be missing or malformed. If this fails, we fall back
             // to other caseId detection methods below.
+            //
+            // We intentionally don't console-log this because it's expected in many flows
+            // and would create noisy logs for end users/admins.
         }
 
         // 2) inContextOfRef (base64 JSON)
@@ -63,6 +68,8 @@ export default class FindNearestFacilities extends LightningElement {
         } catch (e) {
             // Non-blocking: inContextOfRef may be absent, not base64, or not JSON depending
             // on how this component is launched. Safe to ignore and keep trying.
+            //
+            // We intentionally don't console-log this because it's expected in many flows.
         }
 
         // 3) backgroundContext (string URL)
@@ -78,12 +85,18 @@ export default class FindNearestFacilities extends LightningElement {
             }
         } catch (e) {
             // Non-blocking: backgroundContext is optional and format varies; ignore parse errors.
+            //
+            // We intentionally don't console-log this because it's expected in many flows.
         }
     }
 
     looksLikeCaseId(id) {
-        // Case is a standard object and its keyprefix is consistently "500" across orgs.
-        return typeof id === 'string' && id.length >= 15 && id.startsWith('500');
+        // CaseId is a 15 or 18 char Salesforce Id, and Case keyprefix is "500".
+        // This is safe for production because keyprefixes for standard objects don't vary by org.
+        if (typeof id !== 'string') return false;
+        const trimmed = id.trim();
+        const isSalesforceId = /^[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?$/.test(trimmed);
+        return isSalesforceId && trimmed.startsWith(FindNearestFacilities.CASE_KEY_PREFIX);
     }
 
     caseIdFromInContextOfRef(inCtx) {
