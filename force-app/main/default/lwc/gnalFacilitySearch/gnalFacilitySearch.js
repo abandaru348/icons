@@ -1,6 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
@@ -184,11 +185,15 @@ export default class FindNearestFacilities extends LightningElement {
         this.originAddress = normalizedOrigin;
 
         if (!normalizedOrigin) {
-            this.setNotice('Error', 'Please provide an origin address.', 'error');
+            const msg = 'Please provide an origin address.';
+            this.showToast('Error', msg, 'error');
+            this.setNotice('Error', msg, 'error');
             return;
         }
         if (!this.caseId) {
-            this.setNotice('Error', 'This action must be launched from a Case.', 'error');
+            const msg = 'This action must be launched from a Case.';
+            this.showToast('Error', msg, 'error');
+            this.setNotice('Error', msg, 'error');
             return;
         }
 
@@ -222,6 +227,7 @@ export default class FindNearestFacilities extends LightningElement {
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';
                 this.lastErrorMessage = msg;
+                this.showToast('Error', msg, 'error');
                 this.setNotice('Error', msg, 'error');
             })
             .finally(() => {
@@ -292,6 +298,22 @@ export default class FindNearestFacilities extends LightningElement {
         this.noticeTitle = title || '';
         this.noticeMessage = message || '';
         this.noticeVariant = variant || 'info';
+    }
+
+    showToast(title, message, variant) {
+        // Toasts are the standard Salesforce UX for transient feedback, especially errors.
+        // We still set inline notice/error-details so the message remains visible on the page.
+        try {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: title || '',
+                    message: message || '',
+                    variant: variant || 'info'
+                })
+            );
+        } catch (e) {
+            // Non-blocking: if toasts aren't available in a given container, fall back to inline notice only.
+        }
     }
 
     handleCancel() {
