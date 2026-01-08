@@ -1,7 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import Toast from 'lightning/toast';
 
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
 import createOrIncrementLocationService from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationService';
@@ -21,7 +21,7 @@ export default class GnalLocationServicesFinder extends LightningElement {
     isLoading = false;
 
     noticeMessage = '';
-    noticeVariant = 'info'; // 'info' | 'success' | 'warning' | 'error'
+    _noticeVariant = 'info'; // stored; use getter to keep lowercased
 
     @wire(CurrentPageReference)
     setPageRef(pr) {
@@ -55,32 +55,41 @@ export default class GnalLocationServicesFinder extends LightningElement {
     }
 
     get effectiveCaseId() {
-        const cid = this.recordId || this.caseId;
-        return this.looksLikeCaseId(cid) ? cid.trim() : null;
+        const rawId = this.recordId || this.caseId;
+        if (typeof rawId !== 'string') return null;
+        const trimmedId = rawId.trim();
+        return this.looksLikeCaseId(trimmedId) ? trimmedId : null;
     }
 
     get hasResults() {
         return Array.isArray(this.results) && this.results.length > 0;
     }
 
+    get noticeVariant() {
+        // Keep variant consistently lowercased and avoid calling toLowerCase on empty strings.
+        return this._noticeVariant ? this._noticeVariant.toLowerCase() : '';
+    }
+
     get showInlineNotice() {
         // Use inline notice for non-error informational messages.
         // Errors are shown as toasts.
-        return !!this.noticeMessage && (this.noticeVariant || '').toLowerCase() !== 'error';
+        return !!this.noticeMessage && this.noticeVariant !== 'error';
     }
 
     get noticeClass() {
         const base = 'slds-m-top_small slds-box slds-theme_alert-texture';
-        const v = (this.noticeVariant || '').toLowerCase();
-        if (v === 'success') return `${base} slds-theme_success`;
-        if (v === 'warning') return `${base} slds-theme_warning`;
-        if (v === 'error') return `${base} slds-theme_error`;
+        const variant = this.noticeVariant;
+        if (variant === 'success') return `${base} slds-theme_success`;
+        if (variant === 'warning') return `${base} slds-theme_warning`;
+        if (variant === 'error') return `${base} slds-theme_error`;
         return `${base} slds-theme_info`;
     }
 
     looksLikeCaseId(id) {
         // Case is a standard object; keyprefix is consistently "500" across orgs.
-        return typeof id === 'string' && id.trim().length >= 15 && id.trim().startsWith('500');
+        if (typeof id !== 'string') return false;
+        const trimmedId = id.trim();
+        return trimmedId.length >= 15 && trimmedId.startsWith('500');
     }
 
     async prefillFromCaseHomeAddress() {
@@ -103,8 +112,9 @@ export default class GnalLocationServicesFinder extends LightningElement {
         this.currentLocation = event?.target?.value || '';
     }
 
-    handleFind() {
-        const normalized = (this.currentLocation || '').trim();
+    async handleFind() {
+        // Avoid calling trim() on empty strings.
+        const normalized = this.currentLocation ? this.currentLocation.trim() : '';
         this.currentLocation = normalized;
 
         if (!normalized) {
@@ -112,7 +122,8 @@ export default class GnalLocationServicesFinder extends LightningElement {
             this.setNotice('', 'error'); // don’t show inline error div
             return;
         }
-        if (!this.effectiveCaseId) {
+        const effectiveCaseId = this.effectiveCaseId;
+        if (!effectiveCaseId) {
             this.showToast('Error', 'This action must be launched from a Case.', 'error');
             this.setNotice('', 'error');
             return;
@@ -122,31 +133,32 @@ export default class GnalLocationServicesFinder extends LightningElement {
         this.results = [];
         this.setNotice('', 'info');
 
-        createOrIncrementLocationService({ caseId: this.effectiveCaseId, currentLocation: normalized })
-            .then(() =>
-                findNearestFacilitiesWithRadius({
-                    accountId: null,
-                    originAddress: normalized,
-                    radiusMiles: GnalLocationServicesFinder.WARM_CACHE_RADIUS_MILES
-                })
-            )
-            .then((data = []) => {
-                this.results = this.normalizeResults(data);
-                const hasAny = this.results.length > 0;
-                if (!hasAny) {
-                    this.setNotice('No facilities found within the selected distance.', 'info');
-                } else {
-                    this.setNotice('', 'success');
-                }
-            })
-            .catch((error) => {
-                const msg = error?.body?.message || error?.message || 'Error finding facilities.';
-                this.showToast('Error', msg, 'error');
-                this.setNotice('', 'error');
-            })
-            .finally(() => {
-                this.isLoading = false;
+        try {
+            const upsert = await createOrIncrementLocationService({ caseId: effectiveCaseId, currentLocation: normalized });
+            const count = upsert?.searchCount;
+            const searchMsg = count ? `Search count: ${count}` : 'Search recorded.';
+            this.showToast('Success', searchMsg, 'success');
+            this.setNotice(searchMsg, 'success');
+
+            const data = await findNearestFacilitiesWithRadius({
+                accountId: null,
+                originAddress: normalized,
+                radiusMiles: GnalLocationServicesFinder.WARM_CACHE_RADIUS_MILES
             });
+
+            this.results = this.normalizeResults(data);
+            if (this.hasResults) {
+                this.showToast('Success', 'Nearest facilities found successfully.', 'success');
+            } else {
+                this.setNotice('No facilities found within the selected distance.', 'info');
+            }
+        } catch (error) {
+            const msg = error?.body?.message || error?.message || 'Error finding facilities.';
+            this.showToast('Error', msg, 'error');
+            this.setNotice('', 'error');
+        } finally {
+            this.isLoading = false;
+        }
     }
 
     normalizeResults(data = []) {
@@ -166,19 +178,17 @@ export default class GnalLocationServicesFinder extends LightningElement {
 
     setNotice(message, variant) {
         this.noticeMessage = message || '';
-        this.noticeVariant = variant || 'info';
+        this._noticeVariant = variant || 'info';
     }
 
     showToast(title, message, variant) {
-        // Use toast for errors (Salesforce standard UX). Inline notice is reserved for info.
+        // Experience sites (LWR) do not support lightning/platformShowToastEvent; use lightning/toast.
         try {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: title || '',
-                    message: message || '',
-                    variant: variant || 'info'
-                })
-            );
+            Toast.show({
+                label: title || '',
+                message: message || '',
+                variant: variant || 'info'
+            });
         } catch (e) {
             // Non-blocking: if toasts aren't available in this container, fall back silently.
             if (GnalLocationServicesFinder.DEBUG) {
