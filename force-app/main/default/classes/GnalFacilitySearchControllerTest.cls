@@ -131,7 +131,15 @@ private class GnalFacilitySearchControllerTest {
         setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, null, st.PostalCode, null);
+        // Build destination address exactly as the controller does (using queried State/Country fields),
+        // since some orgs auto-populate these from StateCode/CountryCode.
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String destAddress = formatAddress(stored.Street, stored.City, stored.State, stored.PostalCode, stored.Country);
         String originAddress = '100 Origin St, Austin, TX 78701';
 
         // Insert cache row WITHOUT any origin coordinates; in tests the controller should fall back to Distance_Miles__c.
