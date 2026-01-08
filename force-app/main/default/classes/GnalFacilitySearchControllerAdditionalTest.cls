@@ -34,6 +34,14 @@ private class GnalFacilitySearchControllerAdditionalTest {
     }
 
     @IsTest
+    static void getCaseAccountId_nullCaseId_returnsNull() {
+        Test.startTest();
+        Id out = GnalFacilitySearchController.getCaseAccountId(null);
+        Test.stopTest();
+        System.assertEquals(null, out);
+    }
+
+    @IsTest
     static void getCaseBillingAddress_returnsBillingAddress() {
         Account a = new Account(
             Name = 'Billing Acct',
@@ -58,6 +66,98 @@ private class GnalFacilitySearchControllerAdditionalTest {
         System.assertNotEquals(null, addr);
         System.assert(addr.contains('500 Main St'), 'Expected street in billing address. Actual: ' + addr);
         System.assert(addr.contains('Austin'), 'Expected city in billing address. Actual: ' + addr);
+    }
+
+    @IsTest
+    static void getCaseBillingAddress_nullCaseId_returnsNull() {
+        Test.startTest();
+        String addr = GnalFacilitySearchController.getCaseBillingAddress(null);
+        Test.stopTest();
+        System.assertEquals(null, addr);
+    }
+
+    @IsTest
+    static void getCaseBillingAddress_caseWithNoAccount_returnsNull() {
+        Case c = new Case(Subject = 'No Account', Status = 'New', Origin = 'Phone');
+        insert c;
+
+        Test.startTest();
+        String addr = GnalFacilitySearchController.getCaseBillingAddress(c.Id);
+        Test.stopTest();
+        System.assertEquals(null, addr);
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_noCacheRows_returnsEmpty_inTests() {
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('No Cache Origin', 10);
+        Test.stopTest();
+        System.assertNotEquals(null, results);
+        System.assertEquals(0, results.size());
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_trimsOriginAddress() {
+        String origin = 'Trim Me';
+        insert new GeocodeCache__c(
+            Name = 'TrimCache',
+            Origin_Address__c = origin,
+            Destination_Address__c = 'Dest',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('  ' + origin + '  ', 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+        System.assertEquals(true, results.size() >= 1);
+    }
+
+    @IsTest
+    static void getLatestCaseOriginAddressForAccount_formatsFromSubfields_whenPresent() {
+        Account a = new Account(Name = 'Origin Format Acct');
+        insert a;
+
+        // Create a strict-match Case and populate GNAL origin address via subfields if they exist.
+        Case c = new Case(AccountId = a.Id, Origin = 'Phone', Status = 'New', Subject = 'Origin');
+        Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
+        Boolean wroteAny = false;
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Street__s')) {
+            c.put('GNAL_Origin_Location__Street__s', '10 Street');
+            wroteAny = true;
+        }
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__City__s')) {
+            c.put('GNAL_Origin_Location__City__s', 'Austin');
+            wroteAny = true;
+        }
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__State__s')) {
+            c.put('GNAL_Origin_Location__State__s', 'TX');
+            wroteAny = true;
+        }
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__PostalCode__s')) {
+            c.put('GNAL_Origin_Location__PostalCode__s', '78701');
+            wroteAny = true;
+        }
+        if (caseFields != null && caseFields.containsKey('GNAL_Origin_Location__Country__s')) {
+            c.put('GNAL_Origin_Location__Country__s', 'US');
+            wroteAny = true;
+        }
+        insert c;
+
+        Test.startTest();
+        String origin = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(a.Id);
+        Test.stopTest();
+
+        // If fields are missing in this org, controller correctly returns null.
+        if (wroteAny) {
+            System.assertNotEquals(null, origin);
+            System.assert(origin.contains('10 Street'));
+        } else {
+            System.assertEquals(null, origin);
+        }
     }
 
     @IsTest
