@@ -1,4 +1,12 @@
+/**
+ * GNAL Call Us Component
+ *
+ * Displays a support phone card with a click-to-call CTA, intended for Experience Cloud pages.
+ * Phone values are configurable via @api for reuse across brands/environments.
+ */
+
 import { LightningElement, api } from 'lwc';
+import { normalizePhoneForTel } from 'c/gnalUtils';
 
 export default class GnalCallUsComponent extends LightningElement {
     @api title = 'Call Us';
@@ -11,7 +19,7 @@ export default class GnalCallUsComponent extends LightningElement {
 
     get telUrl() {
         const dial = (this.phoneNumberDial || this.phoneNumberDisplay || '').trim();
-        const normalized = dial.replace(/[^\d+]/g, '');
+        const normalized = normalizePhoneForTel(dial);
         return normalized ? `tel:${normalized}` : 'tel:';
     }
 

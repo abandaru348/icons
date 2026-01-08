@@ -1,92 +1,81 @@
+@import 'c/gnalSharedStyles';
+
 :host {
     display: block;
 }
 
-.call-us-card {
-    background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e5e7eb;
+/* Card wrapper: prefer SLDS + theme, minimal overrides. */
+:host .gnal-call-us-card {
+    border-radius: var(--gnal-radius-lg);
     overflow: hidden;
-    max-width: 360px;
+    --sds-c-card-radius-border: var(--gnal-radius-lg);
 }
 
-.call-us-card__icon {
+.gnal-call-us__badge {
     display: inline-flex;
     width: 44px;
     height: 44px;
-    border-radius: 999px;
-    background: #0a2c87;
+    border-radius: var(--gnal-radius-pill);
+    background: var(--gnal-color-primary);
     align-items: center;
     justify-content: center;
 }
 
-.call-us-card__header-icon {
+.gnal-call-us__badge-icon {
     --sds-c-icon-color-foreground-default: #ffffff;
     --sds-c-icon-color-foreground: #ffffff;
 }
 
-.call-us-card__title {
-    color: #0a2c87;
+.gnal-call-us__title {
+    color: var(--gnal-color-primary);
     font-weight: 700;
     line-height: 1.2;
 }
 
-.call-us-card__subtitle {
-    color: #0a2c87;
+.gnal-call-us__subtitle {
+    color: var(--gnal-color-primary);
     font-weight: 600;
-    margin-top: 2px;
 }
 
-.call-us-card__label {
-    color: #111827;
+.gnal-call-us__label {
+    color: var(--gnal-color-text);
     font-weight: 500;
 }
 
-.call-us-card__phone {
-    margin-top: 2px;
-}
-
-.call-us-card__phone-link {
-    color: #0a2c87;
-    text-decoration: none;
+.gnal-call-us__phone {
     font-weight: 800;
     letter-spacing: 0.02em;
 }
 
-.call-us-card__phone-link:hover,
-.call-us-card__phone-link:focus {
-    text-decoration: underline;
+.gnal-call-us__clock {
+    --sds-c-icon-color-foreground-default: var(--gnal-color-text-muted);
+    --sds-c-icon-color-foreground: var(--gnal-color-text-muted);
 }
 
-.call-us-card__clock {
-    --sds-c-icon-color-foreground-default: #6b7280;
-    --sds-c-icon-color-foreground: #6b7280;
-}
-
-.call-us-card__divider {
+.gnal-call-us__divider {
     height: 1px;
-    background: #e5e7eb;
+    background: var(--gnal-color-border);
 }
 
-.call-us-card__cta {
+.gnal-call-us__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     padding: 0.65rem 1rem;
-    border-radius: 999px;
-    background: #0a2c87;
+    border-radius: var(--gnal-radius-pill);
+    background: var(--gnal-color-primary);
     color: #ffffff;
     text-decoration: none;
     font-weight: 700;
 }
 
-.call-us-card__cta:hover,
-.call-us-card__cta:focus {
-    background: #08256f;
+.gnal-call-us__cta:hover,
+.gnal-call-us__cta:focus {
+    background: var(--gnal-color-primary-hover);
 }
 
-.call-us-card__cta-icon {
+.gnal-call-us__cta-icon {
     --sds-c-icon-color-foreground-default: #ffffff;
     --sds-c-icon-color-foreground: #ffffff;
 }

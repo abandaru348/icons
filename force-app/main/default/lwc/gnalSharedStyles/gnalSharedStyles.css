@@ -1,0 +1,33 @@
+/*
+ * GNAL shared branding + utility styles.
+ *
+ * Import into component CSS via: @import 'c/gnalSharedStyles';
+ * Keep this file small and focused on cross-component reuse.
+ */
+
+:host {
+    /* Brand tokens (prefer Experience Builder Theme / Design Tokens long-term). */
+    --gnal-color-primary: #0a2c87;
+    --gnal-color-primary-hover: #08256f;
+    --gnal-color-border: #e5e7eb;
+    --gnal-color-text: #111827;
+    --gnal-color-text-muted: #6b7280;
+
+    --gnal-radius-lg: 1rem;
+    --gnal-radius-pill: 999px;
+}
+
+/* Utilities (prefix per naming guide). */
+.gnal-clickable {
+    cursor: pointer;
+}
+
+.gnal-link {
+    color: var(--gnal-color-primary);
+    text-decoration: none;
+}
+
+.gnal-link:hover,
+.gnal-link:focus {
+    text-decoration: underline;
+}

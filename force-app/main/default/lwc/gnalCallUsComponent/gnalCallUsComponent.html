@@ -1,62 +1,68 @@
 <template>
-    <section class="call-us-card" role="region" aria-label="Call Us">
-        <div class="call-us-card__header slds-p-around_medium">
-            <div class="slds-grid slds-grid_vertical-align-start">
-                <div class="slds-m-right_medium">
-                    <span class="call-us-card__icon" aria-hidden="true">
+    <lightning-card class="gnal-call-us-card" aria-label="Call Us">
+        <div class="slds-p-around_medium">
+            <lightning-layout vertical-align="start">
+                <lightning-layout-item class="slds-m-right_medium" flexibility="no-grow">
+                    <span class="gnal-call-us__badge" aria-hidden="true">
                         <lightning-icon
                             icon-name="utility:call"
                             size="small"
                             alternative-text=""
                             title=""
-                            class="call-us-card__header-icon"
+                            class="gnal-call-us__badge-icon"
                         >
                         </lightning-icon>
                     </span>
-                </div>
+                </lightning-layout-item>
 
-                <div class="slds-grow">
-                    <h2 class="call-us-card__title slds-text-heading_medium">{title}</h2>
-                    <p class="call-us-card__subtitle slds-text-body_small">{subtitle}</p>
-                </div>
-            </div>
+                <lightning-layout-item flexibility="grow">
+                    <h2 class="slds-text-heading_medium gnal-call-us__title">{title}</h2>
+                    <p class="slds-text-body_small gnal-call-us__subtitle slds-m-top_xx-small">{subtitle}</p>
+                </lightning-layout-item>
+            </lightning-layout>
 
             <div class="slds-m-top_medium">
-                <p class="call-us-card__label slds-text-body_small">{supportLineLabel}</p>
-                <p class="call-us-card__phone slds-text-heading_medium">
-                    <a class="call-us-card__phone-link" href={telUrl} aria-label={callAriaLabel}>
+                <p class="slds-text-body_small gnal-call-us__label">{supportLineLabel}</p>
+                <p class="slds-text-heading_medium slds-m-top_xx-small">
+                    <a class="gnal-link gnal-call-us__phone" href={telUrl} aria-label={callAriaLabel}>
                         {phoneNumberDisplay}
                     </a>
                 </p>
             </div>
 
-            <div class="slds-m-top_small slds-grid slds-grid_vertical-align-center">
-                <lightning-icon
-                    icon-name="utility:clock"
-                    size="x-small"
-                    alternative-text="Availability"
-                    title="Availability"
-                    class="call-us-card__clock slds-m-right_x-small"
-                >
-                </lightning-icon>
-                <span class="slds-text-body_small slds-text-color_weak">{availabilityText}</span>
+            <div class="slds-m-top_small">
+                <lightning-layout vertical-align="center">
+                    <lightning-layout-item flexibility="no-grow" class="slds-m-right_x-small">
+                        <lightning-icon
+                            icon-name="utility:clock"
+                            size="x-small"
+                            alternative-text="Availability"
+                            title="Availability"
+                            class="gnal-call-us__clock"
+                        >
+                        </lightning-icon>
+                    </lightning-layout-item>
+                    <lightning-layout-item flexibility="grow">
+                        <span class="slds-text-body_small slds-text-color_weak">{availabilityText}</span>
+                    </lightning-layout-item>
+                </lightning-layout>
             </div>
         </div>
 
-        <div class="call-us-card__divider" role="presentation"></div>
+        <div class="gnal-call-us__divider" role="presentation"></div>
 
-        <div class="call-us-card__footer slds-p-around_medium slds-text-align_center">
-            <a class="call-us-card__cta" href={telUrl} aria-label={callAriaLabel}>
+        <div slot="footer" class="slds-text-align_center">
+            <a class="gnal-call-us__cta" href={telUrl} aria-label={callAriaLabel}>
                 <lightning-icon
                     icon-name="utility:call"
                     size="x-small"
                     alternative-text=""
                     title=""
-                    class="call-us-card__cta-icon slds-m-right_small"
+                    class="gnal-call-us__cta-icon slds-m-right_small"
                 >
                 </lightning-icon>
                 <span>{ctaLabel}</span>
             </a>
         </div>
-    </section>
+    </lightning-card>
 </template>
