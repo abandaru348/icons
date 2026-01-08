@@ -2,28 +2,28 @@
     display: block;
 
     /* Local branding tokens (kept component-scoped until a global token system is approved). */
-    --gnal-call-us-color-primary: #0a2c87;
-    --gnal-call-us-color-primary-hover: #08256f;
-    --gnal-call-us-color-border: #e5e7eb;
-    --gnal-call-us-color-text: #111827;
-    --gnal-call-us-color-text-muted: #6b7280;
-    --gnal-call-us-radius-lg: 1rem;
-    --gnal-call-us-radius-pill: 999px;
+    --call-us-color-primary: #0a2c87;
+    --call-us-color-primary-hover: #08256f;
+    --call-us-color-border: #e5e7eb;
+    --call-us-color-text: #111827;
+    --call-us-color-text-muted: #6b7280;
+    --call-us-radius-lg: 1rem;
+    --call-us-radius-pill: 999px;
 }
 
 /* Card wrapper: prefer SLDS + theme, minimal overrides. */
 :host .call-us-card {
-    border-radius: var(--gnal-call-us-radius-lg);
+    border-radius: var(--call-us-radius-lg);
     overflow: hidden;
-    --sds-c-card-radius-border: var(--gnal-call-us-radius-lg);
+    --sds-c-card-radius-border: var(--call-us-radius-lg);
 }
 
 .call-us__badge {
     display: inline-flex;
     width: 44px;
     height: 44px;
-    border-radius: var(--gnal-call-us-radius-pill);
-    background: var(--gnal-call-us-color-primary);
+    border-radius: var(--call-us-radius-pill);
+    background: var(--call-us-color-primary);
     align-items: center;
     justify-content: center;
 }
@@ -34,25 +34,25 @@
 }
 
 .call-us__title {
-    color: var(--gnal-call-us-color-primary);
+    color: var(--call-us-color-primary);
     font-weight: 700;
     line-height: 1.2;
 }
 
 .call-us__subtitle {
-    color: var(--gnal-call-us-color-primary);
+    color: var(--call-us-color-primary);
     font-weight: 600;
 }
 
 .call-us__label {
-    color: var(--gnal-call-us-color-text);
+    color: var(--call-us-color-text);
     font-weight: 500;
 }
 
 .call-us__phone-link {
     font-weight: 800;
     letter-spacing: 0.02em;
-    color: var(--gnal-call-us-color-primary);
+    color: var(--call-us-color-primary);
     text-decoration: none;
 }
 
@@ -62,13 +62,13 @@
 }
 
 .call-us__clock {
-    --sds-c-icon-color-foreground-default: var(--gnal-call-us-color-text-muted);
-    --sds-c-icon-color-foreground: var(--gnal-call-us-color-text-muted);
+    --sds-c-icon-color-foreground-default: var(--call-us-color-text-muted);
+    --sds-c-icon-color-foreground: var(--call-us-color-text-muted);
 }
 
 .call-us__divider {
     height: 1px;
-    background: var(--gnal-call-us-color-border);
+    background: var(--call-us-color-border);
 }
 
 .call-us__cta {
@@ -77,8 +77,8 @@
     justify-content: center;
     width: 100%;
     padding: 0.65rem 1rem;
-    border-radius: var(--gnal-call-us-radius-pill);
-    background: var(--gnal-call-us-color-primary);
+    border-radius: var(--call-us-radius-pill);
+    background: var(--call-us-color-primary);
     color: #ffffff;
     text-decoration: none;
     font-weight: 700;
@@ -86,7 +86,7 @@
 
 .call-us__cta:hover,
 .call-us__cta:focus {
-    background: var(--gnal-call-us-color-primary-hover);
+    background: var(--call-us-color-primary-hover);
 }
 
 .call-us__cta-icon {
