@@ -1,5 +1,4 @@
 import { LightningElement, api } from 'lwc';
-import CALL_US_PHONE from '@salesforce/resourceUrl/gnalCallUsPhone';
 
 export default class GnalCallUsComponent extends LightningElement {
     @api title = 'Call Us';
@@ -9,8 +8,6 @@ export default class GnalCallUsComponent extends LightningElement {
     @api phoneNumberDial;
     @api availabilityText = 'Available 24 hours a day, 7 days a week';
     @api ctaLabel = 'Call now';
-
-    phoneIcon = CALL_US_PHONE;
 
     get telUrl() {
         const dial = (this.phoneNumberDial || this.phoneNumberDisplay || '').trim();

@@ -20,11 +20,9 @@
     justify-content: center;
 }
 
-.call-us-card__icon img {
-    width: 18px;
-    height: 18px;
-    display: block;
-    filter: brightness(0) invert(1);
+.call-us-card__header-icon {
+    --sds-c-icon-color-foreground-default: #ffffff;
+    --sds-c-icon-color-foreground: #ffffff;
 }
 
 .call-us-card__title {
