@@ -1,0 +1,70 @@
+<template>
+    <lightning-card class="call-us-card">
+        <section class="slds-p-around_medium" role="region" aria-labelledby="callUsHeading">
+            <lightning-layout vertical-align="start">
+                <lightning-layout-item class="slds-m-right_medium" flexibility="no-grow">
+                    <span class="call-us__badge" aria-hidden="true">
+                        <lightning-icon
+                            icon-name="utility:call"
+                            size="small"
+                            alternative-text="Call"
+                            title="Call"
+                            class="call-us__badge-icon"
+                        >
+                        </lightning-icon>
+                    </span>
+                </lightning-layout-item>
+
+                <lightning-layout-item flexibility="grow">
+                    <h2 id="callUsHeading" class="slds-text-heading_medium call-us__title">
+                        {title}
+                    </h2>
+                    <p class="slds-text-body_small call-us__subtitle slds-m-top_xx-small">{subtitle}</p>
+                </lightning-layout-item>
+            </lightning-layout>
+
+            <div class="slds-m-top_medium">
+                <p class="slds-text-body_small call-us__label">{supportLineLabel}</p>
+                <p class="slds-text-heading_medium slds-m-top_xx-small">
+                    <a class="call-us__phone-link" href={telUrl} aria-label={callAriaLabel}>
+                        {phoneNumberDisplay}
+                    </a>
+                </p>
+            </div>
+
+            <div class="slds-m-top_small">
+                <lightning-layout vertical-align="center">
+                    <lightning-layout-item flexibility="no-grow" class="slds-m-right_x-small">
+                        <lightning-icon
+                            icon-name="utility:clock"
+                            size="x-small"
+                            alternative-text="Availability"
+                            title="Availability"
+                            class="call-us__clock"
+                        >
+                        </lightning-icon>
+                    </lightning-layout-item>
+                    <lightning-layout-item flexibility="grow">
+                        <span class="slds-text-body_small slds-text-color_weak">{availabilityText}</span>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </div>
+        </section>
+
+        <div class="call-us__divider" role="presentation"></div>
+
+        <div slot="footer" class="slds-text-align_center">
+            <a class="call-us__cta" href={telUrl} aria-label={callAriaLabel}>
+                <lightning-icon
+                    icon-name="utility:call"
+                    size="x-small"
+                    alternative-text="Call"
+                    title="Call"
+                    class="call-us__cta-icon slds-m-right_small"
+                >
+                </lightning-icon>
+                <span>{ctaLabel}</span>
+            </a>
+        </div>
+    </lightning-card>
+</template>
