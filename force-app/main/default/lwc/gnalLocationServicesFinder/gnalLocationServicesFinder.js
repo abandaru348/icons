@@ -35,7 +35,7 @@ export default class GnalLocationServicesFinder extends LightningElement {
                 const cid = decoded?.GNAL_Case__c || decoded?.Case__c;
                 if (this.looksLikeCaseId(cid)) this.caseId = cid;
             }
-        } catch (e) {
+        } catch (error) {
             // Non-blocking: defaultFieldValues is not guaranteed to exist and may be malformed depending on
             // how the component is launched (action vs related list override vs direct navigation).
             // We can still function via recordId/manual entry, so we intentionally don't hard-fail here.
@@ -44,7 +44,7 @@ export default class GnalLocationServicesFinder extends LightningElement {
             // Enable DEBUG temporarily if you want to inspect failures in the browser console.
             if (GnalLocationServicesFinder.DEBUG) {
                 // eslint-disable-next-line no-console
-                console.warn('Failed to decode defaultFieldValues for Case context', e);
+                console.warn('Failed to decode defaultFieldValues for Case context', error);
             }
         }
     }
@@ -98,12 +98,12 @@ export default class GnalLocationServicesFinder extends LightningElement {
             if (!this.effectiveCaseId) return;
             const home = await getDefaultCurrentLocationForCase({ caseId: this.effectiveCaseId });
             if (home) this.currentLocation = home;
-        } catch (e) {
+        } catch (error) {
             // Non-blocking: if prefill fails, user can enter a location manually.
             // Intentionally not shown to the user; this is a convenience feature only.
             if (GnalLocationServicesFinder.DEBUG) {
                 // eslint-disable-next-line no-console
-                console.warn('Failed to prefill current location from Case home address', e);
+                console.warn('Failed to prefill current location from Case home address', error);
             }
         }
     }
@@ -163,13 +163,13 @@ export default class GnalLocationServicesFinder extends LightningElement {
     }
 
     normalizeResults(data = []) {
-        return (data || []).map((r) => {
-            const minutesNum = Number(r?.minutes ?? 0);
-            const milesNum = Number(r?.distanceMiles ?? 0);
+        return (data || []).map((result) => {
+            const minutesNum = Number(result?.minutes ?? 0);
+            const milesNum = Number(result?.distanceMiles ?? 0);
             const safeMinutes = Number.isFinite(minutesNum) ? minutesNum : 0;
             const safeMiles = Number.isFinite(milesNum) ? milesNum : 0;
             return {
-                ...r,
+                ...result,
                 minutes: safeMinutes,
                 distanceMiles: safeMiles,
                 info: `${Math.round(safeMinutes)} mins (${safeMiles.toFixed(1)} mi)`
@@ -187,21 +187,21 @@ export default class GnalLocationServicesFinder extends LightningElement {
         // - Standard Lightning supports lightning/platformShowToastEvent
         // - Experience sites (LWR) support lightning/toast
         // We try both so the same component works everywhere.
-        const t = title || '';
-        const m = message || '';
-        const v = variant || 'info';
+        const toastTitle = title || '';
+        const toastMessage = message || '';
+        const toastVariant = variant || 'info';
         try {
-            this.dispatchEvent(new ShowToastEvent({ title: t, message: m, variant: v }));
+            this.dispatchEvent(new ShowToastEvent({ title: toastTitle, message: toastMessage, variant: toastVariant }));
             return;
-        } catch (e) {
+        } catch (error) {
             // ignore and fall back
         }
         try {
-            Toast.show({ label: t, message: m, variant: v });
-        } catch (e) {
+            Toast.show({ label: toastTitle, message: toastMessage, variant: toastVariant });
+        } catch (error) {
             if (GnalLocationServicesFinder.DEBUG) {
                 // eslint-disable-next-line no-console
-                console.warn('Failed to dispatch toast (both implementations unavailable)', e);
+                console.warn('Failed to dispatch toast (both implementations unavailable)', error);
             }
         }
     }
