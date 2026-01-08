@@ -188,13 +188,11 @@ export default class FindNearestFacilities extends LightningElement {
         if (!normalizedOrigin) {
             const msg = 'Please provide an origin address.';
             this.showToast('Error', msg, 'error');
-            this.setNotice('Error', msg, 'error');
             return;
         }
         if (!this.caseId) {
             const msg = 'This action must be launched from a Case.';
             this.showToast('Error', msg, 'error');
-            this.setNotice('Error', msg, 'error');
             return;
         }
 
@@ -223,14 +221,12 @@ export default class FindNearestFacilities extends LightningElement {
                     ? 'Nearest facilities found successfully.'
                     : 'No facilities found within the selected distance.';
                 const variant = hasAnyResults ? 'success' : 'info';
-                this.setNotice(title, message, variant);
                 this.showToast(title, message, variant);
             })
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';
                 this.lastErrorMessage = msg;
                 this.showToast('Error', msg, 'error');
-                this.setNotice('Error', msg, 'error');
             })
             .finally(() => {
                 this.isLoading = false;
