@@ -17,12 +17,13 @@
                 ></lightning-button>
             </div>
 
-            <template lwc:if={noticeMessage}>
-                <div class="slds-m-top_small slds-box slds-theme_alert-texture slds-theme_info">
+            <template lwc:if={showInlineNotice}>
+                <div class={noticeClass} role="status">
                     {noticeMessage}
                 </div>
             </template>
-            <template lwc:elseif={isLoading}>
+
+            <template lwc:if={isLoading}>
                 <div class="slds-m-top_medium">
                     <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
                 </div>
