@@ -12,13 +12,13 @@
 }
 
 /* Card wrapper: prefer SLDS + theme, minimal overrides. */
-:host .gnal-call-us-card {
+:host .call-us-card {
     border-radius: var(--gnal-call-us-radius-lg);
     overflow: hidden;
     --sds-c-card-radius-border: var(--gnal-call-us-radius-lg);
 }
 
-.gnal-call-us__badge {
+.call-us__badge {
     display: inline-flex;
     width: 44px;
     height: 44px;
@@ -28,50 +28,50 @@
     justify-content: center;
 }
 
-.gnal-call-us__badge-icon {
+.call-us__badge-icon {
     --sds-c-icon-color-foreground-default: #ffffff;
     --sds-c-icon-color-foreground: #ffffff;
 }
 
-.gnal-call-us__title {
+.call-us__title {
     color: var(--gnal-call-us-color-primary);
     font-weight: 700;
     line-height: 1.2;
 }
 
-.gnal-call-us__subtitle {
+.call-us__subtitle {
     color: var(--gnal-call-us-color-primary);
     font-weight: 600;
 }
 
-.gnal-call-us__label {
+.call-us__label {
     color: var(--gnal-call-us-color-text);
     font-weight: 500;
 }
 
-.gnal-call-us__phone-link {
+.call-us__phone-link {
     font-weight: 800;
     letter-spacing: 0.02em;
     color: var(--gnal-call-us-color-primary);
     text-decoration: none;
 }
 
-.gnal-call-us__phone-link:hover,
-.gnal-call-us__phone-link:focus {
+.call-us__phone-link:hover,
+.call-us__phone-link:focus {
     text-decoration: underline;
 }
 
-.gnal-call-us__clock {
+.call-us__clock {
     --sds-c-icon-color-foreground-default: var(--gnal-call-us-color-text-muted);
     --sds-c-icon-color-foreground: var(--gnal-call-us-color-text-muted);
 }
 
-.gnal-call-us__divider {
+.call-us__divider {
     height: 1px;
     background: var(--gnal-call-us-color-border);
 }
 
-.gnal-call-us__cta {
+.call-us__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -84,12 +84,12 @@
     font-weight: 700;
 }
 
-.gnal-call-us__cta:hover,
-.gnal-call-us__cta:focus {
+.call-us__cta:hover,
+.call-us__cta:focus {
     background: var(--gnal-call-us-color-primary-hover);
 }
 
-.gnal-call-us__cta-icon {
+.call-us__cta-icon {
     --sds-c-icon-color-foreground-default: #ffffff;
     --sds-c-icon-color-foreground: #ffffff;
 }
