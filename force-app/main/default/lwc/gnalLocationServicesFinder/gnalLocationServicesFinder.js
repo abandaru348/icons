@@ -1,4 +1,6 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
+import { CurrentPageReference } from 'lightning/navigation';
+import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
@@ -6,9 +8,10 @@ import createOrIncrementLocationService from '@salesforce/apex/GnalLocationServi
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 
 export default class GnalLocationServicesFinder extends LightningElement {
-    static DEFAULT_RADIUS_MILES = 100;
+    static WARM_CACHE_RADIUS_MILES = 100;
 
-    @api recordId; // expected to be Case Id when placed on a Case record page
+    @api recordId; // Case Id when placed on Case page as an action
+    caseId; // may be populated from page reference when launched from related list
 
     currentLocation = '';
     results = [];
@@ -17,12 +20,32 @@ export default class GnalLocationServicesFinder extends LightningElement {
     noticeMessage = '';
     noticeVariant = 'info'; // 'info' | 'success' | 'warning' | 'error'
 
+    @wire(CurrentPageReference)
+    setPageRef(pr) {
+        // When used as a New override from the related list, GNAL_Case__c may come through defaultFieldValues.
+        // This is best-effort; if it fails, we fall back to recordId or manual entry.
+        try {
+            const defaults = pr?.state?.defaultFieldValues;
+            if (defaults && !this.caseId && !this.recordId) {
+                const decoded = decodeDefaultFieldValues(defaults);
+                const cid = decoded?.GNAL_Case__c || decoded?.Case__c;
+                if (this.looksLikeCaseId(cid)) this.caseId = cid;
+            }
+        } catch (e) {
+            // Non-blocking: defaultFieldValues may be absent/malformed depending on launch context.
+            // Intentionally not console-logged to avoid noisy logs for expected navigation variants.
+        }
+    }
+
     connectedCallback() {
+        // Prefer recordId when present; otherwise fall back to any caseId resolved from page reference.
+        this.caseId = this.recordId || this.caseId;
         this.prefillFromCaseHomeAddress();
     }
 
-    get caseId() {
-        return this.looksLikeCaseId(this.recordId) ? this.recordId : null;
+    get effectiveCaseId() {
+        const cid = this.recordId || this.caseId;
+        return this.looksLikeCaseId(cid) ? cid.trim() : null;
     }
 
     get hasResults() {
@@ -51,11 +74,12 @@ export default class GnalLocationServicesFinder extends LightningElement {
 
     async prefillFromCaseHomeAddress() {
         try {
-            if (!this.caseId) return;
-            const home = await getDefaultCurrentLocationForCase({ caseId: this.caseId });
+            if (!this.effectiveCaseId) return;
+            const home = await getDefaultCurrentLocationForCase({ caseId: this.effectiveCaseId });
             if (home) this.currentLocation = home;
         } catch (e) {
             // Non-blocking: if prefill fails, user can enter a location manually.
+            // Intentionally not shown to the user; this is a convenience feature only.
         }
     }
 
@@ -73,7 +97,7 @@ export default class GnalLocationServicesFinder extends LightningElement {
             this.setNotice('', 'error'); // don’t show inline error div
             return;
         }
-        if (!this.caseId) {
+        if (!this.effectiveCaseId) {
             this.showToast('Error', 'This action must be launched from a Case.', 'error');
             this.setNotice('', 'error');
             return;
@@ -83,12 +107,12 @@ export default class GnalLocationServicesFinder extends LightningElement {
         this.results = [];
         this.setNotice('', 'info');
 
-        createOrIncrementLocationService({ caseId: this.caseId, currentLocation: normalized })
+        createOrIncrementLocationService({ caseId: this.effectiveCaseId, currentLocation: normalized })
             .then(() =>
                 findNearestFacilitiesWithRadius({
                     accountId: null,
                     originAddress: normalized,
-                    radiusMiles: GnalLocationServicesFinder.DEFAULT_RADIUS_MILES
+                    radiusMiles: GnalLocationServicesFinder.WARM_CACHE_RADIUS_MILES
                 })
             )
             .then((data = []) => {
