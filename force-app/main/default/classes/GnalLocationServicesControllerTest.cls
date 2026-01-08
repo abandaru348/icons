@@ -33,6 +33,32 @@ private class GnalLocationServicesControllerTest {
         }
     }
 
+    private static GNAL_Location_Service__c queryLocationService(Id locationServiceId) {
+        if (locationServiceId == null) return null;
+
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
+        List<String> selectFields = new List<String>{ 'Id', 'GNAL_Search_Count__c', 'GNAL_Case__c' };
+        List<String> candidates = new List<String>{
+            'GNAL_Current_Location__Street__s',
+            'GNAL_Current_Location__City__s',
+            'GNAL_Current_Location__State__s',
+            'GNAL_Current_Location__StateCode__s',
+            'GNAL_Current_Location__PostalCode__s',
+            'GNAL_Current_Location__Country__s',
+            'GNAL_Current_Location__CountryCode__s'
+        };
+        for (String f : candidates) {
+            if (fields != null && fields.containsKey(f)) selectFields.add(f);
+        }
+
+        String soql =
+            'SELECT ' + String.join(selectFields, ',') +
+            ' FROM GNAL_Location_Service__c' +
+            ' WHERE Id = \'' + String.escapeSingleQuotes(String.valueOf(locationServiceId)) + '\'' +
+            ' LIMIT 1';
+        return (GNAL_Location_Service__c) Database.query(soql);
+    }
+
     @IsTest
     static void createOrIncrement_createsOnceAndIncrements_andNormalizes() {
         Account a = new Account(Name = 'Test Account');
@@ -101,6 +127,127 @@ private class GnalLocationServicesControllerTest {
 
         System.assertEquals(r1.locationServiceId, r4.locationServiceId, 'Expected original address to reuse original record');
         System.assertEquals(2, r4.searchCount, 'Expected search count increment for original address');
+    }
+
+    @IsTest
+    static void createOrIncrement_parsesFourTokenStatePostalAndCountryCode() {
+        Account a = new Account(Name = 'Parse 4-token');
+        insert a;
+        Case c = new Case(Subject = 'Test', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        // 4 tokens: street, city, "state postal", countryCode
+        String addr = '1 Test St, Austin, TX 78701, US';
+
+        Test.startTest();
+        GnalLocationServicesController.LocationServiceUpsertResult r1 =
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, addr);
+        GnalLocationServicesController.LocationServiceUpsertResult r2 =
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, addr);
+        Test.stopTest();
+
+        System.assertEquals(r1.locationServiceId, r2.locationServiceId);
+        System.assertEquals(2, r2.searchCount);
+
+        GNAL_Location_Service__c saved = queryLocationService(r1.locationServiceId);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
+        if (fields != null && fields.containsKey('GNAL_Current_Location__StateCode__s')) {
+            System.assertEquals('TX', (String) saved.get('GNAL_Current_Location__StateCode__s'));
+        }
+        if (fields != null && fields.containsKey('GNAL_Current_Location__CountryCode__s')) {
+            System.assertEquals('US', (String) saved.get('GNAL_Current_Location__CountryCode__s'));
+        }
+    }
+
+    @IsTest
+    static void createOrIncrement_parsesThreeTokenCityStatePostal() {
+        Account a = new Account(Name = 'Parse 3-token');
+        insert a;
+        Case c = new Case(Subject = 'Test', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        // 3 tokens: street, "city state postal", countryCode
+        String addr = '2 Test St, Austin TX 78701, US';
+
+        Test.startTest();
+        GnalLocationServicesController.LocationServiceUpsertResult r1 =
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, addr);
+        Test.stopTest();
+
+        System.assertNotEquals(null, r1.locationServiceId);
+        GNAL_Location_Service__c saved = queryLocationService(r1.locationServiceId);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
+        if (fields != null && fields.containsKey('GNAL_Current_Location__City__s')) {
+            System.assertEquals('Austin', (String) saved.get('GNAL_Current_Location__City__s'));
+        }
+        if (fields != null && fields.containsKey('GNAL_Current_Location__PostalCode__s')) {
+            System.assertEquals('78701', (String) saved.get('GNAL_Current_Location__PostalCode__s'));
+        }
+        if (fields != null && fields.containsKey('GNAL_Current_Location__CountryCode__s')) {
+            System.assertEquals('US', (String) saved.get('GNAL_Current_Location__CountryCode__s'));
+        }
+    }
+
+    @IsTest
+    static void createOrIncrement_convertsStateAndCountryLabelsToCodes() {
+        Account a = new Account(Name = 'Label->Code');
+        insert a;
+        Case c = new Case(Subject = 'Test', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        // 5 tokens: street, city, stateLabel, postal, countryLabel
+        // This is expected to populate StateCode__s/CountryCode__s via label->code mapping.
+        String addr = '3 Test St, Austin, Texas, 78701, United States';
+
+        Test.startTest();
+        GnalLocationServicesController.LocationServiceUpsertResult r1 =
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, addr);
+        Test.stopTest();
+
+        GNAL_Location_Service__c saved = queryLocationService(r1.locationServiceId);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
+        if (fields != null && fields.containsKey('GNAL_Current_Location__StateCode__s')) {
+            System.assertEquals('TX', (String) saved.get('GNAL_Current_Location__StateCode__s'));
+        }
+        if (fields != null && fields.containsKey('GNAL_Current_Location__CountryCode__s')) {
+            System.assertEquals('US', (String) saved.get('GNAL_Current_Location__CountryCode__s'));
+        }
+    }
+
+    @IsTest
+    static void getDefaultCurrentLocationForCase_convertsHomeStateAndCountryCodesToLabels() {
+        // Cover the branch where Home Address only has codes; controller should return labels when possible.
+        Id personRtId = getPersonAccountRecordTypeId();
+        if (personRtId == null) {
+            System.assertEquals(true, true, 'Person Accounts not enabled; skipping label conversion test.');
+            return;
+        }
+
+        Account a = new Account(RecordTypeId = personRtId, LastName = 'PA Codes');
+        Boolean wroteAny =
+            tryPutIfWriteable(a, 'GNAL_Home_Address__Street__s', '10 Code St') |
+            tryPutIfWriteable(a, 'GNAL_Home_Address__City__s', 'Austin') |
+            tryPutIfWriteable(a, 'GNAL_Home_Address__StateCode__s', 'TX') |
+            tryPutIfWriteable(a, 'GNAL_Home_Address__PostalCode__s', '78701') |
+            tryPutIfWriteable(a, 'GNAL_Home_Address__CountryCode__s', 'US');
+        insert a;
+
+        Case c = new Case(Subject = 'Has Account', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        Test.startTest();
+        String addr = GnalLocationServicesController.getDefaultCurrentLocationForCase(c.Id);
+        Test.stopTest();
+
+        if (wroteAny) {
+            System.assertNotEquals(null, addr);
+            System.assert(addr.contains('10 Code St'));
+            // State/Country should be labels when picklists are enabled and available.
+            System.assertEquals(false, addr.contains(', TX,'), 'Expected state label rather than code. Actual: ' + addr);
+            System.assertEquals(false, addr.endsWith(', US'), 'Expected country label rather than code. Actual: ' + addr);
+        } else {
+            System.assertEquals(null, addr, 'Expected null when home address fields are unavailable/unwriteable.');
+        }
     }
 
     @IsTest
