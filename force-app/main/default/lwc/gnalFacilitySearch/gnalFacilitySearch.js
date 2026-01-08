@@ -1,7 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import Toast from 'lightning/toast';
 
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
@@ -223,6 +223,7 @@ export default class FindNearestFacilities extends LightningElement {
                     : 'No facilities found within the selected distance.';
                 const variant = hasAnyResults ? 'success' : 'info';
                 this.setNotice(title, message, variant);
+                this.showToast(title, message, variant);
             })
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';
@@ -301,16 +302,14 @@ export default class FindNearestFacilities extends LightningElement {
     }
 
     showToast(title, message, variant) {
-        // Toasts are the standard Salesforce UX for transient feedback, especially errors.
+        // Experience sites (LWR) do not support lightning/platformShowToastEvent; use lightning/toast.
         // We still set inline notice/error-details so the message remains visible on the page.
         try {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: title || '',
-                    message: message || '',
-                    variant: variant || 'info'
-                })
-            );
+            Toast.show({
+                label: title || '',
+                message: message || '',
+                variant: variant || 'info'
+            });
         } catch (e) {
             // Non-blocking: if toasts aren't available in a given container, fall back to inline notice only.
         }
