@@ -9,6 +9,9 @@ import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearch
 
 export default class GnalLocationServicesFinder extends LightningElement {
     static WARM_CACHE_RADIUS_MILES = 100;
+    // Debug logging is intentionally off by default to avoid noisy console output for end users.
+    // Flip to true temporarily when troubleshooting navigation context issues.
+    static DEBUG = false;
 
     @api recordId; // Case Id when placed on Case page as an action
     caseId; // may be populated from page reference when launched from related list
@@ -32,8 +35,16 @@ export default class GnalLocationServicesFinder extends LightningElement {
                 if (this.looksLikeCaseId(cid)) this.caseId = cid;
             }
         } catch (e) {
-            // Non-blocking: defaultFieldValues may be absent/malformed depending on launch context.
-            // Intentionally not console-logged to avoid noisy logs for expected navigation variants.
+            // Non-blocking: defaultFieldValues is not guaranteed to exist and may be malformed depending on
+            // how the component is launched (action vs related list override vs direct navigation).
+            // We can still function via recordId/manual entry, so we intentionally don't hard-fail here.
+            //
+            // Logging: this can be expected/benign in many flows, so we don't log by default.
+            // Enable DEBUG temporarily if you want to inspect failures in the browser console.
+            if (GnalLocationServicesFinder.DEBUG) {
+                // eslint-disable-next-line no-console
+                console.warn('Failed to decode defaultFieldValues for Case context', e);
+            }
         }
     }
 
@@ -80,6 +91,10 @@ export default class GnalLocationServicesFinder extends LightningElement {
         } catch (e) {
             // Non-blocking: if prefill fails, user can enter a location manually.
             // Intentionally not shown to the user; this is a convenience feature only.
+            if (GnalLocationServicesFinder.DEBUG) {
+                // eslint-disable-next-line no-console
+                console.warn('Failed to prefill current location from Case home address', e);
+            }
         }
     }
 
@@ -166,6 +181,10 @@ export default class GnalLocationServicesFinder extends LightningElement {
             );
         } catch (e) {
             // Non-blocking: if toasts aren't available in this container, fall back silently.
+            if (GnalLocationServicesFinder.DEBUG) {
+                // eslint-disable-next-line no-console
+                console.warn('Failed to dispatch toast event', e);
+            }
         }
     }
 }
