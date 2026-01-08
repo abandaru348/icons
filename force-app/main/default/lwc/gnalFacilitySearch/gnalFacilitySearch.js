@@ -1,6 +1,8 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import Toast from 'lightning/toast';
 
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
@@ -300,7 +302,7 @@ export default class FindNearestFacilities extends LightningElement {
         this.noticeVariant = variant || 'info';
     }
 
-    async showToast(title, message, variant) {
+    showToast(title, message, variant) {
         // Toast implementation differs by container:
         // - Standard Lightning supports lightning/platformShowToastEvent
         // - Experience sites (LWR) support lightning/toast
@@ -310,16 +312,15 @@ export default class FindNearestFacilities extends LightningElement {
         const m = message || '';
         const v = variant || 'info';
         try {
-            const mod = await import('lightning/platformShowToastEvent');
-            // eslint-disable-next-line new-cap
-            this.dispatchEvent(new mod.ShowToastEvent({ title: t, message: m, variant: v }));
+            // Preferred for standard Lightning containers.
+            this.dispatchEvent(new ShowToastEvent({ title: t, message: m, variant: v }));
             return;
         } catch (e) {
             // ignore and fall back
         }
         try {
-            const toastMod = await import('lightning/toast');
-            toastMod.default.show({ label: t, message: m, variant: v });
+            // Preferred for Experience Sites (LWR).
+            Toast.show({ label: t, message: m, variant: v });
         } catch (e) {
             // Non-blocking: if toasts aren't available in a given container, fall back to inline notice only.
         }

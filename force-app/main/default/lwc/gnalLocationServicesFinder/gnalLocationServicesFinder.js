@@ -1,6 +1,8 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import Toast from 'lightning/toast';
 
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
 import createOrIncrementLocationService from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationService';
@@ -185,28 +187,17 @@ export default class GnalLocationServicesFinder extends LightningElement {
         // - Standard Lightning supports lightning/platformShowToastEvent
         // - Experience sites (LWR) support lightning/toast
         // We try both so the same component works everywhere.
-        try {
-            this.showToastInternal(title, message, variant);
-        } catch (e) {
-            // ignore (showToastInternal handles its own fallbacks)
-        }
-    }
-
-    async showToastInternal(title, message, variant) {
         const t = title || '';
         const m = message || '';
         const v = variant || 'info';
         try {
-            const mod = await import('lightning/platformShowToastEvent');
-            // eslint-disable-next-line new-cap
-            this.dispatchEvent(new mod.ShowToastEvent({ title: t, message: m, variant: v }));
+            this.dispatchEvent(new ShowToastEvent({ title: t, message: m, variant: v }));
             return;
         } catch (e) {
             // ignore and fall back
         }
         try {
-            const toastMod = await import('lightning/toast');
-            toastMod.default.show({ label: t, message: m, variant: v });
+            Toast.show({ label: t, message: m, variant: v });
         } catch (e) {
             if (GnalLocationServicesFinder.DEBUG) {
                 // eslint-disable-next-line no-console
