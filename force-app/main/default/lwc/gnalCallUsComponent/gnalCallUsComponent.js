@@ -6,7 +6,6 @@
  */
 
 import { LightningElement, api } from 'lwc';
-import { normalizePhoneForTel } from 'c/gnalUtils';
 
 export default class GnalCallUsComponent extends LightningElement {
     @api title = 'Call Us';
@@ -19,11 +18,25 @@ export default class GnalCallUsComponent extends LightningElement {
 
     get telUrl() {
         const dial = (this.phoneNumberDial || this.phoneNumberDisplay || '').trim();
-        const normalized = normalizePhoneForTel(dial);
+        const normalized = this.normalizePhoneForTel(dial);
         return normalized ? `tel:${normalized}` : 'tel:';
     }
 
     get callAriaLabel() {
         return `Call ${this.phoneNumberDisplay || 'support line'}`;
+    }
+
+    /**
+     * Normalizes a phone number for tel: links.
+     * Keeps digits and an optional leading "+"; removes spaces, hyphens, parentheses, etc.
+     */
+    normalizePhoneForTel(rawPhone) {
+        const input = (rawPhone || '').trim();
+        if (!input) {
+            return '';
+        }
+
+        // Business rule: allow international dialing by preserving "+".
+        return input.replace(/[^\d+]/g, '');
     }
 }

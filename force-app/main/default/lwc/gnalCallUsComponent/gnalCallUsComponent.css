@@ -1,22 +1,29 @@
-@import 'c/gnalSharedStyles';
-
 :host {
     display: block;
+
+    /* Local branding tokens (kept component-scoped until a global token system is approved). */
+    --gnal-call-us-color-primary: #0a2c87;
+    --gnal-call-us-color-primary-hover: #08256f;
+    --gnal-call-us-color-border: #e5e7eb;
+    --gnal-call-us-color-text: #111827;
+    --gnal-call-us-color-text-muted: #6b7280;
+    --gnal-call-us-radius-lg: 1rem;
+    --gnal-call-us-radius-pill: 999px;
 }
 
 /* Card wrapper: prefer SLDS + theme, minimal overrides. */
 :host .gnal-call-us-card {
-    border-radius: var(--gnal-radius-lg);
+    border-radius: var(--gnal-call-us-radius-lg);
     overflow: hidden;
-    --sds-c-card-radius-border: var(--gnal-radius-lg);
+    --sds-c-card-radius-border: var(--gnal-call-us-radius-lg);
 }
 
 .gnal-call-us__badge {
     display: inline-flex;
     width: 44px;
     height: 44px;
-    border-radius: var(--gnal-radius-pill);
-    background: var(--gnal-color-primary);
+    border-radius: var(--gnal-call-us-radius-pill);
+    background: var(--gnal-call-us-color-primary);
     align-items: center;
     justify-content: center;
 }
@@ -27,34 +34,41 @@
 }
 
 .gnal-call-us__title {
-    color: var(--gnal-color-primary);
+    color: var(--gnal-call-us-color-primary);
     font-weight: 700;
     line-height: 1.2;
 }
 
 .gnal-call-us__subtitle {
-    color: var(--gnal-color-primary);
+    color: var(--gnal-call-us-color-primary);
     font-weight: 600;
 }
 
 .gnal-call-us__label {
-    color: var(--gnal-color-text);
+    color: var(--gnal-call-us-color-text);
     font-weight: 500;
 }
 
-.gnal-call-us__phone {
+.gnal-call-us__phone-link {
     font-weight: 800;
     letter-spacing: 0.02em;
+    color: var(--gnal-call-us-color-primary);
+    text-decoration: none;
+}
+
+.gnal-call-us__phone-link:hover,
+.gnal-call-us__phone-link:focus {
+    text-decoration: underline;
 }
 
 .gnal-call-us__clock {
-    --sds-c-icon-color-foreground-default: var(--gnal-color-text-muted);
-    --sds-c-icon-color-foreground: var(--gnal-color-text-muted);
+    --sds-c-icon-color-foreground-default: var(--gnal-call-us-color-text-muted);
+    --sds-c-icon-color-foreground: var(--gnal-call-us-color-text-muted);
 }
 
 .gnal-call-us__divider {
     height: 1px;
-    background: var(--gnal-color-border);
+    background: var(--gnal-call-us-color-border);
 }
 
 .gnal-call-us__cta {
@@ -63,8 +77,8 @@
     justify-content: center;
     width: 100%;
     padding: 0.65rem 1rem;
-    border-radius: var(--gnal-radius-pill);
-    background: var(--gnal-color-primary);
+    border-radius: var(--gnal-call-us-radius-pill);
+    background: var(--gnal-call-us-color-primary);
     color: #ffffff;
     text-decoration: none;
     font-weight: 700;
@@ -72,7 +86,7 @@
 
 .gnal-call-us__cta:hover,
 .gnal-call-us__cta:focus {
-    background: var(--gnal-color-primary-hover);
+    background: var(--gnal-call-us-color-primary-hover);
 }
 
 .gnal-call-us__cta-icon {
