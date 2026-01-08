@@ -99,8 +99,8 @@ export default class GnalLocationServicesFinder extends LightningElement {
     }
 
     handleLocationChange(event) {
-        // Keep UI state clean, but still re-trim at submit as defense-in-depth.
-        this.currentLocation = (event?.target?.value || '').trim();
+        // Store raw input; normalize/trim only at submit time (handleFind) before calling Apex.
+        this.currentLocation = event?.target?.value || '';
     }
 
     handleFind() {
