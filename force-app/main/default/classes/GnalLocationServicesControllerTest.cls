@@ -81,15 +81,15 @@ private class GnalLocationServicesControllerTest {
 
         Test.startTest();
         GnalLocationServicesController.LocationServiceUpsertResult r1 =
-            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '123 Main St, Austin, TX 78701');
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '123 Main St, Austin, TX, 78701, United States');
         GnalLocationServicesController.LocationServiceUpsertResult r2 =
-            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '999 Other St, Austin, TX 78702');
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '999 Other St, Austin, TX, 78702, United States');
         // Same as r2 address -> increment that record
         GnalLocationServicesController.LocationServiceUpsertResult r3 =
-            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '  999  Other St,  Austin, TX 78702  ');
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '  999  Other St,  Austin, TX, 78702, United States  ');
         // Back to r1 address -> increment the original record (not create a 3rd)
         GnalLocationServicesController.LocationServiceUpsertResult r4 =
-            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '123 Main St, Austin, TX 78701');
+            GnalLocationServicesController.createOrIncrementLocationService(c.Id, '123 Main St, Austin, TX, 78701, United States');
         Test.stopTest();
 
         System.assertNotEquals(null, r1.locationServiceId);
