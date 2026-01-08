@@ -1,7 +1,6 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
-import Toast from 'lightning/toast';
 
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
@@ -301,15 +300,26 @@ export default class FindNearestFacilities extends LightningElement {
         this.noticeVariant = variant || 'info';
     }
 
-    showToast(title, message, variant) {
-        // Experience sites (LWR) do not support lightning/platformShowToastEvent; use lightning/toast.
+    async showToast(title, message, variant) {
+        // Toast implementation differs by container:
+        // - Standard Lightning supports lightning/platformShowToastEvent
+        // - Experience sites (LWR) support lightning/toast
+        // We try both so the same component works everywhere.
         // We still set inline notice/error-details so the message remains visible on the page.
+        const t = title || '';
+        const m = message || '';
+        const v = variant || 'info';
         try {
-            Toast.show({
-                label: title || '',
-                message: message || '',
-                variant: variant || 'info'
-            });
+            const mod = await import('lightning/platformShowToastEvent');
+            // eslint-disable-next-line new-cap
+            this.dispatchEvent(new mod.ShowToastEvent({ title: t, message: m, variant: v }));
+            return;
+        } catch (e) {
+            // ignore and fall back
+        }
+        try {
+            const toastMod = await import('lightning/toast');
+            toastMod.default.show({ label: t, message: m, variant: v });
         } catch (e) {
             // Non-blocking: if toasts aren't available in a given container, fall back to inline notice only.
         }

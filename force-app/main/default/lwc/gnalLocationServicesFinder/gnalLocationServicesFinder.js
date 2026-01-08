@@ -1,7 +1,6 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
 import { decodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
-import Toast from 'lightning/toast';
 
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
 import createOrIncrementLocationService from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationService';
@@ -182,18 +181,36 @@ export default class GnalLocationServicesFinder extends LightningElement {
     }
 
     showToast(title, message, variant) {
-        // Experience sites (LWR) do not support lightning/platformShowToastEvent; use lightning/toast.
+        // Toast implementation differs by container:
+        // - Standard Lightning supports lightning/platformShowToastEvent
+        // - Experience sites (LWR) support lightning/toast
+        // We try both so the same component works everywhere.
         try {
-            Toast.show({
-                label: title || '',
-                message: message || '',
-                variant: variant || 'info'
-            });
+            this.showToastInternal(title, message, variant);
         } catch (e) {
-            // Non-blocking: if toasts aren't available in this container, fall back silently.
+            // ignore (showToastInternal handles its own fallbacks)
+        }
+    }
+
+    async showToastInternal(title, message, variant) {
+        const t = title || '';
+        const m = message || '';
+        const v = variant || 'info';
+        try {
+            const mod = await import('lightning/platformShowToastEvent');
+            // eslint-disable-next-line new-cap
+            this.dispatchEvent(new mod.ShowToastEvent({ title: t, message: m, variant: v }));
+            return;
+        } catch (e) {
+            // ignore and fall back
+        }
+        try {
+            const toastMod = await import('lightning/toast');
+            toastMod.default.show({ label: t, message: m, variant: v });
+        } catch (e) {
             if (GnalLocationServicesFinder.DEBUG) {
                 // eslint-disable-next-line no-console
-                console.warn('Failed to dispatch toast event', e);
+                console.warn('Failed to dispatch toast (both implementations unavailable)', e);
             }
         }
     }
