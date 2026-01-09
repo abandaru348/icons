@@ -1,0 +1,13 @@
+# Node / tooling
+**/node_modules/**
+**/.npm/**
+**/.yarn/**
+
+# OS / editor
+**/.DS_Store
+**/.vscode/**
+**/.idea/**
+
+# Salesforce local-only
+**/.sf/**
+**/.sfdx/**
