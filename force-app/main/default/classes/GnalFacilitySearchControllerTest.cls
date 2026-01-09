@@ -896,5 +896,68 @@ private class GnalFacilitySearchControllerTest {
 
         System.assertNotEquals(null, results);
     }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_trimsOriginAddress_matchesCache_inTests() {
+        // Test-only path uses miles-only query; ensure originAddress trim affects matching.
+        String originAddress = 'TrimOrigin';
+        insert new GeocodeCache__c(
+            Name = 'TrimOriginCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Dest',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+
+        Test.startTest();
+        List<Map<String, Object>> results =
+            GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('  ' + originAddress + '  ', 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+        System.assertEquals(true, results.size() >= 1);
+    }
+
+    @IsTest
+    static void getLatestCaseOriginAddressForAccount_prefersTextOriginField_whenPresent() {
+        // Covers formatCaseOriginAddress() branch that reads GNAL_Origin_Location__c directly when it is Text.
+        Map<String, Schema.SObjectField> caseFields = Schema.SObjectType.Case.fields.getMap();
+        if (caseFields == null || !caseFields.containsKey('GNAL_Origin_Location__c')) {
+            System.assertEquals(true, true, 'GNAL_Origin_Location__c missing; skipping.');
+            return;
+        }
+        Schema.DescribeFieldResult d = caseFields.get('GNAL_Origin_Location__c').getDescribe();
+        if (d != null && d.getType() == Schema.DisplayType.Address) {
+            System.assertEquals(true, true, 'GNAL_Origin_Location__c is Address; skipping text-field branch.');
+            return;
+        }
+
+        Account a = new Account(Name = 'Text Origin Acct');
+        insert a;
+        Case c = new Case(AccountId = a.Id, Origin = 'Phone', Status = 'New', Subject = 'Origin');
+        c.put('GNAL_Origin_Location__c', '123 Origin From Text');
+        insert c;
+
+        Test.startTest();
+        String out = GnalFacilitySearchController.getLatestCaseOriginAddressForAccount(a.Id);
+        Test.stopTest();
+
+        System.assertEquals('123 Origin From Text', out);
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_blankOriginSpaces_throws() {
+        Boolean threw = false;
+        try {
+            Test.startTest();
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, '   ', 5);
+        } catch (Exception ex) {
+            threw = true;
+        } finally {
+            Test.stopTest();
+        }
+        System.assertEquals(true, threw);
+    }
 }
 
