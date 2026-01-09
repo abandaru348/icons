@@ -750,5 +750,151 @@ private class GnalFacilitySearchControllerTest {
         Test.stopTest();
         System.assertEquals(null, origin);
     }
+
+    // --- Added tests to increase controller coverage (no production code changes) ---
+
+    @IsTest
+    static void getCaseAccountId_and_getCaseBillingAddress_coverHelpers() {
+        Account a = new Account(
+            Name = 'Helper Account',
+            BillingStreet = '500 Main St',
+            BillingCity = 'Austin',
+            BillingPostalCode = '78701'
+        );
+        setFieldIfExists(a, 'BillingStateCode', 'TX');
+        setFieldIfExists(a, 'BillingCountryCode', 'US');
+        setFieldIfExists(a, 'BillingCountry', 'United States');
+        insert a;
+
+        Case c = new Case(Subject = 'Test', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        Test.startTest();
+        System.assertEquals(null, GnalFacilitySearchController.getCaseAccountId(null));
+        System.assertEquals(a.Id, GnalFacilitySearchController.getCaseAccountId(c.Id));
+        System.assertEquals(null, GnalFacilitySearchController.getCaseBillingAddress(null));
+        System.assertNotEquals(null, GnalFacilitySearchController.getCaseBillingAddress(c.Id));
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_fallsBackToMilesOnly_whenOriginCoordsMissingInTests() {
+        // Goal: cover the Test.isRunningTest() fallback branch in findNearestFacilitiesInternal()
+        // where origin coords are unavailable, and it filters using Distance_Miles__c.
+
+        OperatingHours oh = new OperatingHours(Name = 'OH MilesOnly', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Facility MilesOnly',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '1 Facility Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        // Build destination address as the controller does (using the queried State/Country fields).
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String destAddress = formatAddress(stored.Street, stored.City, stored.State, stored.PostalCode, stored.Country);
+        String originAddress = '100 Origin St, Austin, TX 78701';
+
+        // Insert cache row for every destination address so there are no "missingAddresses"
+        // and the controller will not attempt callouts. Also omit origin coords so origin remains null.
+        insert new GeocodeCache__c(
+            Name = 'MilesOnlyCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 3,
+            Distance_Meters__c = 4828,
+            Travel_Time_Minutes__c = 12
+        );
+
+        Test.startTest();
+        List<Map<String, Object>> results =
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 5);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+        System.assertEquals(true, results.size() >= 1, 'Expected miles-only fallback results.');
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_parentTerritoryDedup_executesWithoutThrowing() {
+        // Cover getDistinctTerritories() second loop + addTerritoryIfNew dedupe.
+        OperatingHours oh = new OperatingHours(Name = 'OH Parent', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory parent = new ServiceTerritory(
+            Name = 'Parent Facility',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '10 Parent St',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(parent, 'CountryCode', 'US');
+        setFieldIfExists(parent, 'StateCode', 'TX');
+        insert parent;
+
+        ServiceTerritory child1 = new ServiceTerritory(
+            Name = 'Child 1',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            ParentTerritoryId = parent.Id,
+            Street = '11 Child St',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        ServiceTerritory child2 = new ServiceTerritory(
+            Name = 'Child 2',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            ParentTerritoryId = parent.Id,
+            Street = '12 Child St',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        insert new List<ServiceTerritory>{ child1, child2 };
+
+        ServiceTerritory storedParent = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :parent.Id
+            LIMIT 1
+        ];
+        String parentDest = formatAddress(
+            storedParent.Street,
+            storedParent.City,
+            storedParent.State,
+            storedParent.PostalCode,
+            storedParent.Country
+        );
+        String originAddress = '100 Origin St, Austin, TX 78701';
+
+        insert new GeocodeCache__c(
+            Name = 'ParentCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = parentDest,
+            Distance_Miles__c = 2,
+            Distance_Meters__c = 3218,
+            Travel_Time_Minutes__c = 8
+        );
+
+        Test.startTest();
+        List<Map<String, Object>> results =
+            GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 50);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+    }
 }
 
