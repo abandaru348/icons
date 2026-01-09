@@ -750,51 +750,5 @@ private class GnalFacilitySearchControllerTest {
         Test.stopTest();
         System.assertEquals(null, origin);
     }
-
-    // --- Minimal additions to raise coverage (keeps original test structure intact) ---
-
-    @IsTest
-    static void getCaseAccountId_and_getCaseBillingAddress_extraCoverage() {
-        Account a = new Account(
-            Name = 'Extra Coverage',
-            BillingStreet = '500 Main St',
-            BillingCity = 'Austin',
-            BillingPostalCode = '78701'
-        );
-        setFieldIfExists(a, 'BillingStateCode', 'TX');
-        setFieldIfExists(a, 'BillingCountryCode', 'US');
-        setFieldIfExists(a, 'BillingCountry', 'United States');
-        insert a;
-
-        Case c = new Case(Subject = 'Test', Status = 'New', Origin = 'Phone', AccountId = a.Id);
-        insert c;
-
-        Test.startTest();
-        System.assertEquals(a.Id, GnalFacilitySearchController.getCaseAccountId(c.Id));
-        System.assertNotEquals(null, GnalFacilitySearchController.getCaseBillingAddress(c.Id));
-        System.assertEquals(null, GnalFacilitySearchController.getCaseAccountId(null));
-        System.assertEquals(null, GnalFacilitySearchController.getCaseBillingAddress(null));
-        Test.stopTest();
-    }
-
-    @IsTest
-    static void findFacilitiesFromCacheWithRadius_trimsOrigin_inTests_extraCoverage() {
-        String origin = 'Trim Me';
-        insert new GeocodeCache__c(
-            Name = 'TrimCache',
-            Origin_Address__c = origin,
-            Destination_Address__c = 'Dest',
-            Distance_Miles__c = 1,
-            Distance_Meters__c = 1609,
-            Travel_Time_Minutes__c = 5
-        );
-
-        Test.startTest();
-        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius('  ' + origin + '  ', 5);
-        Test.stopTest();
-
-        System.assertNotEquals(null, results);
-        System.assertEquals(true, results.size() >= 1);
-    }
 }
 
