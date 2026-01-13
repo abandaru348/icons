@@ -1,0 +1,26 @@
+.page-wrapper {
+    background: var(--gnal-background); 
+}
+
+.icon-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-3);
+}
+
+.availability-text {
+    display: flex;
+    align-items: center;
+    gap: var(--slds-g-spacing-1);
+}
+
+.one-size-card {
+    min-height: 200px;
+}
+
+.dbn-sample-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
