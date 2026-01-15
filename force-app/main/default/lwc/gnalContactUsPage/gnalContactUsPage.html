@@ -24,7 +24,7 @@
 
                         <p class="gnal-section-title slds-p-bottom_medium">Speak directly with a support specialist</p>
                         <p class="slds-p-bottom_x-small">GNAL Portal Support Line</p>
-                        <p class="gnal-field-description">1-800-342-9647</p>
+                        <p class="gnal-field-description">{supportPhone}</p>
 
                         <div class="availability-text gnal-field-description-muted slds-p-top_medium">
                             <lightning-icon class="gnal-secondary-icon" icon-name="utility:clock" size="x-small"></lightning-icon>
@@ -45,7 +45,7 @@
                                 ></lightning-button-icon>
                             </div>
 
-                            <template if:true={showDbnInfo}>
+                            <template lwc:if={showDbnInfo}>
                                 <div class="slds-m-top_small">
                                     <img class="dbn-sample-image" src={dbnSampleUrl} alt="DoD Benefit Number (DBN) sample"/>
                                 </div>
@@ -72,7 +72,7 @@
 
                         <p class="gnal-section-title slds-p-bottom_medium">Send us your questions or comments</p>
                         <p class="slds-p-bottom_x-small">General support</p>
-                        <p class="gnal-field-description">support@gnal.com</p>
+                        <p class="gnal-field-description">{supportEmail}</p>
 
                         <div class="availability-text gnal-field-description-muted slds-p-top_medium">
                             <lightning-icon class="gnal-secondary-icon" icon-name="utility:clock" size="x-small"></lightning-icon>
@@ -81,7 +81,7 @@
                     </div>
 
                     <div slot="footer">
-                        <lightning-button label="Email us" icon-name="utility:email" variant="brand"></lightning-button>
+                        <lightning-button label="Email us" icon-name="utility:email" variant="brand" onclick={handleEmailClick}></lightning-button>
                     </div>
 
                 </lightning-card>
@@ -108,7 +108,7 @@
                     </div>
 
                     <div slot="footer">
-                        <lightning-button label="Start Chat" icon-name="utility:chat" variant="brand"></lightning-button>
+                        <lightning-button label="Start Chat" icon-name="utility:chat" variant="brand" onclick={handleChatClick}></lightning-button>
                     </div>
 
                 </lightning-card>
