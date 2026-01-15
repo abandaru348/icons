@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>GNAL_Portal_Support_Phone</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>GNAL Portal Support phone number</shortDescription>
+        <value>1-800-342-9647</value>
+    </labels>
+    <labels>
+        <fullName>GNAL_Portal_Support_Email</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>GNAL Portal Support email address</shortDescription>
+        <value>support@gnal.com</value>
+    </labels>
+</CustomLabels>

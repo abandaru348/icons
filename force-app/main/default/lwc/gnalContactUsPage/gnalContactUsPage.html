@@ -1,0 +1,119 @@
+<template>
+    <div class="page-wrapper slds-p-vertical_xx-large">
+
+        <lightning-layout horizontal-align="center">
+            <lightning-layout-item size="12" class="slds-text-align_center" >
+                <span class="gnal-page-title">
+                    Contact Us
+                </span>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <lightning-layout horizontal-align="center" multiple-rows>
+            
+            <!-- CALL US -->
+            <lightning-layout-item size="12" medium-device-size="8" large-device-size="3" padding="around-small">
+                <lightning-card aria-label="Call Us">
+                    <div slot="title" class="icon-title-row slds-p-bottom_small">
+                        <lightning-icon class="gnal-brand-icon" icon-name="utility:call" size="medium" alternative-text="Call Us"></lightning-icon>
+                        <span class="gnal-card-title">Call Us</span>
+                    </div>
+
+                    <div class="slds-p-horizontal_medium one-size-card">
+
+
+                        <p class="gnal-section-title slds-p-bottom_medium">Speak directly with a support specialist</p>
+                        <p class="slds-p-bottom_x-small">GNAL Portal Support Line</p>
+                        <p class="gnal-field-description">{supportPhone}</p>
+
+                        <div class="availability-text gnal-field-description-muted slds-p-top_medium">
+                            <lightning-icon class="gnal-secondary-icon" icon-name="utility:clock" size="x-small"></lightning-icon>
+                            <span>Available 24 hours a day, 7 days a week</span>
+                        </div>
+
+                        <div class="slds-border_top slds-m-top_medium slds-p-top_medium">
+                            <div class="slds-align_absolute-center">
+                                <span class="gnal-field-description-muted">Please have your DBN ready.</span>
+                                <lightning-button-icon
+                                    class="slds-m-left_xx-small"
+                                    icon-name="utility:info"
+                                    variant="bare"
+                                    size="small"
+                                    alternative-text="DBN information"
+                                    title="DBN information"
+                                    onclick={handleToggleDbnInfo}
+                                ></lightning-button-icon>
+                            </div>
+
+                            <template lwc:if={showDbnInfo}>
+                                <div class="slds-m-top_small">
+                                    <img class="dbn-sample-image" src={dbnSampleUrl} alt="DoD Benefit Number (DBN) sample"/>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div slot="footer">
+                        <lightning-button label="Call now" icon-name="utility:call" variant="brand"></lightning-button>
+                    </div>
+
+                </lightning-card>
+            </lightning-layout-item>
+
+
+            <!-- EMAIL US -->
+            <lightning-layout-item size="12" medium-device-size="8" large-device-size="3" padding="around-small">
+                <lightning-card aria-label="Email Us" >
+                    <div slot="title" class="icon-title-row slds-p-bottom_small">
+                        <lightning-icon class="gnal-brand-icon" icon-name="utility:email" size="medium" alternative-text="Email Us"></lightning-icon>
+                        <span class="gnal-card-title">Email Us</span>
+                    </div>
+                    <div class="slds-p-horizontal_medium one-size-card">
+
+                        <p class="gnal-section-title slds-p-bottom_medium">Send us your questions or comments</p>
+                        <p class="slds-p-bottom_x-small">General support</p>
+                        <p class="gnal-field-description">{supportEmail}</p>
+
+                        <div class="availability-text gnal-field-description-muted slds-p-top_medium">
+                            <lightning-icon class="gnal-secondary-icon" icon-name="utility:clock" size="x-small"></lightning-icon>
+                            <span>Available 24 hours a day, 7 days a week</span>
+                        </div>
+                    </div>
+
+                    <div slot="footer">
+                        <lightning-button label="Email us" icon-name="utility:email" variant="brand" onclick={handleEmailClick}></lightning-button>
+                    </div>
+
+                </lightning-card>
+            </lightning-layout-item>
+
+            <!-- LIVE CHAT -->
+            <lightning-layout-item size="12" medium-device-size="8" large-device-size="3" padding="around-small">
+                <lightning-card aria-label="Live Chat">
+                    <div slot="title" class="icon-title-row slds-p-bottom_small">
+                        <lightning-icon class="gnal-brand-icon" icon-name="utility:chat" size="medium" alternative-text="Live Chat"></lightning-icon>
+                        <span class="gnal-card-title">Live Chat</span>
+                    </div>
+                    <div class="slds-p-horizontal_medium one-size-card">
+
+
+                        <p class="gnal-section-title slds-m-bottom_medium">Chat with a nurse in real time</p>
+
+                        <p class="slds-p-bottom_x-small">Chat support hours</p>
+
+                         <div class="slds-m-bottom_large">
+                            <p class="gnal-field-description">Mon – Fri: 6:00 AM – 10:00 PM EST</p>
+                            <p class="gnal-field-description">Sat – Sun: 8:00 AM – 8:00 PM EST</p>
+                        </div>
+                    </div>
+
+                    <div slot="footer">
+                        <lightning-button label="Start Chat" icon-name="utility:chat" variant="brand" onclick={handleChatClick}></lightning-button>
+                    </div>
+
+                </lightning-card>
+            </lightning-layout-item>
+            
+        </lightning-layout>
+    </div>
+</template>
