@@ -24,6 +24,7 @@ public with sharing class GnalFacilitySearchController {
     private static List<ServiceTerritory> TERRITORY_CACHE = new List<ServiceTerritory>();
     private static Map<Id, String> ACCOUNT_BILLING_CACHE = new Map<Id, String>();
     private static Set<String> CACHE_WARM_REQUEST_KEYS = new Set<String>();
+    private static Map<String, String> TERRITORY_ADDRESS_NAME_CACHE = new Map<String, String>();
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -59,9 +60,14 @@ public with sharing class GnalFacilitySearchController {
                 effectiveRadius = DEFAULT_RADIUS_MILES;
             }
 
+            Map<String, String> addressToName = getTerritoryAddressNameMap();
+
             // Test fallback: allow cache-only filtering without requiring origin coordinates.
             if (Test.isRunningTest()) {
-                return formatCacheResults(queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, effectiveRadius));
+                return formatCacheResults(
+                    queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, effectiveRadius),
+                    addressToName
+                );
             }
 
             LatLng origin = getOriginLatLngFromAnyCacheRow(originAddress);
@@ -77,7 +83,7 @@ public with sharing class GnalFacilitySearchController {
                 effectiveRadius
             );
 
-            return formatCacheResults(filteredCaches);
+            return formatCacheResults(filteredCaches, addressToName);
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -118,11 +124,18 @@ public with sharing class GnalFacilitySearchController {
         }
 
         Set<String> destinationAddressSet = new Set<String>();
+        Map<String, String> addressToName = new Map<String, String>();
         for (ServiceTerritory territory : territories) {
             String formattedAddress = formatServiceTerritoryAddress(territory);
             if (!String.isBlank(formattedAddress)) {
                 destinationAddressSet.add(formattedAddress);
+                if (!addressToName.containsKey(formattedAddress)) {
+                    addressToName.put(formattedAddress, territory.Name);
+                }
             }
+        }
+        if (!addressToName.isEmpty()) {
+            TERRITORY_ADDRESS_NAME_CACHE = addressToName;
         }
 
         if (destinationAddressSet.isEmpty()) {
@@ -147,7 +160,7 @@ public with sharing class GnalFacilitySearchController {
                 effectiveRadius
             );
             if (!fallback.isEmpty() || Test.isRunningTest()) {
-                return formatCacheResults(fallback);
+                return formatCacheResults(fallback, addressToName);
             }
             throw new AuraHandledException('Unable to determine origin coordinates.');
         }
@@ -160,7 +173,7 @@ public with sharing class GnalFacilitySearchController {
             effectiveRadius
         );
 
-        return formatCacheResults(filteredCaches);
+        return formatCacheResults(filteredCaches, addressToName);
     }
 
     /**
@@ -710,13 +723,25 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static List<Map<String, Object>> formatCacheResults(List<GeocodeCache__c> cacheRecords) {
+        return formatCacheResults(cacheRecords, null);
+    }
+
+    private static List<Map<String, Object>> formatCacheResults(
+        List<GeocodeCache__c> cacheRecords,
+        Map<String, String> addressToName
+    ) {
         List<Map<String, Object>> formattedResults = new List<Map<String, Object>>();
         for (GeocodeCache__c cacheEntry : cacheRecords) {
             Double latitude = cacheEntry.Destination_Location__Latitude__s;
             Double longitude = cacheEntry.Destination_Location__Longitude__s;
+            String address = cacheEntry.Destination_Address__c;
+            String facilityName = (addressToName != null && addressToName.containsKey(address))
+                ? addressToName.get(address)
+                : null;
 
             formattedResults.add(new Map<String, Object>{
-                'address'        => cacheEntry.Destination_Address__c,
+                'address'        => address,
+                'facilityName'   => facilityName,
                 'minutes'        => cacheEntry.Travel_Time_Minutes__c,
                 'distanceMeters' => cacheEntry.Distance_Meters__c,
                 'distanceMiles'  => cacheEntry.Distance_Miles__c,
@@ -725,6 +750,23 @@ public with sharing class GnalFacilitySearchController {
             });
         }
         return formattedResults;
+    }
+
+    private static Map<String, String> getTerritoryAddressNameMap() {
+        if (TERRITORY_ADDRESS_NAME_CACHE != null && !TERRITORY_ADDRESS_NAME_CACHE.isEmpty()) {
+            return TERRITORY_ADDRESS_NAME_CACHE;
+        }
+        List<ServiceTerritory> territories = getDistinctTerritories();
+        Map<String, String> addressToName = new Map<String, String>();
+        for (ServiceTerritory territory : territories) {
+            String formattedAddress = formatServiceTerritoryAddress(territory);
+            if (String.isBlank(formattedAddress)) continue;
+            if (!addressToName.containsKey(formattedAddress)) {
+                addressToName.put(formattedAddress, territory.Name);
+            }
+        }
+        TERRITORY_ADDRESS_NAME_CACHE = addressToName;
+        return addressToName;
     }
 
     /**
