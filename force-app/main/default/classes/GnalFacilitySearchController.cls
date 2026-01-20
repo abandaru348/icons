@@ -145,11 +145,7 @@ public with sharing class GnalFacilitySearchController {
         // Deterministic ordering reduces flaky result ordering.
         List<String> destinationAddresses = new List<String>(destinationAddressSet);
         destinationAddresses.sort();
-        if (destinationAddresses.size() > MAX_DESTINATION_ADDRESSES_PER_SEARCH) {
-            destinationAddresses = new List<String>(
-                destinationAddresses.subList(0, MAX_DESTINATION_ADDRESSES_PER_SEARCH)
-            );
-        }
+        destinationAddresses = limitAddressList(destinationAddresses, MAX_DESTINATION_ADDRESSES_PER_SEARCH);
 
         CacheContext cacheContext = ensureCacheCoverage(originAddress, destinationAddresses);
         if (cacheContext.originLatitude == null || cacheContext.originLongitude == null) {
