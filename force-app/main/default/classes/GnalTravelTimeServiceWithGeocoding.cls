@@ -119,9 +119,22 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
         List<Object> parsedPayload = (List<Object>) JSON.deserializeUntyped(routeResponse.getBody());
         List<TravelTimeResult> results = new List<TravelTimeResult>();
 
+        if (parsedPayload == null || parsedPayload.isEmpty()) {
+            return results;
+        }
+
         for (Object payloadObj : parsedPayload) {
             Map<String, Object> row = (Map<String, Object>) payloadObj;
-            Integer destinationIndex = ((Double) row.get('destinationIndex')).intValue();
+            Object destinationIndexRaw = row.get('destinationIndex');
+            if (!(destinationIndexRaw instanceof Double)) {
+                continue;
+            }
+            Integer destinationIndex = ((Double) destinationIndexRaw).intValue();
+            if (destinationIndex < 0 ||
+                destinationIndex >= routedDestinationAddresses.size() ||
+                destinationIndex >= destinationLatLngList.size()) {
+                continue;
+            }
             String addressKey = routedDestinationAddresses[destinationIndex];
             Map<String, Double> destLatLng = destinationLatLngList[destinationIndex];
 
