@@ -155,10 +155,10 @@ public with sharing class GnalFacilitySearchController {
                 destinationAddresses,
                 effectiveRadius
             );
-            if (!fallback.isEmpty() || Test.isRunningTest()) {
-                return formatCacheResults(fallback, addressToName);
+            if (fallback.isEmpty()) {
+                logException('Origin coordinates unavailable', null);
             }
-            throw new AuraHandledException('Unable to determine origin coordinates.');
+            return formatCacheResults(fallback, addressToName);
         }
 
         List<GeocodeCache__c> filteredCaches = queryCachesWithinRadius(
