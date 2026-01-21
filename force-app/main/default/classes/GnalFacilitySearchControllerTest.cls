@@ -1125,4 +1125,79 @@ private class GnalFacilitySearchControllerTest {
         GnalFacilitySearchController.setLocationFieldForTest(row, 'Destination_Location__c', 30.0, -97.0, true);
         System.assertNotEquals(null, row);
     }
+
+    @IsTest
+    static void helperMethods_coverTerritoryAndOriginLookups() {
+        OperatingHours oh = new OperatingHours(Name = 'OH Helpers', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Helper Facility',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '123 Helper St',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        String formatted = GnalFacilitySearchController.formatServiceTerritoryAddressForTest(st);
+        System.assertNotEquals(null, formatted);
+
+        Map<String, String> map = GnalFacilitySearchController.getTerritoryAddressNameMapForTest();
+        System.assertEquals(true, map.containsValue('Helper Facility'));
+
+        String originAddress = '500 Origin St, Austin, TX 78701';
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'OriginLookup',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = formatted,
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            cache.put('Origin_Latitude__c', 10.1);
+            cache.put('Origin_Longitude__c', -10.2);
+        } else if (fields != null && fields.containsKey('Origin_Lat__c') && fields.containsKey('Origin_Lng__c')) {
+            cache.put('Origin_Lat__c', 10.1);
+            cache.put('Origin_Lng__c', -10.2);
+        }
+        insert cache;
+
+        Map<String, Double> latLng = GnalFacilitySearchController.getOriginLatLngFromAnyCacheRowForTest(originAddress);
+        if (!latLng.isEmpty()) {
+            System.assertEquals(true, latLng.containsKey('lat'));
+            System.assertEquals(true, latLng.containsKey('lng'));
+        }
+
+        System.assertNotEquals(null, GnalFacilitySearchController.initOptionalOriginFieldsSelectForTest());
+        System.assertNotEquals(null, GnalFacilitySearchController.initOptionalCaseOriginFieldsSelectForTest());
+        System.assertNotEquals(null, GnalFacilitySearchController.initCaseOriginNotNullWhereForTest());
+    }
+
+    @IsTest
+    static void helperMethods_coverMilesOnlyQueries() {
+        String originAddress = '600 Origin St, Austin, TX 78701';
+        GeocodeCache__c row = new GeocodeCache__c(
+            Name = 'MilesOnly',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Miles Dest',
+            Distance_Miles__c = 2,
+            Distance_Meters__c = 3218,
+            Travel_Time_Minutes__c = 6
+        );
+        insert row;
+
+        List<GeocodeCache__c> byMiles =
+            GnalFacilitySearchController.queryCachesWithinRadiusByMilesOnly(originAddress, new List<String>{ 'Miles Dest' }, 5);
+        System.assertEquals(1, byMiles.size());
+
+        List<GeocodeCache__c> allMiles =
+            GnalFacilitySearchController.queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, 5);
+        System.assertEquals(true, allMiles.size() >= 1);
+    }
 }

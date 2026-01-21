@@ -1257,6 +1257,41 @@ public with sharing class GnalFacilitySearchController {
         setLocationField(row, fieldApiName, lat, lon, isInsert);
     }
 
+    @TestVisible
+    private static String formatServiceTerritoryAddressForTest(ServiceTerritory territory) {
+        return formatServiceTerritoryAddress(territory);
+    }
+
+    @TestVisible
+    private static Map<String, String> getTerritoryAddressNameMapForTest() {
+        return getTerritoryAddressNameMap();
+    }
+
+    @TestVisible
+    private static Map<String, Double> getOriginLatLngFromAnyCacheRowForTest(String originAddress) {
+        LatLng ll = getOriginLatLngFromAnyCacheRow(originAddress);
+        Map<String, Double> out = new Map<String, Double>();
+        if (ll == null) return out;
+        out.put('lat', ll.lat);
+        out.put('lng', ll.lng);
+        return out;
+    }
+
+    @TestVisible
+    private static String initOptionalOriginFieldsSelectForTest() {
+        return initOptionalOriginFieldsSelect();
+    }
+
+    @TestVisible
+    private static String initOptionalCaseOriginFieldsSelectForTest() {
+        return initOptionalCaseOriginFieldsSelect();
+    }
+
+    @TestVisible
+    private static String initCaseOriginNotNullWhereForTest() {
+        return initCaseOriginNotNullWhere();
+    }
+
     @AuraEnabled(cacheable=true)
     public static String getAccountBillingAddress(Id accountId) {
         if (accountId == null) {
