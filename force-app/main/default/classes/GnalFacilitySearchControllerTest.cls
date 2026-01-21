@@ -921,4 +921,87 @@ private class GnalFacilitySearchControllerTest {
 
         System.assertNotEquals(null, results);
     }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_includesFacilityName() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+
+        OperatingHours oh = new OperatingHours(Name = 'OH Name Map', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'MTF Alpha',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '88 Facility Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String originAddress = '200 Origin St, Austin, TX 78701';
+
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'NameMapCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 4,
+            Distance_Meters__c = 6437,
+            Travel_Time_Minutes__c = 15
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        insert cache;
+
+        Test.startTest();
+        List<Map<String, Object>> results = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 10);
+        Test.stopTest();
+
+        System.assertNotEquals(null, results);
+        System.assertEquals(true, results.size() >= 1, 'Expected cached facility result');
+        Map<String, Object> first = results[0];
+        System.assertEquals('MTF Alpha', (String) first.get('facilityName'));
+    }
+
+    @IsTest
+    static void findFacilitiesFromCacheWithRadius_usesCachedTerritoryMap() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+
+        OperatingHours oh = new OperatingHours(Name = 'OH Cached Map', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'MTF Cached',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '90 Facility Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        String originAddress = '300 Origin St, Austin, TX 78701';
+
+        insert new GeocodeCache__c(
+            Name = 'CachedMapRow',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 2,
+            Distance_Meters__c = 3218,
+            Travel_Time_Minutes__c = 8
+        );
+
+        Test.startTest();
+        List<Map<String, Object>> firstResults = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 50);
+        List<Map<String, Object>> secondResults = GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 50);
+        Test.stopTest();
+
+        System.assertNotEquals(null, firstResults);
+        System.assertNotEquals(null, secondResults);
+    }
 }
