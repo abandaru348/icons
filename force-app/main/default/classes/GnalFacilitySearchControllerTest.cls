@@ -1450,6 +1450,13 @@ private class GnalFacilitySearchControllerTest {
         GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>());
         GnalFacilitySearchController.updateCacheRecordsForTest(new List<GeocodeCache__c>());
 
+        // Insert without required name to trigger SaveResult error handling.
+        GeocodeCache__c missingName = new GeocodeCache__c(
+            Origin_Address__c = 'Origin',
+            Destination_Address__c = 'Dest'
+        );
+        GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>{ missingName });
+
         // Missing Id update should return SaveResult errors (no throw).
         GeocodeCache__c bogus = new GeocodeCache__c(
             Origin_Address__c = 'Origin',
