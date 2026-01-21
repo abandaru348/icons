@@ -1294,6 +1294,16 @@ public with sharing class GnalFacilitySearchController {
     }
 
     @TestVisible
+    private static String formatExceptionForClientForTest(String prefix, Exception ex) {
+        return formatExceptionForClient(prefix, ex);
+    }
+
+    @TestVisible
+    private static void logExceptionForTest(String prefix, Exception ex) {
+        logException(prefix, ex);
+    }
+
+    @TestVisible
     private static List<GeocodeCache__c> queryExistingCachesForTest(
         String originAddress,
         List<String> destinationAddresses

@@ -1411,4 +1411,36 @@ private class GnalFacilitySearchControllerTest {
             }
         }
     }
+
+    @IsTest
+    static void helperMethods_coverExceptionFormattingAndNulls() {
+        String msg1 = GnalFacilitySearchController.formatExceptionForClientForTest(null, null);
+        System.assertEquals(true, msg1.contains('Operation failed'));
+
+        String msg2 = GnalFacilitySearchController.formatExceptionForClientForTest('Test Prefix', new Exception('boom'));
+        System.assertEquals(true, msg2.startsWith('Test Prefix'));
+
+        GnalFacilitySearchController.logExceptionForTest('Prefix', null);
+        GnalFacilitySearchController.logExceptionForTest('Prefix', new Exception('x'));
+
+        System.assertEquals('(\'\')', GnalFacilitySearchController.toSoqlInListForTest(null));
+        System.assertEquals(null, GnalFacilitySearchController.normalizeOriginAddressForTest(null));
+        System.assertEquals(null, GnalFacilitySearchController.formatServiceTerritoryAddressForTest(null));
+
+        Map<String, Double> missing =
+            GnalFacilitySearchController.extractLatLngFromFieldsForTest(new GeocodeCache__c(), 'Nope__c', 'Nope__c');
+        System.assertEquals(true, missing.isEmpty());
+
+        Double lat = 1.0;
+        Double lon = 2.0;
+        Boolean wrote = GnalFacilitySearchController.tryWriteNumericLatLngForTest(
+            new GeocodeCache__c(),
+            'Nope__c',
+            'Nope__c',
+            lat,
+            lon,
+            true
+        );
+        System.assertEquals(false, wrote);
+    }
 }
