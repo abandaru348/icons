@@ -941,7 +941,19 @@ private class GnalFacilitySearchControllerTest {
         setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String destAddress = formatAddress(st.Street, st.City, 'TX', st.PostalCode, null);
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String destAddress = formatAddress(
+            stored.Street,
+            stored.City,
+            stored.State,
+            stored.PostalCode,
+            stored.Country
+        );
         String originAddress = '200 Origin St, Austin, TX 78701';
 
         GeocodeCache__c cache = new GeocodeCache__c(
@@ -953,6 +965,17 @@ private class GnalFacilitySearchControllerTest {
             Travel_Time_Minutes__c = 15
         );
         setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> cacheFields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (cacheFields != null && cacheFields.containsKey('Origin_Location__c')) {
+            setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (cacheFields != null && cacheFields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        } else if (cacheFields != null &&
+                   cacheFields.containsKey('Origin_Latitude__c') &&
+                   cacheFields.containsKey('Origin_Longitude__c')) {
+            cache.put('Origin_Latitude__c', 30.2672);
+            cache.put('Origin_Longitude__c', -97.7431);
+        }
         insert cache;
 
         Test.startTest();
