@@ -593,6 +593,76 @@ public with sharing class GnalLocationServicesController {
         return null;
     }
 
+    @TestVisible
+    private static String normalizeAddressForTest(String address) {
+        return normalizeAddress(address);
+    }
+
+    @TestVisible
+    private static String stateLabelFromCodeForTest(String code) {
+        return stateLabelFromCode(code);
+    }
+
+    @TestVisible
+    private static String stateCodeFromInputForTest(String stateOrCode) {
+        return stateCodeFromInput(stateOrCode);
+    }
+
+    @TestVisible
+    private static String countryLabelFromCodeForTest(String code) {
+        return countryLabelFromCode(code);
+    }
+
+    @TestVisible
+    private static String countryCodeFromInputForTest(String countryOrCode) {
+        return countryCodeFromInput(countryOrCode);
+    }
+
+    @TestVisible
+    private static Map<String, String> invertMapCaseInsensitiveForTest(Map<String, String> input) {
+        return invertMapCaseInsensitive(input);
+    }
+
+    @TestVisible
+    private static List<String> splitTrimForTest(String raw, String delimiter) {
+        return splitTrim(raw, delimiter);
+    }
+
+    @TestVisible
+    private static Map<String, String> parseStatePostalForTest(String value) {
+        ParsedAddress parsed = parseStatePostal(value);
+        return parsedToMap(parsed);
+    }
+
+    @TestVisible
+    private static Map<String, String> parseCityStatePostalForTest(String value) {
+        ParsedAddress parsed = parseCityStatePostal(value);
+        return parsedToMap(parsed);
+    }
+
+    @TestVisible
+    private static Map<String, String> parseNormalizedAddressForTest(String normalized) {
+        ParsedAddress parsed = parseNormalizedAddress(normalized);
+        return parsedToMap(parsed);
+    }
+
+    @TestVisible
+    private static void loadDefaultLocationsForCasesForTest(Set<Id> caseIds) {
+        loadDefaultLocationsForCases(caseIds);
+    }
+
+    @TestVisible
+    private static Map<String, String> parsedToMap(ParsedAddress parsed) {
+        Map<String, String> out = new Map<String, String>();
+        if (parsed == null) return out;
+        out.put('street', parsed.street);
+        out.put('city', parsed.city);
+        out.put('state', parsed.state);
+        out.put('postal', parsed.postal);
+        out.put('country', parsed.country);
+        return out;
+    }
+
     private static Map<String, String> initCodeToLabel(Schema.DescribeFieldResult describe) {
         Map<String, String> out = new Map<String, String>();
         try {
