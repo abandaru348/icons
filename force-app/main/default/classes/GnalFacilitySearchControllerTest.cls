@@ -1457,6 +1457,21 @@ private class GnalFacilitySearchControllerTest {
         );
         GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>{ missingName });
 
+        // Successful insert to ensure createable paths.
+        GeocodeCache__c good = new GeocodeCache__c(
+            Name = 'CacheGood',
+            Origin_Address__c = 'Origin Good',
+            Destination_Address__c = 'Dest Good',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>{ good });
+
+        // Update the inserted record (success path for update).
+        GeocodeCache__c toUpdate = new GeocodeCache__c(Id = good.Id, Travel_Time_Minutes__c = 7);
+        GnalFacilitySearchController.updateCacheRecordsForTest(new List<GeocodeCache__c>{ toUpdate });
+
         // Missing Id update should return SaveResult errors (no throw).
         GeocodeCache__c bogus = new GeocodeCache__c(
             Origin_Address__c = 'Origin',
