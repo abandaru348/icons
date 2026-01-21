@@ -1547,6 +1547,7 @@ private class GnalFacilitySearchControllerTest {
             '42835 Cumulus Terrace, Brambleton, Va'
         );
         System.assertEquals(true, normalized3.endsWith('United States'));
+        System.assertEquals(true, normalized3.contains('Virginia'));
     }
 
     @IsTest

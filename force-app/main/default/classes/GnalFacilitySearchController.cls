@@ -983,8 +983,16 @@ public with sharing class GnalFacilitySearchController {
         if (String.isBlank(value)) return null;
         String trimmed = value.trim();
         String code = stateCodeFromInput(trimmed);
-        if (!String.isBlank(code)) return code;
-        if (isStateCodeToken(trimmed)) return trimmed.toUpperCase();
+        if (!String.isBlank(code) && STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(code)) {
+            return STATE_CODE_TO_LABEL.get(code);
+        }
+        String key = trimmed.toLowerCase();
+        if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
+            String mapped = STATE_LABEL_TO_CODE.get(key);
+            return STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(mapped)
+                ? STATE_CODE_TO_LABEL.get(mapped)
+                : trimmed;
+        }
         return null;
     }
 
