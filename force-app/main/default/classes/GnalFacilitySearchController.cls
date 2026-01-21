@@ -11,6 +11,7 @@ public with sharing class GnalFacilitySearchController {
     private static final Integer MAX_DESTINATION_ADDRESSES_PER_SEARCH = 1000;
     private static final Integer CALL_OUTS_PER_ORIGIN_GEOCODE = 1;
     private static final Integer CALL_OUTS_PER_ROUTE_MATRIX = 1;
+    private static final String ZIP5_REGEX = '^[0-9]{5}$';
 
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
@@ -936,8 +937,64 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static String normalizeOriginAddress(String originAddress) {
-        // Keep cache keys stable across user input variations (e.g., trailing spaces).
-        return originAddress == null ? null : originAddress.trim();
+        if (originAddress == null) return null;
+        String trimmed = originAddress.trim().replaceAll('\\s+', ' ');
+        if (String.isBlank(trimmed)) return trimmed;
+
+        List<String> tokens = splitTrim(trimmed, ',');
+        if (tokens.isEmpty()) return trimmed;
+
+        Boolean hasCountry = false;
+        for (Integer i = 0; i < tokens.size(); i++) {
+            String t = tokens[i];
+            if (isCountryToken(t)) {
+                hasCountry = true;
+                tokens[i] = 'United States';
+            } else if (isStateCodeToken(t)) {
+                tokens[i] = t.toUpperCase();
+            }
+        }
+
+        if (!hasCountry) {
+            Boolean hasZip = false;
+            for (String t : tokens) {
+                if (isZipToken(t)) {
+                    hasZip = true;
+                    break;
+                }
+            }
+            if (hasZip) {
+                tokens.add('United States');
+            }
+        }
+
+        return String.join(tokens, ', ');
+    }
+
+    private static Boolean isZipToken(String value) {
+        return !String.isBlank(value) && Pattern.matches(ZIP5_REGEX, value.trim());
+    }
+
+    private static Boolean isStateCodeToken(String value) {
+        if (String.isBlank(value)) return false;
+        String t = value.trim();
+        return t.length() == 2 && Pattern.matches('^[a-zA-Z]{2}$', t);
+    }
+
+    private static Boolean isCountryToken(String value) {
+        if (String.isBlank(value)) return false;
+        String t = value.trim();
+        return t.equalsIgnoreCase('US') || t.equalsIgnoreCase('USA') || t.equalsIgnoreCase('United States');
+    }
+
+    private static List<String> splitTrim(String raw, String delimiter) {
+        List<String> out = new List<String>();
+        if (String.isBlank(raw) || String.isBlank(delimiter)) return out;
+        for (String p : raw.split(delimiter)) {
+            String t = p == null ? null : p.trim();
+            if (!String.isBlank(t)) out.add(t);
+        }
+        return out;
     }
 
     private static String initOptionalCaseOriginFieldsSelect() {

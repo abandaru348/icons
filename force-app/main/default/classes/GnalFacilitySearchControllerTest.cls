@@ -1532,6 +1532,19 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void normalizeOriginAddress_addsCountryWhenMissing() {
+        String normalized = GnalFacilitySearchController.normalizeOriginAddressForTest(
+            '42835 Cumulus Terrace, Brambleton, VA, 20148'
+        );
+        System.assertEquals(true, normalized.endsWith('United States'));
+
+        String normalized2 = GnalFacilitySearchController.normalizeOriginAddressForTest(
+            '42835 Cumulus Terrace, Brambleton, Virginia, 20148, Us'
+        );
+        System.assertEquals(true, normalized2.endsWith('United States'));
+    }
+
+    @IsTest
     static void helperMethods_coverCacheDmlPaths() {
         // Empty list short-circuits.
         GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>());
