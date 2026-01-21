@@ -26,6 +26,7 @@ public with sharing class GnalFacilitySearchController {
     private static Set<String> CACHE_WARM_REQUEST_KEYS = new Set<String>();
     private static Map<String, String> TERRITORY_ADDRESS_NAME_CACHE = new Map<String, String>();
     @TestVisible private static Boolean FORCE_ASYNC = false;
+    @TestVisible private static Boolean FORCE_DISTANCE_FILTER = false;
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -67,7 +68,7 @@ public with sharing class GnalFacilitySearchController {
             Map<String, String> addressToName = getTerritoryAddressNameMap();
 
             // Test fallback: allow cache-only filtering without requiring origin coordinates.
-            if (Test.isRunningTest()) {
+            if (Test.isRunningTest() && !FORCE_DISTANCE_FILTER) {
                 return formatCacheResults(
                     queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, effectiveRadius),
                     addressToName
@@ -626,7 +627,7 @@ public with sharing class GnalFacilitySearchController {
             return new List<GeocodeCache__c>();
         }
         // Test fallback: avoid DISTANCE() flakiness/limitations and rely on cached miles instead.
-        if (Test.isRunningTest()) {
+        if (Test.isRunningTest() && !FORCE_DISTANCE_FILTER) {
             return queryCachesWithinRadiusByMilesOnly(originAddress, destinationAddresses, radiusMiles);
         }
         if (originLatitude == null || originLongitude == null) {
@@ -663,7 +664,7 @@ public with sharing class GnalFacilitySearchController {
     ) {
         if (String.isBlank(originAddress)) return new List<GeocodeCache__c>();
         // Test fallback: avoid requiring origin coords for DISTANCE().
-        if (Test.isRunningTest()) {
+        if (Test.isRunningTest() && !FORCE_DISTANCE_FILTER) {
             return queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, radiusMiles);
         }
         if (originLatitude == null || originLongitude == null) return new List<GeocodeCache__c>();

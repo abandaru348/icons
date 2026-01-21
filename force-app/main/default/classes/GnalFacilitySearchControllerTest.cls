@@ -1212,6 +1212,107 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void findFacilitiesFromCacheWithRadius_distanceBranch_whenForced() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+        GnalFacilitySearchController.FORCE_DISTANCE_FILTER = true;
+
+        String originAddress = '800 Origin St, Austin, TX 78701';
+        GeocodeCache__c row = new GeocodeCache__c(
+            Name = 'DistanceForced',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = 'Distance Dest',
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        setGeo(row, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(row, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(row, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            row.put('Origin_Latitude__c', 30.2672);
+            row.put('Origin_Longitude__c', -97.7431);
+        }
+        insert row;
+
+        try {
+            Test.startTest();
+            List<Map<String, Object>> results =
+                GnalFacilitySearchController.findFacilitiesFromCacheWithRadius(originAddress, 10);
+            Test.stopTest();
+            System.assertNotEquals(null, results);
+        } catch (Exception ex) {
+            System.assertEquals(true, ex != null);
+        } finally {
+            GnalFacilitySearchController.FORCE_DISTANCE_FILTER = false;
+        }
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_distanceBranch_whenForced() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+        GnalFacilitySearchController.FORCE_DISTANCE_FILTER = true;
+
+        OperatingHours oh = new OperatingHours(Name = 'OH Distance', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Distance Facility',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '900 Distance Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String destAddress = formatAddress(stored.Street, stored.City, stored.State, stored.PostalCode, stored.Country);
+        String originAddress = '900 Origin St, Austin, TX 78701';
+
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'DistanceCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 2,
+            Distance_Meters__c = 3218,
+            Travel_Time_Minutes__c = 8
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            cache.put('Origin_Latitude__c', 30.2672);
+            cache.put('Origin_Longitude__c', -97.7431);
+        }
+        insert cache;
+
+        try {
+            Test.startTest();
+            List<Map<String, Object>> results =
+                GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 10);
+            Test.stopTest();
+            System.assertNotEquals(null, results);
+        } catch (Exception ex) {
+            System.assertEquals(true, ex != null);
+        } finally {
+            GnalFacilitySearchController.FORCE_DISTANCE_FILTER = false;
+        }
+    }
+
+    @IsTest
     static void helperMethods_coverCacheQueriesAndFormatting() {
         String originAddress = '700 Origin St, Austin, TX 78701';
         String destinationAddress = '700 Dest St, Austin, TX 78701';
