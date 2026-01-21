@@ -439,15 +439,19 @@ public with sharing class GnalLocationServicesController {
         if (!LOCATION_SERVICES_BY_CASE_CACHE.containsKey(caseId)) return;
 
         List<GNAL_Location_Service__c> rows = LOCATION_SERVICES_BY_CASE_CACHE.get(caseId);
-        if (rows == null) rows = new List<GNAL_Location_Service__c>();
+        List<GNAL_Location_Service__c> newRows = new List<GNAL_Location_Service__c>();
+        newRows.add(record);
 
-        for (Integer i = rows.size() - 1; i >= 0; i--) {
-            if (rows[i] != null && rows[i].Id == record.Id) {
-                rows.remove(i);
+        if (rows != null && !rows.isEmpty()) {
+            for (GNAL_Location_Service__c row : rows) {
+                if (row == null || row.Id == record.Id) {
+                    continue;
+                }
+                newRows.add(row);
             }
         }
-        rows.add(0, record);
-        LOCATION_SERVICES_BY_CASE_CACHE.put(caseId, rows);
+
+        LOCATION_SERVICES_BY_CASE_CACHE.put(caseId, newRows);
     }
 
     private static String buildLocationServiceKey(Id caseId, String normalized) {
