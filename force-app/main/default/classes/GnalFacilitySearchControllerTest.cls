@@ -1313,6 +1313,93 @@ private class GnalFacilitySearchControllerTest {
     }
 
     @IsTest
+    static void findNearestFacilitiesWithRadius_backfillsOriginCoords_whenAllowed() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+        GnalFacilitySearchController.ALLOW_TEST_GEOCODE = true;
+
+        OperatingHours oh = new OperatingHours(Name = 'OH Backfill', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'Backfill Facility',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '100 Backfill Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String destAddress = formatAddress(stored.Street, stored.City, stored.State, stored.PostalCode, stored.Country);
+        String originAddress = '1000 Origin St, Austin, TX 78701';
+
+        // Cache row exists but missing origin coords to trigger backfill.
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'BackfillCache',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destAddress,
+            Distance_Miles__c = 2,
+            Distance_Meters__c = 3218,
+            Travel_Time_Minutes__c = 8
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        insert cache;
+
+        try {
+            Test.startTest();
+            List<Map<String, Object>> results =
+                GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 10);
+            Test.stopTest();
+            System.assertNotEquals(null, results);
+        } finally {
+            GnalFacilitySearchController.ALLOW_TEST_GEOCODE = false;
+        }
+    }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_lastResortOriginGeocode_whenAllowed() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+        GnalFacilitySearchController.ALLOW_TEST_GEOCODE = true;
+        GnalFacilitySearchController.FORCE_ASYNC = true;
+
+        OperatingHours oh = new OperatingHours(Name = 'OH LastResort', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st = new ServiceTerritory(
+            Name = 'LastResort Facility',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '200 LastResort Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st, 'CountryCode', 'US');
+        setFieldIfExists(st, 'StateCode', 'TX');
+        insert st;
+
+        String originAddress = '2000 Origin St, Austin, TX 78701';
+
+        try {
+            Test.startTest();
+            List<Map<String, Object>> results =
+                GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 10);
+            Test.stopTest();
+            System.assertNotEquals(null, results);
+        } finally {
+            GnalFacilitySearchController.ALLOW_TEST_GEOCODE = false;
+            GnalFacilitySearchController.FORCE_ASYNC = false;
+        }
+    }
+
+    @IsTest
     static void helperMethods_coverCacheQueriesAndFormatting() {
         String originAddress = '700 Origin St, Austin, TX 78701';
         String destinationAddress = '700 Dest St, Austin, TX 78701';

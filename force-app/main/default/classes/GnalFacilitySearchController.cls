@@ -27,6 +27,7 @@ public with sharing class GnalFacilitySearchController {
     private static Map<String, String> TERRITORY_ADDRESS_NAME_CACHE = new Map<String, String>();
     @TestVisible private static Boolean FORCE_ASYNC = false;
     @TestVisible private static Boolean FORCE_DISTANCE_FILTER = false;
+    @TestVisible private static Boolean ALLOW_TEST_GEOCODE = false;
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -409,7 +410,7 @@ public with sharing class GnalFacilitySearchController {
         // Backfill origin coords into existing cache rows if missing (one-time Google call).
         if ((context.originLatitude == null || context.originLongitude == null) && !existingCacheRecords.isEmpty()) {
             // Tests should never require real geocoding callouts; upper layers can fall back to cached miles.
-            if (Test.isRunningTest()) {
+            if (Test.isRunningTest() && !ALLOW_TEST_GEOCODE) {
                 return context;
             }
 
@@ -442,7 +443,7 @@ public with sharing class GnalFacilitySearchController {
 
         // If there are no existing cache rows (should only happen when no destinations had addresses), last resort.
         if (context.originLatitude == null || context.originLongitude == null) {
-            if (Test.isRunningTest()) {
+            if (Test.isRunningTest() && !ALLOW_TEST_GEOCODE) {
                 return context;
             }
             try {
