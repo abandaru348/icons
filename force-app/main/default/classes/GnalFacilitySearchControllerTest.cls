@@ -1124,7 +1124,9 @@ private class GnalFacilitySearchControllerTest {
         Double lat = 3.3;
         Double lon = 4.4;
         GnalFacilitySearchController.writeOriginLatLngForTest(row, lat, lon, true);
-        GnalFacilitySearchController.setLocationFieldForTest(row, 'Destination_Location__c', 30.0, -97.0, true);
+        Double destLat = 30.0;
+        Double destLon = -97.0;
+        GnalFacilitySearchController.setLocationFieldForTest(row, 'Destination_Location__c', destLat, destLon, true);
         System.assertNotEquals(null, row);
     }
 
