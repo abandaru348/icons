@@ -1417,11 +1417,11 @@ private class GnalFacilitySearchControllerTest {
         String msg1 = GnalFacilitySearchController.formatExceptionForClientForTest(null, null);
         System.assertEquals(true, msg1.contains('Operation failed'));
 
-        String msg2 = GnalFacilitySearchController.formatExceptionForClientForTest('Test Prefix', new Exception('boom'));
+        String msg2 = GnalFacilitySearchController.formatExceptionForClientForTest('Test Prefix', new AuraHandledException('boom'));
         System.assertEquals(true, msg2.startsWith('Test Prefix'));
 
         GnalFacilitySearchController.logExceptionForTest('Prefix', null);
-        GnalFacilitySearchController.logExceptionForTest('Prefix', new Exception('x'));
+        GnalFacilitySearchController.logExceptionForTest('Prefix', new AuraHandledException('x'));
 
         System.assertEquals('(\'\')', GnalFacilitySearchController.toSoqlInListForTest(null));
         System.assertEquals(null, GnalFacilitySearchController.normalizeOriginAddressForTest(null));
