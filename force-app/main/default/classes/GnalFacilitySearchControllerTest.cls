@@ -1542,6 +1542,11 @@ private class GnalFacilitySearchControllerTest {
             '42835 Cumulus Terrace, Brambleton, Virginia, 20148, Us'
         );
         System.assertEquals(true, normalized2.endsWith('United States'));
+
+        String normalized3 = GnalFacilitySearchController.normalizeOriginAddressForTest(
+            '42835 Cumulus Terrace, Brambleton, Va'
+        );
+        System.assertEquals(true, normalized3.endsWith('United States'));
     }
 
     @IsTest

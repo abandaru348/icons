@@ -12,6 +12,12 @@ public with sharing class GnalFacilitySearchController {
     private static final Integer CALL_OUTS_PER_ORIGIN_GEOCODE = 1;
     private static final Integer CALL_OUTS_PER_ROUTE_MATRIX = 1;
     private static final String ZIP5_REGEX = '^[0-9]{5}$';
+    private static final Map<String, String> STATE_CODE_TO_LABEL =
+        initCodeToLabel(Account.BillingStateCode.getDescribe());
+    private static final Map<String, String> COUNTRY_CODE_TO_LABEL =
+        initCodeToLabel(Account.BillingCountryCode.getDescribe());
+    private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
+    private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
 
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
@@ -945,30 +951,41 @@ public with sharing class GnalFacilitySearchController {
         if (tokens.isEmpty()) return trimmed;
 
         Boolean hasCountry = false;
+        Boolean hasState = false;
+        Boolean hasZip = false;
         for (Integer i = 0; i < tokens.size(); i++) {
             String t = tokens[i];
+            if (isZipToken(t)) {
+                hasZip = true;
+                continue;
+            }
             if (isCountryToken(t)) {
                 hasCountry = true;
                 tokens[i] = 'United States';
-            } else if (isStateCodeToken(t)) {
-                tokens[i] = t.toUpperCase();
+                continue;
+            }
+
+            String stateToken = normalizeStateToken(t);
+            if (!String.isBlank(stateToken)) {
+                hasState = true;
+                tokens[i] = stateToken;
             }
         }
 
-        if (!hasCountry) {
-            Boolean hasZip = false;
-            for (String t : tokens) {
-                if (isZipToken(t)) {
-                    hasZip = true;
-                    break;
-                }
-            }
-            if (hasZip) {
-                tokens.add('United States');
-            }
+        if (!hasCountry && (hasZip || hasState)) {
+            tokens.add('United States');
         }
 
         return String.join(tokens, ', ');
+    }
+
+    private static String normalizeStateToken(String value) {
+        if (String.isBlank(value)) return null;
+        String trimmed = value.trim();
+        String code = stateCodeFromInput(trimmed);
+        if (!String.isBlank(code)) return code;
+        if (isStateCodeToken(trimmed)) return trimmed.toUpperCase();
+        return null;
     }
 
     private static Boolean isZipToken(String value) {
@@ -984,7 +1001,49 @@ public with sharing class GnalFacilitySearchController {
     private static Boolean isCountryToken(String value) {
         if (String.isBlank(value)) return false;
         String t = value.trim();
-        return t.equalsIgnoreCase('US') || t.equalsIgnoreCase('USA') || t.equalsIgnoreCase('United States');
+        if (t.equalsIgnoreCase('US') || t.equalsIgnoreCase('USA') || t.equalsIgnoreCase('United States')) return true;
+        String key = t.toLowerCase();
+        return COUNTRY_LABEL_TO_CODE != null && COUNTRY_LABEL_TO_CODE.containsKey(key);
+    }
+
+    private static String stateCodeFromInput(String stateOrCode) {
+        if (String.isBlank(stateOrCode)) return null;
+        String trimmed = stateOrCode.trim();
+        String upper = trimmed.toUpperCase();
+        if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(upper)) return upper;
+        if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(trimmed)) return trimmed;
+        String key = trimmed.toLowerCase();
+        if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
+            return STATE_LABEL_TO_CODE.get(key);
+        }
+        return null;
+    }
+
+    private static Map<String, String> initCodeToLabel(Schema.DescribeFieldResult describe) {
+        Map<String, String> out = new Map<String, String>();
+        try {
+            if (describe == null) return out;
+            for (Schema.PicklistEntry e : describe.getPicklistValues()) {
+                if (e == null) continue;
+                String code = e.getValue();
+                String label = e.getLabel();
+                if (!String.isBlank(code) && !String.isBlank(label)) out.put(code, label);
+            }
+        } catch (Exception ex) {
+            // ignore; fall back to raw codes
+        }
+        return out;
+    }
+
+    private static Map<String, String> invertMapCaseInsensitive(Map<String, String> input) {
+        Map<String, String> out = new Map<String, String>();
+        if (input == null) return out;
+        for (String code : input.keySet()) {
+            String label = input.get(code);
+            if (String.isBlank(code) || String.isBlank(label)) continue;
+            out.put(label.toLowerCase(), code);
+        }
+        return out;
     }
 
     private static List<String> splitTrim(String raw, String delimiter) {
