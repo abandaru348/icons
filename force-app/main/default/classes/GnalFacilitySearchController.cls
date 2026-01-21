@@ -1304,6 +1304,16 @@ public with sharing class GnalFacilitySearchController {
     }
 
     @TestVisible
+    private static void insertCacheRecordsForTest(List<GeocodeCache__c> records) {
+        insertCacheRecords(records);
+    }
+
+    @TestVisible
+    private static void updateCacheRecordsForTest(List<GeocodeCache__c> records) {
+        updateCacheRecords(records);
+    }
+
+    @TestVisible
     private static List<GeocodeCache__c> queryExistingCachesForTest(
         String originAddress,
         List<String> destinationAddresses
