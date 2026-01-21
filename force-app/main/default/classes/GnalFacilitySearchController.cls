@@ -36,6 +36,9 @@ public with sharing class GnalFacilitySearchController {
         try {
             originAddress = normalizeOriginAddress(originAddress);
             return findNearestFacilitiesInternal(accountId, originAddress, radiusMiles);
+        } catch (System.ListException ex) {
+            logException('Facility search list error', ex);
+            return new List<Map<String, Object>>();
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -84,6 +87,9 @@ public with sharing class GnalFacilitySearchController {
             );
 
             return formatCacheResults(filteredCaches, addressToName);
+        } catch (System.ListException ex) {
+            logException('Cache radius search list error', ex);
+            return new List<Map<String, Object>>();
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -96,6 +102,9 @@ public with sharing class GnalFacilitySearchController {
         try {
             originAddress = normalizeOriginAddress(originAddress);
             return findNearestFacilitiesInternal(accountId, originAddress, null);
+        } catch (System.ListException ex) {
+            logException('Facility search list error', ex);
+            return new List<Map<String, Object>>();
         } catch (AuraHandledException ex) {
             throw ex;
         } catch (Exception ex) {
