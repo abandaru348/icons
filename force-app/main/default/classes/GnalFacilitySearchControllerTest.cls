@@ -1027,4 +1027,64 @@ private class GnalFacilitySearchControllerTest {
         System.assertNotEquals(null, firstResults);
         System.assertNotEquals(null, secondResults);
     }
+
+    @IsTest
+    static void findNearestFacilitiesWithRadius_enqueuesAsyncWarm() {
+        Test.setMock(HttpCalloutMock.class, new GoogleMockMany());
+        GnalFacilitySearchController.FORCE_ASYNC = true;
+
+        OperatingHours oh = new OperatingHours(Name = 'OH Async', TimeZone = 'America/Chicago');
+        insert oh;
+
+        ServiceTerritory st1 = new ServiceTerritory(
+            Name = 'Async Facility 1',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '1 Async Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        ServiceTerritory st2 = new ServiceTerritory(
+            Name = 'Async Facility 2',
+            IsActive = true,
+            OperatingHoursId = oh.Id,
+            Street = '2 Async Way',
+            City = 'Austin',
+            PostalCode = '78701'
+        );
+        setFieldIfExists(st1, 'CountryCode', 'US');
+        setFieldIfExists(st1, 'StateCode', 'TX');
+        setFieldIfExists(st2, 'CountryCode', 'US');
+        setFieldIfExists(st2, 'StateCode', 'TX');
+        insert new List<ServiceTerritory>{ st1, st2 };
+
+        ServiceTerritory stored1 = [
+            SELECT Street, City, State, PostalCode, Country
+            FROM ServiceTerritory
+            WHERE Id = :st1.Id
+            LIMIT 1
+        ];
+        String dest1 = formatAddress(stored1.Street, stored1.City, stored1.State, stored1.PostalCode, stored1.Country);
+        String originAddress = '400 Origin St, Austin, TX 78701';
+
+        // Existing cache row (missing origin coords) to trigger origin backfill queueable.
+        insert new GeocodeCache__c(
+            Name = 'AsyncExisting',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = dest1,
+            Distance_Miles__c = 5,
+            Distance_Meters__c = 8046,
+            Travel_Time_Minutes__c = 20
+        );
+
+        try {
+            Test.startTest();
+            List<Map<String, Object>> results =
+                GnalFacilitySearchController.findNearestFacilitiesWithRadius(null, originAddress, 50);
+            Test.stopTest();
+            System.assertNotEquals(null, results);
+        } finally {
+            GnalFacilitySearchController.FORCE_ASYNC = false;
+        }
+    }
 }

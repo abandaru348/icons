@@ -313,4 +313,41 @@ private class GnalLocationServicesControllerTest {
         }
         System.assertEquals(addr, addr2);
     }
+
+    @IsTest
+    static void createOrIncrement_fallbackPath_isCallableForCoverage() {
+        Account a = new Account(Name = 'Fallback Account');
+        insert a;
+
+        Case c = new Case(Subject = 'Fallback', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        Test.startTest();
+        GnalLocationServicesController.LocationServiceUpsertResult r1 =
+            GnalLocationServicesController.createOrIncrementLocationServiceFallback(c.Id, '500 Fallback St, Austin, TX 78701, US');
+        GnalLocationServicesController.LocationServiceUpsertResult r2 =
+            GnalLocationServicesController.createOrIncrementLocationServiceFallback(c.Id, '500 Fallback St, Austin, TX 78701, US');
+        Test.stopTest();
+
+        System.assertNotEquals(null, r1.locationServiceId);
+        System.assertEquals(1, r1.searchCount);
+        System.assertEquals(2, r2.searchCount);
+    }
+
+    @IsTest
+    static void helperMethods_coverCoalesceAndQueryLatest() {
+        Test.startTest();
+        System.assertEquals('A', GnalLocationServicesController.coalesceStr(null, 'A'));
+        System.assertEquals('B', GnalLocationServicesController.coalesceStr('', 'B', null, 'C'));
+        System.assertEquals('X', GnalLocationServicesController.coalesceStrList(new List<Object>{ null, 'X' }));
+
+        // Normal path: returns null when no rows exist.
+        Id none = GnalLocationServicesController.queryLatestLocationServiceId('');
+        System.assertEquals(null, none);
+
+        // Error path: malformed query should be handled and return null.
+        Id bad = GnalLocationServicesController.queryLatestLocationServiceId('WHERE Id = \'');
+        System.assertEquals(null, bad);
+        Test.stopTest();
+    }
 }

@@ -210,6 +210,7 @@ public with sharing class GnalLocationServicesController {
         return buildLocationServiceResult(ls, normalized);
     }
 
+    @TestVisible
     private static LocationServiceUpsertResult createOrIncrementLocationServiceFallback(Id caseId, String normalized) {
         Id matchId = queryLatestLocationServiceId(
             'WHERE GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\''
@@ -458,6 +459,7 @@ public with sharing class GnalLocationServicesController {
         return String.valueOf(caseId) + '|' + String.valueOf(normalized);
     }
 
+    @TestVisible
     private static Id queryLatestLocationServiceId(String whereClause) {
         String w = String.isBlank(whereClause) ? '' : (' ' + whereClause.trim());
         try {
@@ -575,12 +577,15 @@ public with sharing class GnalLocationServicesController {
         return address.trim().replaceAll('\\s+', ' ');
     }
 
+    @TestVisible
     private static String coalesceStr(Object a, Object b) {
         return coalesceStrList(new List<Object>{ a, b });
     }
+    @TestVisible
     private static String coalesceStr(Object a, Object b, Object c, Object d) {
         return coalesceStrList(new List<Object>{ a, b, c, d });
     }
+    @TestVisible
     private static String coalesceStrList(List<Object> vals) {
         for (Object v : vals) {
             if (v instanceof String && !String.isBlank((String) v)) return (String) v;

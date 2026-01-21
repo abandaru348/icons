@@ -25,6 +25,7 @@ public with sharing class GnalFacilitySearchController {
     private static Map<Id, String> ACCOUNT_BILLING_CACHE = new Map<Id, String>();
     private static Set<String> CACHE_WARM_REQUEST_KEYS = new Set<String>();
     private static Map<String, String> TERRITORY_ADDRESS_NAME_CACHE = new Map<String, String>();
+    @TestVisible private static Boolean FORCE_ASYNC = false;
 
     // Cache-first facility search. Will only call Google when a cache miss occurs.
     @AuraEnabled(cacheable=false)
@@ -468,7 +469,7 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static Boolean shouldWarmCacheSynchronously(Integer destinationCount) {
-        if (Test.isRunningTest()) return true;
+        if (Test.isRunningTest()) return !FORCE_ASYNC;
         Integer remaining = Limits.getLimitCallouts() - Limits.getCallouts();
         Integer estimated = estimateCalloutsForGeocode(destinationCount);
         return remaining >= estimated;
