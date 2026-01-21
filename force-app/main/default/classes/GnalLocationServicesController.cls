@@ -163,6 +163,20 @@ public with sharing class GnalLocationServicesController {
         String normalized = normalizeAddress(currentLocation);
         if (String.isBlank(normalized)) throw new AuraHandledException('Current Location is required.');
 
+        try {
+            return createOrIncrementLocationServiceInternal(caseId, normalized);
+        } catch (System.ListException ex) {
+            logException('Location Service list error', ex);
+            return createOrIncrementLocationServiceFallback(caseId, normalized);
+        } catch (AuraHandledException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            logException('Location Service upsert failed', ex);
+            throw new AuraHandledException('Unable to create Location Service. Please try again.');
+        }
+    }
+
+    private static LocationServiceUpsertResult createOrIncrementLocationServiceInternal(Id caseId, String normalized) {
         Id matchId = findLatestLocationServiceIdByCaseAndNormalizedAddress(caseId, normalized);
 
         GNAL_Location_Service__c ls;
@@ -193,10 +207,55 @@ public with sharing class GnalLocationServicesController {
         cacheLocationServiceId(buildLocationServiceKey(caseId, normalized), ls.Id);
         touchLocationServiceCaseCache(caseId, ls);
 
+        return buildLocationServiceResult(ls, normalized);
+    }
+
+    private static LocationServiceUpsertResult createOrIncrementLocationServiceFallback(Id caseId, String normalized) {
+        Id matchId = queryLatestLocationServiceId(
+            'WHERE GNAL_Case__c = \'' + String.escapeSingleQuotes(String.valueOf(caseId)) + '\''
+        );
+
+        GNAL_Location_Service__c ls;
+        if (matchId != null) {
+            ls = [
+                SELECT Id, GNAL_Search_Count__c
+                FROM GNAL_Location_Service__c
+                WHERE Id = :matchId
+                LIMIT 1
+                FOR UPDATE
+            ];
+
+            Integer nextCount = (ls.GNAL_Search_Count__c == null)
+                ? 1
+                : Integer.valueOf(ls.GNAL_Search_Count__c) + 1;
+
+            ls.GNAL_Search_Count__c = nextCount;
+            writeCurrentLocationMinimal(ls, normalized);
+            update ls;
+        } else {
+            ls = new GNAL_Location_Service__c();
+            ls.GNAL_Case__c = caseId;
+            ls.GNAL_Search_Count__c = 1;
+            writeCurrentLocationMinimal(ls, normalized);
+            insert ls;
+        }
+
+        cacheLocationServiceId(buildLocationServiceKey(caseId, normalized), ls.Id);
+        touchLocationServiceCaseCache(caseId, ls);
+
+        return buildLocationServiceResult(ls, normalized);
+    }
+
+    private static LocationServiceUpsertResult buildLocationServiceResult(
+        GNAL_Location_Service__c ls,
+        String normalized
+    ) {
         LocationServiceUpsertResult out = new LocationServiceUpsertResult();
-        out.locationServiceId = ls.Id;
+        out.locationServiceId = ls != null ? ls.Id : null;
         out.currentLocation = normalized;
-        out.searchCount = (ls.GNAL_Search_Count__c == null) ? null : Integer.valueOf(ls.GNAL_Search_Count__c);
+        out.searchCount = (ls != null && ls.GNAL_Search_Count__c != null)
+            ? Integer.valueOf(ls.GNAL_Search_Count__c)
+            : null;
         return out;
     }
 
@@ -446,6 +505,24 @@ public with sharing class GnalLocationServicesController {
             if (!String.isBlank(parsed.country)) {
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__Country__s', countryLabelFromCode(parsed.country));
                 putIfWriteable(ls, fields, 'GNAL_Current_Location__CountryCode__s', countryCodeFromInput(parsed.country));
+            }
+        }
+    }
+
+    private static void writeCurrentLocationMinimal(GNAL_Location_Service__c ls, String normalized) {
+        if (ls == null || String.isBlank(normalized)) return;
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
+        if (fields == null) return;
+
+        if (fields.containsKey('GNAL_Current_Location__Street__s')) {
+            putIfWriteable(ls, fields, 'GNAL_Current_Location__Street__s', normalized);
+            return;
+        }
+
+        if (fields.containsKey('GNAL_Current_Location__c')) {
+            Schema.DescribeFieldResult d = fields.get('GNAL_Current_Location__c').getDescribe();
+            if (d != null && d.getType() != Schema.DisplayType.Address) {
+                putIfWriteable(ls, fields, 'GNAL_Current_Location__c', normalized);
             }
         }
     }
