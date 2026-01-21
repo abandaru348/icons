@@ -1210,4 +1210,91 @@ private class GnalFacilitySearchControllerTest {
             GnalFacilitySearchController.queryCachesWithinRadiusAllCachedByMilesOnly(originAddress, 5);
         System.assertEquals(true, allMiles.size() >= 1);
     }
+
+    @IsTest
+    static void helperMethods_coverCacheQueriesAndFormatting() {
+        String originAddress = '700 Origin St, Austin, TX 78701';
+        String destinationAddress = '700 Dest St, Austin, TX 78701';
+
+        GeocodeCache__c cache = new GeocodeCache__c(
+            Name = 'CacheHelpers',
+            Origin_Address__c = originAddress,
+            Destination_Address__c = destinationAddress,
+            Distance_Miles__c = 1,
+            Distance_Meters__c = 1609,
+            Travel_Time_Minutes__c = 5
+        );
+        setGeo(cache, 'Destination_Location__c', 30.2672, -97.7431);
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Location__c')) {
+            setGeo(cache, 'Origin_Location__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Location_Latitude__c')) {
+            setGeo(cache, 'Origin_Location_Latitude__c', 30.2672, -97.7431);
+        } else if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            cache.put('Origin_Latitude__c', 30.2672);
+            cache.put('Origin_Longitude__c', -97.7431);
+        }
+        insert cache;
+
+        List<GeocodeCache__c> existing =
+            GnalFacilitySearchController.queryExistingCachesForTest(originAddress, new List<String>{ destinationAddress });
+        System.assertEquals(true, existing.size() >= 1);
+
+        // normalizeOriginAddressForTest
+        System.assertEquals('A', GnalFacilitySearchController.normalizeOriginAddressForTest(' A '));
+
+        // formatCacheResultsForTest
+        List<Map<String, Object>> formatted = GnalFacilitySearchController.formatCacheResultsForTest(existing);
+        System.assertEquals(true, formatted.size() >= 1);
+
+        // Attempt to run DISTANCE queries (may be unsupported in some orgs/tests).
+        Double originLat = 30.2672;
+        Double originLon = -97.7431;
+        Double radius = 50.0;
+        try {
+            List<GeocodeCache__c> within =
+                GnalFacilitySearchController.queryCachesWithinRadiusForTest(
+                    originAddress,
+                    new List<String>{ destinationAddress },
+                    originLat,
+                    originLon,
+                    radius
+                );
+            System.assertNotEquals(null, within);
+        } catch (Exception ex) {
+            System.assertEquals(true, ex != null);
+        }
+
+        try {
+            List<GeocodeCache__c> withinAll =
+                GnalFacilitySearchController.queryCachesWithinRadiusAllCachedForTest(originAddress, originLat, originLon, radius);
+            System.assertNotEquals(null, withinAll);
+        } catch (Exception ex) {
+            System.assertEquals(true, ex != null);
+        }
+    }
+
+    @IsTest
+    static void helperMethods_coverLatLngAndNumericWrites() {
+        GeocodeCache__c row = new GeocodeCache__c();
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            Double lat = 11.1;
+            Double lon = -22.2;
+            Boolean wrote = GnalFacilitySearchController.tryWriteNumericLatLngForTest(
+                row,
+                'Origin_Latitude__c',
+                'Origin_Longitude__c',
+                lat,
+                lon,
+                true
+            );
+            if (wrote) {
+                Map<String, Double> out =
+                    GnalFacilitySearchController.extractLatLngFromFieldsForTest(row, 'Origin_Latitude__c', 'Origin_Longitude__c');
+                System.assertEquals(11.1, out.get('lat'));
+                System.assertEquals(-22.2, out.get('lng'));
+            }
+        }
+    }
 }

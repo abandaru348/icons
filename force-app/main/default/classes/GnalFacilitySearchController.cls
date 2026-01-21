@@ -1292,6 +1292,71 @@ public with sharing class GnalFacilitySearchController {
         return initCaseOriginNotNullWhere();
     }
 
+    @TestVisible
+    private static List<GeocodeCache__c> queryExistingCachesForTest(
+        String originAddress,
+        List<String> destinationAddresses
+    ) {
+        return queryExistingCaches(originAddress, destinationAddresses);
+    }
+
+    @TestVisible
+    private static List<GeocodeCache__c> queryCachesWithinRadiusForTest(
+        String originAddress,
+        List<String> destinationAddresses,
+        Double originLatitude,
+        Double originLongitude,
+        Double radiusMiles
+    ) {
+        return queryCachesWithinRadius(originAddress, destinationAddresses, originLatitude, originLongitude, radiusMiles);
+    }
+
+    @TestVisible
+    private static List<GeocodeCache__c> queryCachesWithinRadiusAllCachedForTest(
+        String originAddress,
+        Double originLatitude,
+        Double originLongitude,
+        Double radiusMiles
+    ) {
+        return queryCachesWithinRadiusAllCached(originAddress, originLatitude, originLongitude, radiusMiles);
+    }
+
+    @TestVisible
+    private static List<Map<String, Object>> formatCacheResultsForTest(List<GeocodeCache__c> cacheRecords) {
+        return formatCacheResults(cacheRecords);
+    }
+
+    @TestVisible
+    private static String normalizeOriginAddressForTest(String originAddress) {
+        return normalizeOriginAddress(originAddress);
+    }
+
+    @TestVisible
+    private static Map<String, Double> extractLatLngFromFieldsForTest(
+        SObject row,
+        String latFieldApiName,
+        String lonFieldApiName
+    ) {
+        LatLng ll = extractLatLngFromFields(row, latFieldApiName, lonFieldApiName);
+        Map<String, Double> out = new Map<String, Double>();
+        if (ll == null) return out;
+        out.put('lat', ll.lat);
+        out.put('lng', ll.lng);
+        return out;
+    }
+
+    @TestVisible
+    private static Boolean tryWriteNumericLatLngForTest(
+        GeocodeCache__c record,
+        String latField,
+        String lonField,
+        Double lat,
+        Double lon,
+        Boolean isInsert
+    ) {
+        return tryWriteNumericLatLng(record, latField, lonField, lat, lon, isInsert);
+    }
+
     @AuraEnabled(cacheable=true)
     public static String getAccountBillingAddress(Id accountId) {
         if (accountId == null) {
