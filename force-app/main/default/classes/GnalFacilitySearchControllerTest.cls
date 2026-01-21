@@ -1147,11 +1147,17 @@ private class GnalFacilitySearchControllerTest {
         setFieldIfExists(st, 'StateCode', 'TX');
         insert st;
 
-        String formatted = GnalFacilitySearchController.formatServiceTerritoryAddressForTest(st);
+        ServiceTerritory stored = [
+            SELECT Street, City, State, PostalCode, Country, Name
+            FROM ServiceTerritory
+            WHERE Id = :st.Id
+            LIMIT 1
+        ];
+        String formatted = GnalFacilitySearchController.formatServiceTerritoryAddressForTest(stored);
         System.assertNotEquals(null, formatted);
 
         Map<String, String> addressNameMap = GnalFacilitySearchController.getTerritoryAddressNameMapForTest();
-        System.assertEquals('Helper Facility', addressNameMap.get(formatted));
+        System.assertEquals(stored.Name, addressNameMap.get(formatted));
 
         String originAddress = '500 Origin St, Austin, TX 78701';
         GeocodeCache__c cache = new GeocodeCache__c(
