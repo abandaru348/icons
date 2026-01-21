@@ -116,7 +116,8 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
             throw new AuraHandledException('Route API error: ' + routeResponse.getStatusCode() + ' - ' + routeResponse.getBody());
         }
 
-        List<Object> parsedPayload = (List<Object>) JSON.deserializeUntyped(routeResponse.getBody());
+        Object rawPayload = JSON.deserializeUntyped(routeResponse.getBody());
+        List<Object> parsedPayload = (rawPayload instanceof List<Object>) ? (List<Object>) rawPayload : null;
         List<TravelTimeResult> results = new List<TravelTimeResult>();
 
         if (parsedPayload == null || parsedPayload.isEmpty()) {
@@ -124,40 +125,49 @@ public with sharing class GnalTravelTimeServiceWithGeocoding {
         }
 
         for (Object payloadObj : parsedPayload) {
-            Map<String, Object> row = (Map<String, Object>) payloadObj;
-            Object destinationIndexRaw = row.get('destinationIndex');
-            if (!(destinationIndexRaw instanceof Double)) {
+            try {
+                Map<String, Object> row = (payloadObj instanceof Map<String, Object>)
+                    ? (Map<String, Object>) payloadObj
+                    : null;
+                if (row == null) continue;
+
+                Object destinationIndexRaw = row.get('destinationIndex');
+                if (!(destinationIndexRaw instanceof Double)) {
+                    continue;
+                }
+                Integer destinationIndex = ((Double) destinationIndexRaw).intValue();
+                if (destinationIndex < 0 ||
+                    destinationIndex >= routedDestinationAddresses.size() ||
+                    destinationIndex >= destinationLatLngList.size()) {
+                    continue;
+                }
+                String addressKey = routedDestinationAddresses[destinationIndex];
+                Map<String, Double> destLatLng = destinationLatLngList[destinationIndex];
+
+                String durationLiteral = (String) row.get('duration');
+                Double seconds = 0;
+                if (!String.isBlank(durationLiteral) && durationLiteral.endsWith('s')) {
+                    seconds = Double.valueOf(durationLiteral.substring(0, durationLiteral.length() - 1));
+                }
+
+                Double minutes = seconds / 60;
+                Double distanceMeters = row.containsKey('distanceMeters') ? (Double) row.get('distanceMeters') : null;
+                Double distanceMiles = metersToMiles(distanceMeters);
+
+                results.add(new TravelTimeResult(
+                    addressKey,
+                    minutes,
+                    distanceMeters,
+                    distanceMiles,
+                    destLatLng != null ? destLatLng.get('lat') : null,
+                    destLatLng != null ? destLatLng.get('lng') : null,
+                    originLatLng.get('lat'),
+                    originLatLng.get('lng')
+                ));
+            } catch (Exception ex) {
+                // Skip malformed rows to avoid breaking the full response.
                 continue;
             }
-            Integer destinationIndex = ((Double) destinationIndexRaw).intValue();
-            if (destinationIndex < 0 ||
-                destinationIndex >= routedDestinationAddresses.size() ||
-                destinationIndex >= destinationLatLngList.size()) {
-                continue;
-            }
-            String addressKey = routedDestinationAddresses[destinationIndex];
-            Map<String, Double> destLatLng = destinationLatLngList[destinationIndex];
-
-            String durationLiteral = (String) row.get('duration');
-            Double seconds = 0;
-            if (!String.isBlank(durationLiteral) && durationLiteral.endsWith('s')) {
-                seconds = Double.valueOf(durationLiteral.substring(0, durationLiteral.length() - 1));
-            }
-
-            Double minutes = seconds / 60;
-            Double distanceMeters = row.containsKey('distanceMeters') ? (Double) row.get('distanceMeters') : null;
-            Double distanceMiles = metersToMiles(distanceMeters);
-
-            results.add(new TravelTimeResult(
-                addressKey,
-                minutes,
-                distanceMeters,
-                distanceMiles,
-                destLatLng != null ? destLatLng.get('lat') : null,
-                destLatLng != null ? destLatLng.get('lng') : null,
-                originLatLng.get('lat'),
-                originLatLng.get('lng')
-            ));
         }
 
         results.sort();
