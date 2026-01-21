@@ -1211,6 +1211,52 @@ public with sharing class GnalFacilitySearchController {
         return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
+    @TestVisible
+    private static List<String> limitAddressListForTest(List<String> addresses, Integer limitSize) {
+        return limitAddressList(addresses, limitSize);
+    }
+
+    @TestVisible
+    private static String quoteSoqlForTest(String value) {
+        return quoteSoql(value);
+    }
+
+    @TestVisible
+    private static String toSoqlInListForTest(List<String> values) {
+        return toSoqlInList(values);
+    }
+
+    @TestVisible
+    private static Integer estimateCalloutsForGeocodeForTest(Integer destinationCount) {
+        return estimateCalloutsForGeocode(destinationCount);
+    }
+
+    @TestVisible
+    private static Map<String, Double> extractOriginLatLngForTest(GeocodeCache__c row) {
+        LatLng ll = extractOriginLatLng(row);
+        Map<String, Double> out = new Map<String, Double>();
+        if (ll == null) return out;
+        out.put('lat', ll.lat);
+        out.put('lng', ll.lng);
+        return out;
+    }
+
+    @TestVisible
+    private static void writeOriginLatLngForTest(GeocodeCache__c row, Double lat, Double lon, Boolean isInsert) {
+        writeOriginLatLng(row, lat, lon, isInsert);
+    }
+
+    @TestVisible
+    private static void setLocationFieldForTest(
+        GeocodeCache__c row,
+        String fieldApiName,
+        Double lat,
+        Double lon,
+        Boolean isInsert
+    ) {
+        setLocationField(row, fieldApiName, lat, lon, isInsert);
+    }
+
     @AuraEnabled(cacheable=true)
     public static String getAccountBillingAddress(Id accountId) {
         if (accountId == null) {

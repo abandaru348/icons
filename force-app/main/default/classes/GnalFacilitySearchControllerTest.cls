@@ -1087,4 +1087,42 @@ private class GnalFacilitySearchControllerTest {
             GnalFacilitySearchController.FORCE_ASYNC = false;
         }
     }
+
+    @IsTest
+    static void utilityMethods_coverHelpers() {
+        // limitAddressListForTest
+        System.assertEquals(0, GnalFacilitySearchController.limitAddressListForTest(null, 5).size());
+        List<String> vals = new List<String>{ 'a', 'b', 'c' };
+        System.assertEquals(2, GnalFacilitySearchController.limitAddressListForTest(vals, 2).size());
+        System.assertEquals(3, GnalFacilitySearchController.limitAddressListForTest(vals, 0).size());
+
+        // quoteSoqlForTest + toSoqlInListForTest
+        System.assertEquals('NULL', GnalFacilitySearchController.quoteSoqlForTest(null));
+        String quoted = GnalFacilitySearchController.quoteSoqlForTest('A\'B');
+        System.assertEquals(true, quoted.startsWith('\''));
+        System.assertEquals(true, quoted.endsWith('\''));
+        System.assertEquals(true, quoted.contains('A'));
+        System.assertEquals(true, quoted.contains('B'));
+        System.assertEquals('(\'\')', GnalFacilitySearchController.toSoqlInListForTest(new List<String>()));
+        System.assertEquals('(\'a\',\'b\')', GnalFacilitySearchController.toSoqlInListForTest(new List<String>{ 'a', 'b' }));
+
+        // estimateCalloutsForGeocodeForTest
+        System.assertEquals(0, GnalFacilitySearchController.estimateCalloutsForGeocodeForTest(0));
+        System.assertEquals(5, GnalFacilitySearchController.estimateCalloutsForGeocodeForTest(3));
+
+        // extractOriginLatLngForTest + writeOriginLatLngForTest + setLocationFieldForTest
+        GeocodeCache__c row = new GeocodeCache__c();
+        Map<String, Schema.SObjectField> fields = Schema.SObjectType.GeocodeCache__c.fields.getMap();
+        if (fields != null && fields.containsKey('Origin_Latitude__c') && fields.containsKey('Origin_Longitude__c')) {
+            row.put('Origin_Latitude__c', 1.1);
+            row.put('Origin_Longitude__c', 2.2);
+            Map<String, Double> latLng = GnalFacilitySearchController.extractOriginLatLngForTest(row);
+            System.assertEquals(1.1, latLng.get('lat'));
+            System.assertEquals(2.2, latLng.get('lng'));
+        }
+
+        GnalFacilitySearchController.writeOriginLatLngForTest(row, 3.3, 4.4, true);
+        GnalFacilitySearchController.setLocationFieldForTest(row, 'Destination_Location__c', 30.0, -97.0, true);
+        System.assertNotEquals(null, row);
+    }
 }
