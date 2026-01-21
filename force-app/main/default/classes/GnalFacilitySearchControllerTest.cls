@@ -1450,12 +1450,8 @@ private class GnalFacilitySearchControllerTest {
         GnalFacilitySearchController.insertCacheRecordsForTest(new List<GeocodeCache__c>());
         GnalFacilitySearchController.updateCacheRecordsForTest(new List<GeocodeCache__c>());
 
-        // Nonexistent Id update should return SaveResult errors (no throw).
-        String prefix = Schema.SObjectType.GeocodeCache__c.getDescribe().getKeyPrefix();
-        String fakeIdStr = prefix + '000000000000000';
-        Id fakeId = (Id) fakeIdStr;
+        // Missing Id update should return SaveResult errors (no throw).
         GeocodeCache__c bogus = new GeocodeCache__c(
-            Id = fakeId,
             Origin_Address__c = 'Origin',
             Destination_Address__c = 'Dest'
         );
