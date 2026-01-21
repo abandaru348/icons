@@ -1243,8 +1243,21 @@ private class GnalFacilitySearchControllerTest {
         // normalizeOriginAddressForTest
         System.assertEquals('A', GnalFacilitySearchController.normalizeOriginAddressForTest(' A '));
 
-        // formatCacheResultsForTest
-        List<Map<String, Object>> formatted = GnalFacilitySearchController.formatCacheResultsForTest(existing);
+        // formatCacheResultsForTest (ensure all fields were selected)
+        List<GeocodeCache__c> fullRows = [
+            SELECT Id,
+                   Origin_Address__c,
+                   Destination_Address__c,
+                   Distance_Miles__c,
+                   Distance_Meters__c,
+                   Travel_Time_Minutes__c,
+                   Destination_Location__Latitude__s,
+                   Destination_Location__Longitude__s,
+                   Destination_Location__c
+            FROM GeocodeCache__c
+            WHERE Id = :cache.Id
+        ];
+        List<Map<String, Object>> formatted = GnalFacilitySearchController.formatCacheResultsForTest(fullRows);
         System.assertEquals(true, formatted.size() >= 1);
 
         // Attempt to run DISTANCE queries (may be unsupported in some orgs/tests).
