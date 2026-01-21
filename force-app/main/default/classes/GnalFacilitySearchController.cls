@@ -18,6 +18,8 @@ public with sharing class GnalFacilitySearchController {
         initCodeToLabel(Account.BillingCountryCode.getDescribe());
     private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
     private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
+    private static final Map<String, String> US_STATE_CODE_TO_LABEL = initUsStateCodeToLabel();
+    private static final Map<String, String> US_STATE_LABEL_TO_CODE = invertMapCaseInsensitive(US_STATE_CODE_TO_LABEL);
 
     private static final Map<String, Schema.SObjectField> CACHE_FIELD_MAP =
         Schema.SObjectType.GeocodeCache__c.fields.getMap();
@@ -981,17 +983,27 @@ public with sharing class GnalFacilitySearchController {
 
     private static String normalizeStateToken(String value) {
         if (String.isBlank(value)) return null;
-        String trimmed = value.trim();
+        String trimmed = value.trim().replace('.', '');
         String code = stateCodeFromInput(trimmed);
-        if (!String.isBlank(code) && STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(code)) {
-            return STATE_CODE_TO_LABEL.get(code);
+        if (String.isBlank(code) && isStateCodeToken(trimmed)) {
+            code = trimmed.toUpperCase();
         }
-        String key = trimmed.toLowerCase();
-        if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
-            String mapped = STATE_LABEL_TO_CODE.get(key);
-            return STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(mapped)
-                ? STATE_CODE_TO_LABEL.get(mapped)
-                : trimmed;
+        if (String.isBlank(code)) {
+            String key = trimmed.toLowerCase();
+            if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
+                code = STATE_LABEL_TO_CODE.get(key);
+            } else if (US_STATE_LABEL_TO_CODE != null && US_STATE_LABEL_TO_CODE.containsKey(key)) {
+                code = US_STATE_LABEL_TO_CODE.get(key);
+            }
+        }
+        if (!String.isBlank(code)) {
+            if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(code)) {
+                return STATE_CODE_TO_LABEL.get(code);
+            }
+            if (US_STATE_CODE_TO_LABEL != null && US_STATE_CODE_TO_LABEL.containsKey(code)) {
+                return US_STATE_CODE_TO_LABEL.get(code);
+            }
+            return code;
         }
         return null;
     }
@@ -1020,9 +1032,13 @@ public with sharing class GnalFacilitySearchController {
         String upper = trimmed.toUpperCase();
         if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(upper)) return upper;
         if (STATE_CODE_TO_LABEL != null && STATE_CODE_TO_LABEL.containsKey(trimmed)) return trimmed;
+        if (US_STATE_CODE_TO_LABEL != null && US_STATE_CODE_TO_LABEL.containsKey(upper)) return upper;
         String key = trimmed.toLowerCase();
         if (STATE_LABEL_TO_CODE != null && STATE_LABEL_TO_CODE.containsKey(key)) {
             return STATE_LABEL_TO_CODE.get(key);
+        }
+        if (US_STATE_LABEL_TO_CODE != null && US_STATE_LABEL_TO_CODE.containsKey(key)) {
+            return US_STATE_LABEL_TO_CODE.get(key);
         }
         return null;
     }
@@ -1051,6 +1067,62 @@ public with sharing class GnalFacilitySearchController {
             if (String.isBlank(code) || String.isBlank(label)) continue;
             out.put(label.toLowerCase(), code);
         }
+        return out;
+    }
+
+    private static Map<String, String> initUsStateCodeToLabel() {
+        Map<String, String> out = new Map<String, String>();
+        out.put('AL', 'Alabama');
+        out.put('AK', 'Alaska');
+        out.put('AZ', 'Arizona');
+        out.put('AR', 'Arkansas');
+        out.put('CA', 'California');
+        out.put('CO', 'Colorado');
+        out.put('CT', 'Connecticut');
+        out.put('DE', 'Delaware');
+        out.put('DC', 'District of Columbia');
+        out.put('FL', 'Florida');
+        out.put('GA', 'Georgia');
+        out.put('HI', 'Hawaii');
+        out.put('ID', 'Idaho');
+        out.put('IL', 'Illinois');
+        out.put('IN', 'Indiana');
+        out.put('IA', 'Iowa');
+        out.put('KS', 'Kansas');
+        out.put('KY', 'Kentucky');
+        out.put('LA', 'Louisiana');
+        out.put('ME', 'Maine');
+        out.put('MD', 'Maryland');
+        out.put('MA', 'Massachusetts');
+        out.put('MI', 'Michigan');
+        out.put('MN', 'Minnesota');
+        out.put('MS', 'Mississippi');
+        out.put('MO', 'Missouri');
+        out.put('MT', 'Montana');
+        out.put('NE', 'Nebraska');
+        out.put('NV', 'Nevada');
+        out.put('NH', 'New Hampshire');
+        out.put('NJ', 'New Jersey');
+        out.put('NM', 'New Mexico');
+        out.put('NY', 'New York');
+        out.put('NC', 'North Carolina');
+        out.put('ND', 'North Dakota');
+        out.put('OH', 'Ohio');
+        out.put('OK', 'Oklahoma');
+        out.put('OR', 'Oregon');
+        out.put('PA', 'Pennsylvania');
+        out.put('RI', 'Rhode Island');
+        out.put('SC', 'South Carolina');
+        out.put('SD', 'South Dakota');
+        out.put('TN', 'Tennessee');
+        out.put('TX', 'Texas');
+        out.put('UT', 'Utah');
+        out.put('VT', 'Vermont');
+        out.put('VA', 'Virginia');
+        out.put('WA', 'Washington');
+        out.put('WV', 'West Virginia');
+        out.put('WI', 'Wisconsin');
+        out.put('WY', 'Wyoming');
         return out;
     }
 
