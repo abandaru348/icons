@@ -315,6 +315,37 @@ private class GnalLocationServicesControllerTest {
     }
 
     @IsTest
+    static void createOrIncrement_acceptsAddressesWithoutCountry() {
+        Account a = new Account(Name = 'State Formats');
+        insert a;
+
+        Case c = new Case(Subject = 'State Formats', Status = 'New', Origin = 'Phone', AccountId = a.Id);
+        insert c;
+
+        Test.startTest();
+        GnalLocationServicesController.LocationServiceUpsertResult r1 =
+            GnalLocationServicesController.createOrIncrementLocationService(
+                c.Id,
+                '42835 Cumulus Terrace, Brambleton, Virginia, 20148'
+            );
+        GnalLocationServicesController.LocationServiceUpsertResult r2 =
+            GnalLocationServicesController.createOrIncrementLocationService(
+                c.Id,
+                '42835 Cumulus Terrace, Brambleton, Va, 20148'
+            );
+        GnalLocationServicesController.LocationServiceUpsertResult r3 =
+            GnalLocationServicesController.createOrIncrementLocationService(
+                c.Id,
+                '42835 Cumulus Terrace, Brambleton, VA, 20148'
+            );
+        Test.stopTest();
+
+        System.assertNotEquals(null, r1.locationServiceId);
+        System.assertNotEquals(null, r2.locationServiceId);
+        System.assertNotEquals(null, r3.locationServiceId);
+    }
+
+    @IsTest
     static void createOrIncrement_fallbackPath_isCallableForCoverage() {
         Account a = new Account(Name = 'Fallback Account');
         insert a;
