@@ -1121,7 +1121,9 @@ private class GnalFacilitySearchControllerTest {
             System.assertEquals(2.2, latLng.get('lng'));
         }
 
-        GnalFacilitySearchController.writeOriginLatLngForTest(row, 3.3, 4.4, true);
+        Double lat = 3.3;
+        Double lon = 4.4;
+        GnalFacilitySearchController.writeOriginLatLngForTest(row, lat, lon, true);
         GnalFacilitySearchController.setLocationFieldForTest(row, 'Destination_Location__c', 30.0, -97.0, true);
         System.assertNotEquals(null, row);
     }
@@ -1146,8 +1148,8 @@ private class GnalFacilitySearchControllerTest {
         String formatted = GnalFacilitySearchController.formatServiceTerritoryAddressForTest(st);
         System.assertNotEquals(null, formatted);
 
-        Map<String, String> map = GnalFacilitySearchController.getTerritoryAddressNameMapForTest();
-        System.assertEquals(true, map.containsValue('Helper Facility'));
+        Map<String, String> addressNameMap = GnalFacilitySearchController.getTerritoryAddressNameMapForTest();
+        System.assertEquals('Helper Facility', addressNameMap.get(formatted));
 
         String originAddress = '500 Origin St, Austin, TX 78701';
         GeocodeCache__c cache = new GeocodeCache__c(
