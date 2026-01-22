@@ -186,7 +186,7 @@ export default class FindNearestFacilities extends LightningElement {
         this.applyRadiusFilter(isNaN(radius) ? null : radius);
     }
 
-    async handleFind() {
+    handleFind() {
         const normalizedOrigin = (this.originAddress || '').trim();
         this.originAddress = normalizedOrigin;
 
@@ -208,43 +208,35 @@ export default class FindNearestFacilities extends LightningElement {
 
         const radius = Number(this.selectedDistance);
 
-        try {
-            const data = await findNearestFacilitiesWithRadius({
-                accountId: null,
-                originAddress: normalizedOrigin,
-                radiusMiles: FindNearestFacilities.WARM_CACHE_RADIUS_MILES
+        createOrIncrementLocationService({ caseId: this.caseId, currentLocation: normalizedOrigin })
+            .then(() =>
+                findNearestFacilitiesWithRadius({
+                    accountId: null,
+                    originAddress: normalizedOrigin,
+                    radiusMiles: FindNearestFacilities.WARM_CACHE_RADIUS_MILES
+                })
+            )
+            .then((data = []) => {
+                this.allResults = this.normalizeResults(data);
+                this.applyRadiusFilter(isNaN(radius) ? null : radius);
+                this.searchHasRun = true;
+
+                const hasAnyResults = this.results.length > 0;
+                const title = hasAnyResults ? 'Success' : 'Info';
+                const message = hasAnyResults
+                    ? 'Nearest facilities found successfully.'
+                    : 'No facilities found within the selected distance.';
+                const variant = hasAnyResults ? 'success' : 'info';
+                this.showToast(title, message, variant);
+            })
+            .catch((error) => {
+                const msg = error?.body?.message || error?.message || 'Error finding facilities.';
+                this.lastErrorMessage = msg;
+                this.showToast('Error', msg, 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
             });
-
-            this.allResults = this.normalizeResults(data);
-            this.applyRadiusFilter(isNaN(radius) ? null : radius);
-            this.searchHasRun = true;
-
-            const hasAnyResults = this.results.length > 0;
-            const title = hasAnyResults ? 'Success' : 'Info';
-            const message = hasAnyResults
-                ? 'Nearest facilities found successfully.'
-                : 'No facilities found within the selected distance.';
-            const variant = hasAnyResults ? 'success' : 'info';
-            this.showToast(title, message, variant);
-
-            if (hasAnyResults) {
-                try {
-                    await createOrIncrementLocationService({
-                        caseId: this.caseId,
-                        currentLocation: normalizedOrigin
-                    });
-                } catch (error) {
-                    const msg = error?.body?.message || error?.message || 'Unable to record location service.';
-                    this.showToast('Error', msg, 'error');
-                }
-            }
-        } catch (error) {
-            const msg = error?.body?.message || error?.message || 'Error finding facilities.';
-            this.lastErrorMessage = msg;
-            this.showToast('Error', msg, 'error');
-        } finally {
-            this.isLoading = false;
-        }
     }
 
     normalizeResults(data = []) {
