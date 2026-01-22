@@ -208,14 +208,11 @@ export default class FindNearestFacilities extends LightningElement {
 
         const radius = Number(this.selectedDistance);
 
-        createOrIncrementLocationService({ caseId: this.caseId, currentLocation: normalizedOrigin })
-            .then(() =>
-                findNearestFacilitiesWithRadius({
-                    accountId: null,
-                    originAddress: normalizedOrigin,
-                    radiusMiles: FindNearestFacilities.WARM_CACHE_RADIUS_MILES
-                })
-            )
+        findNearestFacilitiesWithRadius({
+            accountId: null,
+            originAddress: normalizedOrigin,
+            radiusMiles: FindNearestFacilities.WARM_CACHE_RADIUS_MILES
+        })
             .then((data = []) => {
                 this.allResults = this.normalizeResults(data);
                 this.applyRadiusFilter(isNaN(radius) ? null : radius);
@@ -228,6 +225,14 @@ export default class FindNearestFacilities extends LightningElement {
                     : 'No facilities found within the selected distance.';
                 const variant = hasAnyResults ? 'success' : 'info';
                 this.showToast(title, message, variant);
+
+                if (hasAnyResults) {
+                    return createOrIncrementLocationService({
+                        caseId: this.caseId,
+                        currentLocation: normalizedOrigin
+                    });
+                }
+                return null;
             })
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';
