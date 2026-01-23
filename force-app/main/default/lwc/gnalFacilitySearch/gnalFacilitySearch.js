@@ -6,7 +6,7 @@ import Toast from 'lightning/toast';
 
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForCase from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForCase';
-import createOrIncrementLocationService from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationService';
+import createOrIncrementLocationServiceIfResults from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationServiceIfResults';
 
 export default class FindNearestFacilities extends LightningElement {
     static LIST_RESULT_LIMIT = 8;
@@ -226,13 +226,11 @@ export default class FindNearestFacilities extends LightningElement {
                 const variant = hasAnyResults ? 'success' : 'info';
                 this.showToast(title, message, variant);
 
-                if (hasAnyResults) {
-                    return createOrIncrementLocationService({
-                        caseId: this.caseId,
-                        currentLocation: normalizedOrigin
-                    });
-                }
-                return null;
+                return createOrIncrementLocationServiceIfResults({
+                    caseId: this.caseId,
+                    currentLocation: normalizedOrigin,
+                    resultCount: this.results.length
+                });
             })
             .catch((error) => {
                 const msg = error?.body?.message || error?.message || 'Error finding facilities.';

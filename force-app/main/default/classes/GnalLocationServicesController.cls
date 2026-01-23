@@ -176,6 +176,18 @@ public with sharing class GnalLocationServicesController {
         }
     }
 
+    @AuraEnabled(cacheable=false)
+    public static LocationServiceUpsertResult createOrIncrementLocationServiceIfResults(
+        Id caseId,
+        String currentLocation,
+        Integer resultCount
+    ) {
+        if (resultCount == null || resultCount <= 0) {
+            return null;
+        }
+        return createOrIncrementLocationService(caseId, currentLocation);
+    }
+
     private static LocationServiceUpsertResult createOrIncrementLocationServiceInternal(Id caseId, String normalized) {
         Id matchId = findLatestLocationServiceIdByCaseAndNormalizedAddress(caseId, normalized);
 
