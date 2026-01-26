@@ -832,11 +832,27 @@ public with sharing class GnalLocationServicesController {
 
         // Normalize whitespace and strip newlines for parsing.
         String s = cacheKey.replaceAll('[\\r\\n]+', ' ').trim().replaceAll('\\s+', ' ');
+
+        // Strip trailing country when it isn't comma-delimited.
+        String trailingCountry = null;
+        String lower = s.toLowerCase();
+        List<String> suffixes = new List<String>{ ', united states', ' united states', ', us', ' us', ', usa', ' usa' };
+        for (String suffix : suffixes) {
+            if (lower.endsWith(suffix)) {
+                trailingCountry = 'United States';
+                s = s.substring(0, s.length() - suffix.length()).trim();
+                if (s.endsWith(',')) {
+                    s = s.substring(0, s.length() - 1).trim();
+                }
+                break;
+            }
+        }
         List<String> tokens = splitTrim(s, ',');
 
         ParsedAddress out = new ParsedAddress();
         if (tokens.isEmpty()) {
             out.street = s;
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -852,6 +868,7 @@ public with sharing class GnalLocationServicesController {
             List<String> streetParts = new List<String>();
             for (Integer i = 0; i <= n - 5; i++) streetParts.add(tokens[i]);
             out.street = String.join(streetParts, ', ');
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -862,6 +879,7 @@ public with sharing class GnalLocationServicesController {
             out.city = tokens[1];
             out.state = tokens[2];
             out.postal = tokens[3];
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -876,6 +894,7 @@ public with sharing class GnalLocationServicesController {
             out.state = sp != null ? sp.state : null;
             out.postal = sp != null ? sp.postal : null;
             if (String.isBlank(out.state)) out.state = statePostal;
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -885,6 +904,7 @@ public with sharing class GnalLocationServicesController {
             out.street = tokens[0];
             out.city = tokens[1];
             out.state = tokens[2];
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -894,6 +914,7 @@ public with sharing class GnalLocationServicesController {
             out.street = tokens[0];
             out.city = tokens[1];
             out.postal = tokens[2];
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -910,14 +931,23 @@ public with sharing class GnalLocationServicesController {
             } else {
                 out.city = tokens[1];
             }
+            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
 
         // Minimal: treat as Street-only.
         out.street = s;
+        applyCountryIfMissing(out, trailingCountry);
         cacheParsedAddress(cacheKey, out);
         return out;
+    }
+
+    private static void applyCountryIfMissing(ParsedAddress out, String country) {
+        if (out == null) return;
+        if (String.isBlank(out.country) && !String.isBlank(country)) {
+            out.country = country;
+        }
     }
 
     private static void cacheParsedAddress(String cacheKey, ParsedAddress parsed) {
