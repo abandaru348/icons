@@ -992,7 +992,7 @@ public with sharing class GnalLocationServicesController {
     private static Boolean isUnableToLockRow(DmlException ex) {
         if (ex == null) return false;
         for (Integer i = 0; i < ex.getNumDml(); i++) {
-            if (ex.getDmlStatusCode(i) == StatusCode.UNABLE_TO_LOCK_ROW) {
+            if (ex.getDmlStatusCode(i) == 'UNABLE_TO_LOCK_ROW') {
                 return true;
             }
         }
