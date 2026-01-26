@@ -1010,7 +1010,7 @@ public with sharing class GnalLocationServicesController {
 
     private static String normalizeWhitespace(String input, Boolean breakToComma) {
         if (input == null) return null;
-        StringBuilder sb = new StringBuilder();
+        List<String> out = new List<String>();
         Boolean lastWasSpace = false;
         Boolean lastWasComma = false;
 
@@ -1018,17 +1018,17 @@ public with sharing class GnalLocationServicesController {
             String ch = input.substring(i, i + 1);
             if (ch == '\r' || ch == '\n') {
                 if (breakToComma) {
-                    if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
-                        sb.setLength(sb.length() - 1);
+                    if (lastWasSpace && !out.isEmpty()) {
+                        out.remove(out.size() - 1);
+                        lastWasSpace = false;
                     }
-                    if (sb.length() > 0 && sb.substring(sb.length() - 1) != ',') {
-                        sb.append(',');
-                        sb.append(' ');
+                    if (!lastWasComma && !out.isEmpty()) {
+                        out.add(',');
+                        out.add(' ');
                     }
                     lastWasComma = true;
-                    lastWasSpace = false;
                 } else if (!lastWasSpace) {
-                    sb.append(' ');
+                    out.add(' ');
                     lastWasSpace = true;
                     lastWasComma = false;
                 }
@@ -1036,12 +1036,13 @@ public with sharing class GnalLocationServicesController {
             }
 
             if (ch == ',') {
-                if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
-                    sb.setLength(sb.length() - 1);
+                if (lastWasSpace && !out.isEmpty()) {
+                    out.remove(out.size() - 1);
+                    lastWasSpace = false;
                 }
                 if (!lastWasComma) {
-                    sb.append(',');
-                    sb.append(' ');
+                    out.add(',');
+                    out.add(' ');
                 }
                 lastWasComma = true;
                 lastWasSpace = false;
@@ -1050,19 +1051,19 @@ public with sharing class GnalLocationServicesController {
 
             if (ch.trim().length() == 0) {
                 if (!lastWasSpace && !lastWasComma) {
-                    sb.append(' ');
+                    out.add(' ');
                     lastWasSpace = true;
                 }
                 continue;
             }
 
-            sb.append(ch);
+            out.add(ch);
             lastWasSpace = false;
             lastWasComma = false;
         }
 
-        String result = sb.toString().trim();
-        if (result.endsWith(",")) {
+        String result = String.join(out, '').trim();
+        if (result.endsWith(',')) {
             result = result.substring(0, result.length() - 1).trim();
         }
         return result;
@@ -1076,7 +1077,7 @@ public with sharing class GnalLocationServicesController {
         for (String suffix : suffixes) {
             if (lower.endsWith(suffix)) {
                 String base = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
-                if (base.endsWith(",")) {
+                if (base.endsWith(',')) {
                     base = base.substring(0, base.length() - 1).trim();
                 }
                 return base + ', United States';
