@@ -6,6 +6,7 @@ public with sharing class GnalLocationServicesController {
     private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
     private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
     private static final String ZIP5_REGEX = '^[0-9]{5}$';
+    private static final Pattern ZIP5_COMPILED = Pattern.compile(ZIP5_REGEX);
 
     private static final Integer PARSED_ADDRESS_CACHE_LIMIT = 500;
     private static final Integer MAX_ADDRESS_PARSE_LENGTH = 300;
@@ -664,19 +665,10 @@ public with sharing class GnalLocationServicesController {
 
     private static String normalizeAddress(String address) {
         if (address == null) return null;
-        // Normalize line breaks to commas and collapse whitespace.
-        String normalized = address.replaceAll('[\\r\\n]+', ', ').trim().replaceAll('\\s+', ' ');
-        normalized = normalized.replaceAll('\\s*,\\s*', ', ');
-
+        // Normalize line breaks to commas and collapse whitespace without regex.
+        String normalized = normalizeWhitespace(address, true);
         // Ensure a consistent country token at the end.
-        String lower = normalized.toLowerCase();
-        if (lower.endsWith(' united states') || lower.endsWith(', united states') ||
-            lower.endsWith(' us') || lower.endsWith(', us') ||
-            lower.endsWith(' usa') || lower.endsWith(', usa')) {
-            normalized = normalized.replaceAll('(?i)\\s*,?\\s*(us|usa|united states)$', ', United States');
-        }
-
-        return normalized;
+        return normalizeCountrySuffix(normalized);
     }
 
     @TestVisible
@@ -796,7 +788,7 @@ public with sharing class GnalLocationServicesController {
     }
 
     private static Boolean isZipCode(String value) {
-        return !String.isBlank(value) && Pattern.matches(ZIP5_REGEX, value.trim());
+        return !String.isBlank(value) && ZIP5_COMPILED.matcher(value.trim()).matches();
     }
 
     private static Boolean isLikelyState(String value) {
@@ -842,7 +834,7 @@ public with sharing class GnalLocationServicesController {
         }
 
         // Normalize whitespace and strip newlines for parsing.
-        String s = cacheKey.replaceAll('[\\r\\n]+', ' ').trim().replaceAll('\\s+', ' ');
+        String s = normalizeWhitespace(cacheKey, false);
 
         // Strip trailing country when it isn't comma-delimited.
         String trailingCountry = null;
@@ -975,7 +967,7 @@ public with sharing class GnalLocationServicesController {
         if (parts.size() < 2) return null;
         String last = parts[parts.size() - 1];
         // Simple US ZIP check (5 digits)
-        if (!Pattern.matches(ZIP5_REGEX, last)) return null;
+        if (!ZIP5_COMPILED.matcher(last).matches()) return null;
 
         ParsedAddress out = new ParsedAddress();
         out.postal = last;
@@ -992,7 +984,7 @@ public with sharing class GnalLocationServicesController {
         if (parts.size() < 3) return null;
 
         String postal = parts[parts.size() - 1];
-        if (!Pattern.matches(ZIP5_REGEX, postal)) return null;
+        if (!ZIP5_COMPILED.matcher(postal).matches()) return null;
 
         String state = parts[parts.size() - 2];
         List<String> cityParts = new List<String>();
@@ -1014,6 +1006,83 @@ public with sharing class GnalLocationServicesController {
             if (!String.isBlank(t)) out.add(t);
         }
         return out;
+    }
+
+    private static String normalizeWhitespace(String input, Boolean breakToComma) {
+        if (input == null) return null;
+        StringBuilder sb = new StringBuilder();
+        Boolean lastWasSpace = false;
+        Boolean lastWasComma = false;
+
+        for (Integer i = 0; i < input.length(); i++) {
+            String ch = input.substring(i, i + 1);
+            if (ch == '\r' || ch == '\n') {
+                if (breakToComma) {
+                    if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
+                        sb.setLength(sb.length() - 1);
+                    }
+                    if (sb.length() > 0 && sb.substring(sb.length() - 1) != ',') {
+                        sb.append(',');
+                        sb.append(' ');
+                    }
+                    lastWasComma = true;
+                    lastWasSpace = false;
+                } else if (!lastWasSpace) {
+                    sb.append(' ');
+                    lastWasSpace = true;
+                    lastWasComma = false;
+                }
+                continue;
+            }
+
+            if (ch == ',') {
+                if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
+                    sb.setLength(sb.length() - 1);
+                }
+                if (!lastWasComma) {
+                    sb.append(',');
+                    sb.append(' ');
+                }
+                lastWasComma = true;
+                lastWasSpace = false;
+                continue;
+            }
+
+            if (ch.trim().length() == 0) {
+                if (!lastWasSpace && !lastWasComma) {
+                    sb.append(' ');
+                    lastWasSpace = true;
+                }
+                continue;
+            }
+
+            sb.append(ch);
+            lastWasSpace = false;
+            lastWasComma = false;
+        }
+
+        String result = sb.toString().trim();
+        if (result.endsWith(",")) {
+            result = result.substring(0, result.length() - 1).trim();
+        }
+        return result;
+    }
+
+    private static String normalizeCountrySuffix(String normalized) {
+        if (String.isBlank(normalized)) return normalized;
+        String trimmed = normalized.trim();
+        String lower = trimmed.toLowerCase();
+        List<String> suffixes = new List<String>{ ', united states', ' united states', ', us', ' us', ', usa', ' usa' };
+        for (String suffix : suffixes) {
+            if (lower.endsWith(suffix)) {
+                String base = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
+                if (base.endsWith(",")) {
+                    base = base.substring(0, base.length() - 1).trim();
+                }
+                return base + ', United States';
+            }
+        }
+        return trimmed;
     }
 
     private static void logException(String prefix, Exception ex) {
