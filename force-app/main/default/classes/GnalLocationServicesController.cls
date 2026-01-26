@@ -664,8 +664,19 @@ public with sharing class GnalLocationServicesController {
 
     private static String normalizeAddress(String address) {
         if (address == null) return null;
-        // Collapse any repeated whitespace to a single space.
-        return address.trim().replaceAll('\\s+', ' ');
+        // Normalize line breaks to commas and collapse whitespace.
+        String normalized = address.replaceAll('[\\r\\n]+', ', ').trim().replaceAll('\\s+', ' ');
+        normalized = normalized.replaceAll('\\s*,\\s*', ', ');
+
+        // Ensure a consistent country token at the end.
+        String lower = normalized.toLowerCase();
+        if (lower.endsWith(' united states') || lower.endsWith(', united states') ||
+            lower.endsWith(' us') || lower.endsWith(', us') ||
+            lower.endsWith(' usa') || lower.endsWith(', usa')) {
+            normalized = normalized.replaceAll('(?i)\\s*,?\\s*(us|usa|united states)$', ', United States');
+        }
+
+        return normalized;
     }
 
     @TestVisible
