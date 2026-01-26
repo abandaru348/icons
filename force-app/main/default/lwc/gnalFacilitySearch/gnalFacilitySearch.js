@@ -136,26 +136,6 @@ export default class FindNearestFacilities extends LightningElement {
         return this.results && this.results.length > 0;
     }
 
-    get hasNotice() {
-        return false;
-    }
-
-    get noticeClass() {
-        return '';
-    }
-
-    get noticeVariant() {
-        return '';
-    }
-
-    get noticeTitle() {
-        return '';
-    }
-
-    get noticeMessage() {
-        return '';
-    }
-
     get distanceOptions() {
         return [
             { label: '5 miles', value: '5' },

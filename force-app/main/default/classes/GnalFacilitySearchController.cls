@@ -12,6 +12,8 @@ public with sharing class GnalFacilitySearchController {
     private static final Integer CALL_OUTS_PER_ORIGIN_GEOCODE = 1;
     private static final Integer CALL_OUTS_PER_ROUTE_MATRIX = 1;
     private static final String ZIP5_REGEX = '^[0-9]{5}$';
+    private static final Pattern ZIP5_COMPILED = Pattern.compile(ZIP5_REGEX);
+    private static final Pattern STATE_CODE_COMPILED = Pattern.compile('^[a-zA-Z]{2}$');
     private static final Map<String, String> STATE_CODE_TO_LABEL =
         initCodeToLabel(Account.BillingStateCode.getDescribe());
     private static final Map<String, String> COUNTRY_CODE_TO_LABEL =
@@ -1000,13 +1002,13 @@ public with sharing class GnalFacilitySearchController {
     }
 
     private static Boolean isZipToken(String value) {
-        return !String.isBlank(value) && Pattern.matches(ZIP5_REGEX, value.trim());
+        return !String.isBlank(value) && ZIP5_COMPILED.matcher(value.trim()).matches();
     }
 
     private static Boolean isStateCodeToken(String value) {
         if (String.isBlank(value)) return false;
         String t = value.trim();
-        return t.length() == 2 && Pattern.matches('^[a-zA-Z]{2}$', t);
+        return STATE_CODE_COMPILED.matcher(t).matches();
     }
 
     private static Boolean isCountryToken(String value) {

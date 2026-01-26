@@ -177,6 +177,40 @@ public with sharing class GnalLocationServicesController {
     }
 
     @AuraEnabled(cacheable=false)
+    public static List<LocationServiceUpsertResult> createOrIncrementLocationServices(
+        List<Id> caseIds,
+        List<String> currentLocations
+    ) {
+        List<LocationServiceUpsertResult> results = new List<LocationServiceUpsertResult>();
+        if (caseIds == null || caseIds.isEmpty()) return results;
+        if (currentLocations == null || caseIds.size() != currentLocations.size()) {
+            throw new AuraHandledException('Case Ids and locations must align.');
+        }
+
+        Set<Id> preloadIds = new Set<Id>();
+        for (Id caseId : caseIds) {
+            if (caseId != null) preloadIds.add(caseId);
+        }
+        loadLocationServicesForCases(preloadIds);
+
+        for (Integer i = 0; i < caseIds.size(); i++) {
+            Id caseId = caseIds[i];
+            String location = currentLocations[i];
+            if (caseId == null || String.isBlank(location)) {
+                results.add(null);
+                continue;
+            }
+            try {
+                results.add(createOrIncrementLocationServiceInternal(caseId, normalizeAddress(location)));
+            } catch (Exception ex) {
+                logException('Bulk location service upsert failed', ex);
+                results.add(null);
+            }
+        }
+        return results;
+    }
+
+    @AuraEnabled(cacheable=false)
     public static LocationServiceUpsertResult createOrIncrementLocationServiceIfResults(
         Id caseId,
         String currentLocation,
@@ -189,31 +223,37 @@ public with sharing class GnalLocationServicesController {
     }
 
     private static LocationServiceUpsertResult createOrIncrementLocationServiceInternal(Id caseId, String normalized) {
-        Id matchId = findLatestLocationServiceIdByCaseAndNormalizedAddress(caseId, normalized);
-
+        GNAL_Location_Service__c matchRow = findLatestLocationServiceByCaseAndNormalizedAddress(caseId, normalized);
         GNAL_Location_Service__c ls;
-        if (matchId != null) {
-            ls = [
-                SELECT Id, GNAL_Search_Count__c
-                FROM GNAL_Location_Service__c
-                WHERE Id = :matchId
-                LIMIT 1
-                FOR UPDATE
-            ];
 
+        if (matchRow != null) {
+            ls = matchRow;
             Integer nextCount = (ls.GNAL_Search_Count__c == null)
                 ? 1
                 : Integer.valueOf(ls.GNAL_Search_Count__c) + 1;
-
             ls.GNAL_Search_Count__c = nextCount;
             writeCurrentLocation(ls, normalized);
-            update ls;
+            try {
+                update ls;
+            } catch (DmlException ex) {
+                if (isUnableToLockRow(ex)) {
+                    throw new AuraHandledException('This record is being updated by another user. Please try again.');
+                }
+                throw ex;
+            }
         } else {
             ls = new GNAL_Location_Service__c();
             ls.GNAL_Case__c = caseId;
             ls.GNAL_Search_Count__c = 1;
             writeCurrentLocation(ls, normalized);
-            insert ls;
+            try {
+                insert ls;
+            } catch (DmlException ex) {
+                if (isUnableToLockRow(ex)) {
+                    throw new AuraHandledException('This record is being updated by another user. Please try again.');
+                }
+                throw ex;
+            }
         }
 
         cacheLocationServiceId(buildLocationServiceKey(caseId, normalized), ls.Id);
@@ -235,7 +275,6 @@ public with sharing class GnalLocationServicesController {
                 FROM GNAL_Location_Service__c
                 WHERE Id = :matchId
                 LIMIT 1
-                FOR UPDATE
             ];
 
             Integer nextCount = (ls.GNAL_Search_Count__c == null)
@@ -244,13 +283,27 @@ public with sharing class GnalLocationServicesController {
 
             ls.GNAL_Search_Count__c = nextCount;
             writeCurrentLocationMinimal(ls, normalized);
-            update ls;
+            try {
+                update ls;
+            } catch (DmlException ex) {
+                if (isUnableToLockRow(ex)) {
+                    throw new AuraHandledException('This record is being updated by another user. Please try again.');
+                }
+                throw ex;
+            }
         } else {
             ls = new GNAL_Location_Service__c();
             ls.GNAL_Case__c = caseId;
             ls.GNAL_Search_Count__c = 1;
             writeCurrentLocationMinimal(ls, normalized);
-            insert ls;
+            try {
+                insert ls;
+            } catch (DmlException ex) {
+                if (isUnableToLockRow(ex)) {
+                    throw new AuraHandledException('This record is being updated by another user. Please try again.');
+                }
+                throw ex;
+            }
         }
 
         cacheLocationServiceId(buildLocationServiceKey(caseId, normalized), ls.Id);
@@ -282,18 +335,31 @@ public with sharing class GnalLocationServicesController {
      * If the org doesn't have that field for any reason, fall back to "latest record" behavior.
      */
     private static Id findLatestLocationServiceIdByCaseAndNormalizedAddress(Id caseId, String normalized) {
+        GNAL_Location_Service__c row = findLatestLocationServiceByCaseAndNormalizedAddress(caseId, normalized);
+        return row == null ? null : row.Id;
+    }
+
+    private static GNAL_Location_Service__c findLatestLocationServiceByCaseAndNormalizedAddress(
+        Id caseId,
+        String normalized
+    ) {
         if (caseId == null || String.isBlank(normalized)) return null;
 
         String cacheKey = buildLocationServiceKey(caseId, normalized);
         if (LOCATION_SERVICE_ID_CACHE.containsKey(cacheKey)) {
-            return LOCATION_SERVICE_ID_CACHE.get(cacheKey);
+            Id cachedId = LOCATION_SERVICE_ID_CACHE.get(cacheKey);
+            if (cachedId == null) return null;
+            List<GNAL_Location_Service__c> rows = getLocationServicesForCase(caseId);
+            for (GNAL_Location_Service__c row : rows) {
+                if (row != null && row.Id == cachedId) return row;
+            }
         }
 
         Map<String, Schema.SObjectField> fields = LOCATION_SERVICE_FIELD_MAP;
         Boolean hasStreet = fields != null && fields.containsKey('GNAL_Current_Location__Street__s');
 
         List<GNAL_Location_Service__c> rows = getLocationServicesForCase(caseId);
-        Id matchId;
+        GNAL_Location_Service__c matchRow;
 
         if (hasStreet) {
             ParsedAddress parsed = parseNormalizedAddress(normalized);
@@ -307,15 +373,15 @@ public with sharing class GnalLocationServicesController {
                 if (!matchesParsedAddress(row, parsed, fields)) {
                     continue;
                 }
-                matchId = row.Id;
+                matchRow = row;
                 break;
             }
         } else {
-            matchId = rows.isEmpty() ? null : rows[0].Id;
+            matchRow = rows.isEmpty() ? null : rows[0];
         }
 
-        cacheLocationServiceId(cacheKey, matchId);
-        return matchId;
+        cacheLocationServiceId(cacheKey, matchRow != null ? matchRow.Id : null);
+        return matchRow;
     }
 
     private static List<GNAL_Location_Service__c> getLocationServicesForCase(Id caseId) {
@@ -342,7 +408,7 @@ public with sharing class GnalLocationServicesController {
             LOCATION_SERVICES_BY_CASE_CACHE.clear();
         }
 
-        List<String> selectFields = new List<String>{ 'Id', 'GNAL_Case__c', 'CreatedDate' };
+        List<String> selectFields = new List<String>{ 'Id', 'GNAL_Case__c', 'CreatedDate', 'GNAL_Search_Count__c' };
         if (LOCATION_SERVICE_FIELD_MAP != null) {
             List<String> candidates = new List<String>{
                 'GNAL_Current_Location__Street__s',
@@ -921,5 +987,15 @@ public with sharing class GnalLocationServicesController {
             ex.getMessage() + '\n' +
             ex.getStackTraceString()
         );
+    }
+
+    private static Boolean isUnableToLockRow(DmlException ex) {
+        if (ex == null) return false;
+        for (Integer i = 0; i < ex.getNumDml(); i++) {
+            if (ex.getDmlStatusCode(i) == StatusCode.UNABLE_TO_LOCK_ROW) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -41,16 +41,6 @@
                     </div>
                 </div>
 
-                <template lwc:if={hasNotice}>
-                    <div class={noticeClass} role="alert">
-                        <span class="slds-assistive-text">{noticeVariant}</span>
-                        <h2>
-                            <span class="slds-text-title_bold">{noticeTitle}</span>
-                            <span class="slds-m-left_x-small">{noticeMessage}</span>
-                        </h2>
-                    </div>
-                </template>
-
                 <template lwc:if={isLoading}>
                     <div class="slds-m-top_medium">
                         <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
