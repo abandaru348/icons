@@ -303,29 +303,7 @@ public with sharing class GnalLocationServicesController {
                        Contact.OtherCity,
                        Contact.OtherState,
                        Contact.OtherPostalCode,
-                       Contact.OtherCountry,
-                       Contact.Account.GNAL_Home_Address__Street__s,
-                       Contact.Account.GNAL_Home_Address__City__s,
-                       Contact.Account.GNAL_Home_Address__State__s,
-                       Contact.Account.GNAL_Home_Address__StateCode__s,
-                       Contact.Account.GNAL_Home_Address__PostalCode__s,
-                       Contact.Account.GNAL_Home_Address__Country__s,
-                       Contact.Account.GNAL_Home_Address__CountryCode__s,
-                       Contact.Account.PersonMailingStreet,
-                       Contact.Account.PersonMailingCity,
-                       Contact.Account.PersonMailingState,
-                       Contact.Account.PersonMailingPostalCode,
-                       Contact.Account.PersonMailingCountry,
-                       Contact.Account.BillingStreet,
-                       Contact.Account.BillingCity,
-                       Contact.Account.BillingState,
-                       Contact.Account.BillingPostalCode,
-                       Contact.Account.BillingCountry,
-                       Contact.Account.ShippingStreet,
-                       Contact.Account.ShippingCity,
-                       Contact.Account.ShippingState,
-                       Contact.Account.ShippingPostalCode,
-                       Contact.Account.ShippingCountry
+                       Contact.OtherCountry
                 FROM User
                 WHERE Id = :UserInfo.getUserId()
                 LIMIT 1
@@ -333,61 +311,15 @@ public with sharing class GnalLocationServicesController {
             if (u == null || u.Contact == null) return null;
 
             Contact c = u.Contact;
-            Account a = c.Account;
-            String addr = null;
-            if (a != null) {
-                addr = buildAddressFromParts(
-                    (String) a.get('GNAL_Home_Address__Street__s'),
-                    (String) a.get('GNAL_Home_Address__City__s'),
-                    coalesceStr(
-                        a.get('GNAL_Home_Address__State__s'),
-                        a.get('GNAL_Home_Address__StateCode__s')
-                    ),
-                    (String) a.get('GNAL_Home_Address__PostalCode__s'),
-                    coalesceStr(
-                        a.get('GNAL_Home_Address__Country__s'),
-                        a.get('GNAL_Home_Address__CountryCode__s')
-                    )
-                );
-
-                if (String.isBlank(addr)) {
-                    addr = buildAddressFromParts(
-                        a.PersonMailingStreet,
-                        a.PersonMailingCity,
-                        a.PersonMailingState,
-                        a.PersonMailingPostalCode,
-                        a.PersonMailingCountry
-                    );
-                }
-                if (String.isBlank(addr)) {
-                    addr = buildAddressFromParts(
-                        a.BillingStreet,
-                        a.BillingCity,
-                        a.BillingState,
-                        a.BillingPostalCode,
-                        a.BillingCountry
-                    );
-                }
-                if (String.isBlank(addr)) {
-                    addr = buildAddressFromParts(
-                        a.ShippingStreet,
-                        a.ShippingCity,
-                        a.ShippingState,
-                        a.ShippingPostalCode,
-                        a.ShippingCountry
-                    );
-                }
-            }
-            if (String.isBlank(addr)) {
-                addr = buildPortalHomeAddressFromContact(c);
-            }
-
             Id accountId = c.AccountId;
-            if (String.isBlank(addr) && accountId != null) {
-                if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(accountId)) {
-                    loadHomeLocationsForAccounts(new Set<Id>{ accountId }, true);
+            String addr = buildPortalHomeAddressFromContact(c);
+            if (String.isBlank(addr)) {
+                if (accountId != null) {
+                    if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(accountId)) {
+                        loadHomeLocationsForAccounts(new Set<Id>{ accountId }, true);
+                    }
+                    addr = ACCOUNT_HOME_LOCATION_CACHE.get(accountId);
                 }
-                addr = ACCOUNT_HOME_LOCATION_CACHE.get(accountId);
             }
 
             if (accountId != null && !String.isBlank(addr)) {
@@ -509,21 +441,6 @@ public with sharing class GnalLocationServicesController {
         );
     }
 
-    private static String buildAddressFromParts(
-        String street,
-        String city,
-        String state,
-        String postal,
-        String country
-    ) {
-        List<String> parts = new List<String>();
-        if (!String.isBlank(street)) parts.add(street);
-        if (!String.isBlank(city)) parts.add(city);
-        if (!String.isBlank(state)) parts.add(state);
-        if (!String.isBlank(postal)) parts.add(postal);
-        if (!String.isBlank(country)) parts.add(country);
-        return parts.isEmpty() ? null : String.join(parts, ', ');
-    }
 
     private static String buildPortalHomeAddressFromContact(Contact c) {
         if (c == null) return null;
