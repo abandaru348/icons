@@ -173,18 +173,39 @@ public with sharing class GnalLocationServicesController {
     private static PortalContext getPortalContext() {
         try {
             Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
-            Boolean hasContactId = userFields != null && userFields.containsKey('ContactId');
-            Boolean hasContactCustom = userFields != null && userFields.containsKey('Contact__c');
-            Boolean hasAccountId = userFields != null && userFields.containsKey('AccountId');
-            Boolean hasAccountCustom = userFields != null && userFields.containsKey('Account__c');
+            String contactField = null;
+            String contactRelationship = null;
 
-            String contactField = hasContactId ? 'ContactId' : (hasContactCustom ? 'Contact__c' : null);
-            String accountField = hasAccountId ? 'AccountId' : (hasAccountCustom ? 'Account__c' : null);
+            if (userFields != null) {
+                for (String api : userFields.keySet()) {
+                    Schema.SObjectField f = userFields.get(api);
+                    Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
+                    if (d == null || d.getType() != Schema.DisplayType.Reference) {
+                        continue;
+                    }
+                    List<Schema.SObjectType> refs = d.getReferenceTo();
+                    if (refs == null) continue;
+                    for (Schema.SObjectType refType : refs) {
+                        if (refType == Contact.SObjectType) {
+                            contactField = api;
+                            contactRelationship = d.getRelationshipName();
+                            break;
+                        }
+                    }
+                    if (contactField != null) break;
+                }
+            }
+
+            if (String.isBlank(contactField) || String.isBlank(contactRelationship)) {
+                return null;
+            }
 
             Id userId = UserInfo.getUserId();
-            List<String> selectFields = new List<String>{ 'Id' };
-            if (contactField != null) selectFields.add(contactField);
-            if (accountField != null && accountField != contactField) selectFields.add(accountField);
+            List<String> selectFields = new List<String>{
+                'Id',
+                contactField,
+                contactRelationship + '.AccountId'
+            };
 
             String soql = 'SELECT ' + String.join(selectFields, ',') +
                 ' FROM User WHERE Id = :userId' +
@@ -192,9 +213,12 @@ public with sharing class GnalLocationServicesController {
             User u = (User) Database.query(soql);
             if (u == null) return null;
 
-            Id contactId = contactField != null ? (Id) u.get(contactField) : null;
-            Id accountId = accountField != null ? (Id) u.get(accountField) : null;
-
+            Id contactId = (Id) u.get(contactField);
+            Id accountId;
+            SObject contactObj = u.getSObject(contactRelationship);
+            if (contactObj != null) {
+                accountId = (Id) contactObj.get('AccountId');
+            }
             if (accountId == null && contactId != null) {
                 Contact c = [
                     SELECT Id, AccountId
@@ -204,7 +228,6 @@ public with sharing class GnalLocationServicesController {
                 ];
                 accountId = c != null ? c.AccountId : null;
             }
-
             if (accountId == null) return null;
 
             PortalContext context = new PortalContext();
