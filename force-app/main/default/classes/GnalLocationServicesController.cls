@@ -374,6 +374,9 @@ public with sharing class GnalLocationServicesController {
     private static String buildHomeAddressFromAccount(Account a) {
         if (a == null) return null;
 
+        String compoundHome = buildAddressFromCompound(a.get('GNAL_Home_Address__c'));
+        if (!String.isBlank(compoundHome)) return compoundHome;
+
         String homeText = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, 'GNAL_Home_Address__c');
         if (!String.isBlank(homeText)) return homeText;
 
@@ -411,6 +414,9 @@ public with sharing class GnalLocationServicesController {
         String home = buildHomeAddressFromAccount(a);
         if (!String.isBlank(home)) return home;
 
+        String personMailingCompound = buildAddressFromCompound(a.get('PersonMailingAddress'));
+        if (!String.isBlank(personMailingCompound)) return personMailingCompound;
+
         String personMailing = buildAddressFromStandardFields(
             a,
             'PersonMailingStreet',
@@ -421,7 +427,10 @@ public with sharing class GnalLocationServicesController {
         );
         if (!String.isBlank(personMailing)) return personMailing;
 
-        String billing = buildAddressFromStandardFields(
+        String billing = buildAddressFromCompound(a.get('BillingAddress'));
+        if (!String.isBlank(billing)) return billing;
+
+        billing = buildAddressFromStandardFields(
             a,
             'BillingStreet',
             'BillingCity',
@@ -430,6 +439,9 @@ public with sharing class GnalLocationServicesController {
             'BillingCountry'
         );
         if (!String.isBlank(billing)) return billing;
+
+        String shipping = buildAddressFromCompound(a.get('ShippingAddress'));
+        if (!String.isBlank(shipping)) return shipping;
 
         return buildAddressFromStandardFields(
             a,
@@ -444,6 +456,8 @@ public with sharing class GnalLocationServicesController {
 
     private static String buildPortalHomeAddressFromContact(Contact c) {
         if (c == null) return null;
+        String mailingCompound = buildAddressFromCompound(c.get('MailingAddress'));
+        if (!String.isBlank(mailingCompound)) return mailingCompound;
         String mailing = buildAddressFromContactFields(
             c,
             'MailingStreet',
@@ -454,6 +468,8 @@ public with sharing class GnalLocationServicesController {
         );
         if (!String.isBlank(mailing)) return mailing;
 
+        String otherCompound = buildAddressFromCompound(c.get('OtherAddress'));
+        if (!String.isBlank(otherCompound)) return otherCompound;
         return buildAddressFromContactFields(
             c,
             'OtherStreet',
@@ -479,6 +495,28 @@ public with sharing class GnalLocationServicesController {
         String postal = getContactStringIfSelected(c, CONTACT_FIELD_MAP, postalApi);
         String country = getContactStringIfSelected(c, CONTACT_FIELD_MAP, countryApi);
 
+        List<String> parts = new List<String>();
+        if (!String.isBlank(street)) parts.add(street);
+        if (!String.isBlank(city)) parts.add(city);
+        if (!String.isBlank(state)) parts.add(state);
+        if (!String.isBlank(postal)) parts.add(postal);
+        if (!String.isBlank(country)) parts.add(country);
+        return parts.isEmpty() ? null : String.join(parts, ', ');
+    }
+
+    private static String buildAddressFromCompound(Object value) {
+        if (!(value instanceof Address)) return null;
+        Address addr = (Address) value;
+        return buildAddressFromParts(addr.street, addr.city, addr.state, addr.postalCode, addr.country);
+    }
+
+    private static String buildAddressFromParts(
+        String street,
+        String city,
+        String state,
+        String postal,
+        String country
+    ) {
         List<String> parts = new List<String>();
         if (!String.isBlank(street)) parts.add(street);
         if (!String.isBlank(city)) parts.add(city);
@@ -516,40 +554,16 @@ public with sharing class GnalLocationServicesController {
         List<String> selectFields = new List<String>{ 'Id' };
         if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey('GNAL_Home_Address__c')) {
             Schema.DescribeFieldResult d = ACCOUNT_FIELD_MAP.get('GNAL_Home_Address__c').getDescribe();
-            if (d != null && d.getType() == Schema.DisplayType.Address) {
-                List<String> homeCandidates = new List<String>{
-                    'GNAL_Home_Address__Street__s',
-                    'GNAL_Home_Address__City__s',
-                    'GNAL_Home_Address__StateCode__s',
-                    'GNAL_Home_Address__State__s',
-                    'GNAL_Home_Address__PostalCode__s',
-                    'GNAL_Home_Address__CountryCode__s',
-                    'GNAL_Home_Address__Country__s'
-                };
-                for (String f : homeCandidates) {
-                    if (ACCOUNT_FIELD_MAP.containsKey(f)) selectFields.add(f);
-                }
-            } else {
+            if (d != null) {
+                // Prefer the compound field itself to avoid missing subfield variants.
                 selectFields.add('GNAL_Home_Address__c');
             }
         }
 
         List<String> portalFallback = new List<String>{
-            'PersonMailingStreet',
-            'PersonMailingCity',
-            'PersonMailingState',
-            'PersonMailingPostalCode',
-            'PersonMailingCountry',
-            'BillingStreet',
-            'BillingCity',
-            'BillingState',
-            'BillingPostalCode',
-            'BillingCountry',
-            'ShippingStreet',
-            'ShippingCity',
-            'ShippingState',
-            'ShippingPostalCode',
-            'ShippingCountry'
+            'PersonMailingAddress',
+            'BillingAddress',
+            'ShippingAddress'
         };
         for (String f : portalFallback) {
             if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey(f)) {
