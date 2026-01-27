@@ -11,6 +11,8 @@ public with sharing class GnalLocationServicesController {
     private static final Integer MAX_ADDRESS_PARSE_LENGTH = 300;
     private static final Integer LOCATION_SERVICE_CASE_CACHE_LIMIT = 200;
     private static final Integer LOCATION_SERVICE_KEY_CACHE_LIMIT = 500;
+    private static final String LOCATION_SERVICES_RECORDTYPE_NAME = 'Location_Services';
+    private static Id LOCATION_SERVICES_CASE_RECORDTYPE_ID;
 
     private static final Map<String, Schema.SObjectField> LOCATION_SERVICE_FIELD_MAP =
         Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
@@ -32,6 +34,13 @@ public with sharing class GnalLocationServicesController {
         @AuraEnabled public String currentLocation;
     }
 
+    public class PortalCaseResult {
+        @AuraEnabled public Id caseId;
+        @AuraEnabled public Id locationServiceId;
+        @AuraEnabled public Integer searchCount;
+        @AuraEnabled public String currentLocation;
+    }
+
     @AuraEnabled(cacheable=true)
     public static String getDefaultCurrentLocationForCase(Id caseId) {
         if (caseId == null) return null;
@@ -39,6 +48,69 @@ public with sharing class GnalLocationServicesController {
             loadDefaultLocationsForCases(new Set<Id>{ caseId });
         }
         return CASE_DEFAULT_LOCATION_CACHE.get(caseId);
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static String getDefaultCurrentLocationForPortalUser() {
+        try {
+            PortalContext context = getPortalContext();
+            if (context == null || context.accountId == null) return null;
+            if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(context.accountId)) {
+                loadHomeLocationsForAccounts(new Set<Id>{ context.accountId });
+            }
+            return ACCOUNT_HOME_LOCATION_CACHE.get(context.accountId);
+        } catch (Exception ex) {
+            logException('Portal default location lookup failed', ex);
+            return null;
+        }
+    }
+
+    @AuraEnabled(cacheable=false)
+    public static PortalCaseResult createPortalCaseAndLocationService(String currentLocation, Integer resultCount) {
+        if (String.isBlank(currentLocation)) {
+            throw new AuraHandledException('Current Location is required.');
+        }
+
+        PortalContext context = getPortalContext();
+        if (context == null || context.accountId == null) {
+            throw new AuraHandledException('Unable to determine the account for the current user.');
+        }
+
+        Id recordTypeId = getLocationServicesCaseRecordTypeId();
+        if (recordTypeId == null) {
+            throw new AuraHandledException('Location Services case record type is not configured.');
+        }
+
+        Case c = new Case();
+        c.RecordTypeId = recordTypeId;
+        c.AccountId = context.accountId;
+        if (context.contactId != null) {
+            c.ContactId = context.contactId;
+        }
+
+        try {
+            insert c;
+        } catch (DmlException ex) {
+            if (isUnableToLockRow(ex)) {
+                throw new AuraHandledException('This record is being updated by another user. Please try again.');
+            }
+            throw ex;
+        }
+
+        LocationServiceUpsertResult ls = createOrIncrementLocationServiceIfResults(
+            c.Id,
+            currentLocation,
+            resultCount
+        );
+
+        PortalCaseResult out = new PortalCaseResult();
+        out.caseId = c.Id;
+        if (ls != null) {
+            out.locationServiceId = ls.locationServiceId;
+            out.searchCount = ls.searchCount;
+            out.currentLocation = ls.currentLocation;
+        }
+        return out;
     }
 
     private static void loadDefaultLocationsForCases(Set<Id> caseIds) {
@@ -90,6 +162,75 @@ public with sharing class GnalLocationServicesController {
             String addr = accountId != null ? ACCOUNT_HOME_LOCATION_CACHE.get(accountId) : null;
             CASE_DEFAULT_LOCATION_CACHE.put(caseId, addr);
         }
+    }
+
+    private class PortalContext {
+        Id userId;
+        Id contactId;
+        Id accountId;
+    }
+
+    private static PortalContext getPortalContext() {
+        User u = [
+            SELECT Id, ContactId, Contact.AccountId
+            FROM User
+            WHERE Id = :UserInfo.getUserId()
+            LIMIT 1
+        ];
+        if (u == null || u.ContactId == null) return null;
+
+        PortalContext context = new PortalContext();
+        context.userId = u.Id;
+        context.contactId = u.ContactId;
+        context.accountId = u.Contact != null ? u.Contact.AccountId : null;
+        return context;
+    }
+
+    private static void loadHomeLocationsForAccounts(Set<Id> accountIds) {
+        if (accountIds == null || accountIds.isEmpty()) return;
+
+        Set<Id> toLoad = new Set<Id>();
+        for (Id accountId : accountIds) {
+            if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(accountId)) {
+                toLoad.add(accountId);
+            }
+        }
+        if (toLoad.isEmpty()) return;
+
+        String soql = 'SELECT ' + String.join(HOME_ADDRESS_SELECT_FIELDS, ',') +
+            ' FROM Account WHERE Id IN :toLoad';
+        List<Account> accounts = (List<Account>) Database.query(soql);
+
+        Set<Id> seenAccountIds = new Set<Id>();
+        for (Account a : accounts) {
+            seenAccountIds.add(a.Id);
+            ACCOUNT_HOME_LOCATION_CACHE.put(a.Id, buildHomeAddressFromAccount(a));
+        }
+        for (Id accountId : toLoad) {
+            if (!seenAccountIds.contains(accountId)) {
+                ACCOUNT_HOME_LOCATION_CACHE.put(accountId, null);
+            }
+        }
+    }
+
+    private static Id getLocationServicesCaseRecordTypeId() {
+        if (LOCATION_SERVICES_CASE_RECORDTYPE_ID != null) {
+            return LOCATION_SERVICES_CASE_RECORDTYPE_ID;
+        }
+        try {
+            RecordType rt = [
+                SELECT Id
+                FROM RecordType
+                WHERE SObjectType = 'Case'
+                AND DeveloperName = :LOCATION_SERVICES_RECORDTYPE_NAME
+                LIMIT 1
+            ];
+            LOCATION_SERVICES_CASE_RECORDTYPE_ID = rt != null ? rt.Id : null;
+        } catch (Exception ex) {
+            logException('Location Services record type lookup failed', ex);
+            LOCATION_SERVICES_CASE_RECORDTYPE_ID = null;
+        }
+        return LOCATION_SERVICES_CASE_RECORDTYPE_ID;
     }
 
     private static String buildHomeAddressFromAccount(Account a) {

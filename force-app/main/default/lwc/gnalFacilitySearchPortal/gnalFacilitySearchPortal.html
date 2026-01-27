@@ -1,0 +1,125 @@
+<template>
+    <lightning-card title="Location Services">
+        <div class="portal-container">
+            <p class="intro-text">
+                Military hospitals and clinics are the core of the Military Health System. They are located on military
+                installations around the world. Military hospitals and clinics are also referred to as military
+                treatment facilities or MTFs. Enter your location below to find a military hospital or clinic near you.
+            </p>
+
+            <div class="search-row">
+                <div class="search-field">
+                    <lightning-input
+                        type="text"
+                        label="Enter your location"
+                        value={originAddress}
+                        onchange={handleAddressChange}
+                        placeholder="Enter your address, city, state or zip..."
+                    ></lightning-input>
+                </div>
+                <div class="distance-field">
+                    <lightning-combobox
+                        label="Distance"
+                        value={selectedDistance}
+                        options={distanceOptions}
+                        onchange={handleDistanceChange}
+                    ></lightning-combobox>
+                </div>
+                <div class="action-buttons">
+                    <lightning-button
+                        label="Find"
+                        variant="brand"
+                        onclick={handleFind}
+                        disabled={isLoading}
+                    ></lightning-button>
+                    <lightning-button
+                        label="Clear"
+                        variant="neutral"
+                        onclick={handleClear}
+                        disabled={isLoading}
+                    ></lightning-button>
+                </div>
+            </div>
+
+            <template lwc:if={isLoading}>
+                <div class="loading-row">
+                    <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <template lwc:if={searchHasRun}>
+                <div class="results-toolbar">
+                    <div class="results-count">{showingCountText}</div>
+                    <div class="results-controls">
+                        <div class="pager">
+                            <lightning-button-icon
+                                icon-name="utility:chevronleft"
+                                variant="border-filled"
+                                alternative-text="Previous"
+                                onclick={handlePrevPage}
+                                disabled={isPrevDisabled}
+                            ></lightning-button-icon>
+                            <lightning-button-icon
+                                icon-name="utility:chevronright"
+                                variant="border-filled"
+                                alternative-text="Next"
+                                onclick={handleNextPage}
+                                disabled={isNextDisabled}
+                            ></lightning-button-icon>
+                        </div>
+                        <div class="view-toggle">
+                            <lightning-button
+                                label="List View"
+                                variant={listButtonVariant}
+                                data-view="list"
+                                onclick={handleViewToggle}
+                            ></lightning-button>
+                            <lightning-button
+                                label="Map View"
+                                variant={mapButtonVariant}
+                                data-view="map"
+                                onclick={handleViewToggle}
+                            ></lightning-button>
+                        </div>
+                    </div>
+                </div>
+
+                <template lwc:if={hasResults}>
+                    <div class="results-grid">
+                        <div class={listContainerClass}>
+                            <template for:each={pageResults} for:item="r">
+                                <div key={r.address} class="result-card">
+                                    <div class="result-index">{r.displayIndex}</div>
+                                    <div class="result-details">
+                                        <div class="result-name">{r.displayName}</div>
+                                        <template lwc:if={r.displayAddress}>
+                                            <div class="result-address">{r.displayAddress}</div>
+                                        </template>
+                                        <div class="result-info">{r.info}</div>
+                                        <template lwc:if={r.directionsUrl}>
+                                            <a class="directions-link" href={r.directionsUrl} target="_blank">
+                                                Get Directions
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class={mapContainerClass}>
+                            <lightning-map
+                                map-markers={mapMarkers}
+                                center={mapCenter}
+                                zoom-level="9"
+                            ></lightning-map>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <p class="no-results">No facilities found.</p>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>
