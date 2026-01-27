@@ -11,7 +11,7 @@ public with sharing class GnalLocationServicesController {
     private static final Integer MAX_ADDRESS_PARSE_LENGTH = 300;
     private static final Integer LOCATION_SERVICE_CASE_CACHE_LIMIT = 200;
     private static final Integer LOCATION_SERVICE_KEY_CACHE_LIMIT = 500;
-    private static final String LOCATION_SERVICES_RECORDTYPE_NAME = 'Location_Services';
+    private static final String LOCATION_SERVICES_RECORDTYPE_LABEL = 'Location Services';
     private static Id LOCATION_SERVICES_CASE_RECORDTYPE_ID;
 
     private static final Map<String, Schema.SObjectField> LOCATION_SERVICE_FIELD_MAP =
@@ -239,11 +239,18 @@ public with sharing class GnalLocationServicesController {
             return LOCATION_SERVICES_CASE_RECORDTYPE_ID;
         }
         try {
+            Map<String, Schema.RecordTypeInfo> byName = Schema.SObjectType.Case.getRecordTypeInfosByName();
+            if (byName != null && byName.containsKey(LOCATION_SERVICES_RECORDTYPE_LABEL)) {
+                Schema.RecordTypeInfo info = byName.get(LOCATION_SERVICES_RECORDTYPE_LABEL);
+                LOCATION_SERVICES_CASE_RECORDTYPE_ID = info != null ? info.getRecordTypeId() : null;
+                return LOCATION_SERVICES_CASE_RECORDTYPE_ID;
+            }
+
             RecordType rt = [
                 SELECT Id
                 FROM RecordType
                 WHERE SObjectType = 'Case'
-                AND DeveloperName = :LOCATION_SERVICES_RECORDTYPE_NAME
+                AND Name = :LOCATION_SERVICES_RECORDTYPE_LABEL
                 LIMIT 1
             ];
             LOCATION_SERVICES_CASE_RECORDTYPE_ID = rt != null ? rt.Id : null;
