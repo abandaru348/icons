@@ -14,6 +14,7 @@ public with sharing class GnalFacilitySearchController {
     private static final String ZIP5_REGEX = '^[0-9]{5}$';
     private static final Pattern ZIP5_COMPILED = Pattern.compile(ZIP5_REGEX);
     private static final Pattern STATE_CODE_COMPILED = Pattern.compile('^[a-zA-Z]{2}$');
+    private static final Pattern WHITESPACE_COMPILED = Pattern.compile('\\s+');
     private static final Map<String, String> STATE_CODE_TO_LABEL =
         initCodeToLabel(Account.BillingStateCode.getDescribe());
     private static final Map<String, String> COUNTRY_CODE_TO_LABEL =
@@ -946,7 +947,7 @@ public with sharing class GnalFacilitySearchController {
 
     private static String normalizeOriginAddress(String originAddress) {
         if (originAddress == null) return null;
-        String trimmed = originAddress.trim().replaceAll('\\s+', ' ');
+        String trimmed = WHITESPACE_COMPILED.matcher(originAddress.trim()).replaceAll(' ');
         if (String.isBlank(trimmed)) return trimmed;
 
         List<String> tokens = splitTrim(trimmed, ',');

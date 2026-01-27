@@ -202,6 +202,9 @@ public with sharing class GnalLocationServicesController {
             }
             try {
                 results.add(createOrIncrementLocationServiceInternal(caseId, normalizeAddress(location)));
+            } catch (AuraHandledException ex) {
+                // Preserve row-locking and validation messages for callers.
+                throw ex;
             } catch (Exception ex) {
                 logException('Bulk location service upsert failed', ex);
                 results.add(null);
@@ -346,10 +349,10 @@ public with sharing class GnalLocationServicesController {
         if (caseId == null || String.isBlank(normalized)) return null;
 
         String cacheKey = buildLocationServiceKey(caseId, normalized);
+        List<GNAL_Location_Service__c> rows = getLocationServicesForCase(caseId);
         if (LOCATION_SERVICE_ID_CACHE.containsKey(cacheKey)) {
             Id cachedId = LOCATION_SERVICE_ID_CACHE.get(cacheKey);
             if (cachedId == null) return null;
-            List<GNAL_Location_Service__c> rows = getLocationServicesForCase(caseId);
             for (GNAL_Location_Service__c row : rows) {
                 if (row != null && row.Id == cachedId) return row;
             }
@@ -357,8 +360,6 @@ public with sharing class GnalLocationServicesController {
 
         Map<String, Schema.SObjectField> fields = LOCATION_SERVICE_FIELD_MAP;
         Boolean hasStreet = fields != null && fields.containsKey('GNAL_Current_Location__Street__s');
-
-        List<GNAL_Location_Service__c> rows = getLocationServicesForCase(caseId);
         GNAL_Location_Service__c matchRow;
 
         if (hasStreet) {
