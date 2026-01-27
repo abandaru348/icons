@@ -668,7 +668,10 @@ public with sharing class GnalLocationServicesController {
         // Normalize line breaks to commas and collapse whitespace without regex.
         String normalized = normalizeWhitespace(address, true);
         // Ensure a consistent country token at the end.
-        return normalizeCountrySuffix(normalized);
+        normalized = normalizeCountrySuffix(normalized);
+        ParsedAddress parsed = parseNormalizedAddress(normalized);
+        String canonical = formatCanonicalAddress(parsed);
+        return String.isBlank(canonical) ? normalized : canonical;
     }
 
     @TestVisible
@@ -1136,6 +1139,17 @@ public with sharing class GnalLocationServicesController {
             }
         }
         return trimmed;
+    }
+
+    private static String formatCanonicalAddress(ParsedAddress parsed) {
+        if (parsed == null) return null;
+        List<String> parts = new List<String>();
+        if (!String.isBlank(parsed.street)) parts.add(parsed.street);
+        if (!String.isBlank(parsed.city)) parts.add(parsed.city);
+        if (!String.isBlank(parsed.state)) parts.add(parsed.state);
+        if (!String.isBlank(parsed.postal)) parts.add(parsed.postal);
+        if (!String.isBlank(parsed.country)) parts.add(parsed.country);
+        return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
     private static void logException(String prefix, Exception ex) {
