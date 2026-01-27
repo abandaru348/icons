@@ -922,6 +922,22 @@ public with sharing class GnalLocationServicesController {
             return out;
         }
 
+        // Less common: "street city", "state postal", country (3 tokens)
+        if (tokens.size() == 3) {
+            ParsedAddress sp = parseStatePostal(tokens[1]);
+            if (sp != null) {
+                ParsedAddress sc = splitStreetCity(tokens[0]);
+                out.street = sc != null ? sc.street : tokens[0];
+                out.city = sc != null ? sc.city : null;
+                out.state = sp.state;
+                out.postal = sp.postal;
+                out.country = tokens[2];
+                applyCountryIfMissing(out, trailingCountry);
+                cacheParsedAddress(cacheKey, out);
+                return out;
+            }
+        }
+
         // Less common: street, "city state postal", country (3 tokens)
         if (tokens.size() == 3) {
             out.street = tokens[0];
@@ -1008,9 +1024,20 @@ public with sharing class GnalLocationServicesController {
         return out;
     }
 
+    private static ParsedAddress splitStreetCity(String value) {
+        if (String.isBlank(value)) return null;
+        String trimmed = value.trim();
+        Integer lastSpace = trimmed.lastIndexOf(' ');
+        if (lastSpace <= 0 || lastSpace >= trimmed.length() - 1) return null;
+        ParsedAddress out = new ParsedAddress();
+        out.street = trimmed.substring(0, lastSpace).trim();
+        out.city = trimmed.substring(lastSpace + 1).trim();
+        return out;
+    }
+
     private static String normalizeWhitespace(String input, Boolean breakToComma) {
         if (input == null) return null;
-        StringBuilder sb = new StringBuilder();
+        List<String> out = new List<String>();
         Boolean lastWasSpace = false;
         Boolean lastWasComma = false;
 
@@ -1018,17 +1045,17 @@ public with sharing class GnalLocationServicesController {
             String ch = input.substring(i, i + 1);
             if (ch == '\r' || ch == '\n') {
                 if (breakToComma) {
-                    if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
-                        sb.setLength(sb.length() - 1);
+                    if (lastWasSpace && !out.isEmpty()) {
+                        out.remove(out.size() - 1);
+                        lastWasSpace = false;
                     }
-                    if (sb.length() > 0 && sb.substring(sb.length() - 1) != ',') {
-                        sb.append(',');
-                        sb.append(' ');
+                    if (!lastWasComma && !out.isEmpty()) {
+                        out.add(',');
+                        out.add(' ');
                     }
                     lastWasComma = true;
-                    lastWasSpace = false;
                 } else if (!lastWasSpace) {
-                    sb.append(' ');
+                    out.add(' ');
                     lastWasSpace = true;
                     lastWasComma = false;
                 }
@@ -1036,12 +1063,13 @@ public with sharing class GnalLocationServicesController {
             }
 
             if (ch == ',') {
-                if (sb.length() > 0 && sb.substring(sb.length() - 1) == ' ') {
-                    sb.setLength(sb.length() - 1);
+                if (lastWasSpace && !out.isEmpty()) {
+                    out.remove(out.size() - 1);
+                    lastWasSpace = false;
                 }
                 if (!lastWasComma) {
-                    sb.append(',');
-                    sb.append(' ');
+                    out.add(',');
+                    out.add(' ');
                 }
                 lastWasComma = true;
                 lastWasSpace = false;
@@ -1050,19 +1078,19 @@ public with sharing class GnalLocationServicesController {
 
             if (ch.trim().length() == 0) {
                 if (!lastWasSpace && !lastWasComma) {
-                    sb.append(' ');
+                    out.add(' ');
                     lastWasSpace = true;
                 }
                 continue;
             }
 
-            sb.append(ch);
+            out.add(ch);
             lastWasSpace = false;
             lastWasComma = false;
         }
 
-        String result = sb.toString().trim();
-        if (result.endsWith(",")) {
+        String result = String.join(out, '').trim();
+        if (result.endsWith(',')) {
             result = result.substring(0, result.length() - 1).trim();
         }
         return result;
