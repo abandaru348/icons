@@ -55,6 +55,9 @@ public with sharing class GnalLocationServicesController {
     @AuraEnabled(cacheable=true)
     public static String getDefaultCurrentLocationForPortalUser() {
         try {
+            String directAddr = loadPortalAddressFromUserRelationship();
+            if (!String.isBlank(directAddr)) return directAddr;
+
             PortalContext context = getPortalContext();
             if (context == null || context.accountId == null) return null;
             if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(context.accountId)) {
@@ -284,6 +287,60 @@ public with sharing class GnalLocationServicesController {
             if (!seenAccountIds.contains(accountId)) {
                 ACCOUNT_HOME_LOCATION_CACHE.put(accountId, null);
             }
+        }
+    }
+
+    private static String loadPortalAddressFromUserRelationship() {
+        try {
+            Id userId = UserInfo.getUserId();
+            Set<String> fields = new Set<String>();
+            fields.add('Id');
+            fields.add('Contact.Id');
+            fields.add('Contact.AccountId');
+            fields.add('Contact.MailingStreet');
+            fields.add('Contact.MailingCity');
+            fields.add('Contact.MailingState');
+            fields.add('Contact.MailingPostalCode');
+            fields.add('Contact.MailingCountry');
+            fields.add('Contact.OtherStreet');
+            fields.add('Contact.OtherCity');
+            fields.add('Contact.OtherState');
+            fields.add('Contact.OtherPostalCode');
+            fields.add('Contact.OtherCountry');
+
+            for (String f : HOME_ADDRESS_SELECT_FIELDS) {
+                if (String.isBlank(f)) continue;
+                fields.add('Contact.Account.' + f);
+            }
+
+            String soql = 'SELECT ' + String.join(new List<String>(fields), ',') +
+                ' FROM User WHERE Id = :userId' +
+                ' LIMIT 1';
+            User u = (User) Database.query(soql);
+            if (u == null || u.Contact == null) return null;
+
+            Contact c = u.Contact;
+            Account a = c.Account;
+            String addr = buildPortalHomeAddressFromAccount(a);
+            if (String.isBlank(addr)) {
+                addr = buildPortalHomeAddressFromContact(c);
+            }
+
+            Id accountId = c.AccountId;
+            if (String.isBlank(addr) && accountId != null) {
+                if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(accountId)) {
+                    loadHomeLocationsForAccounts(new Set<Id>{ accountId }, true);
+                }
+                addr = ACCOUNT_HOME_LOCATION_CACHE.get(accountId);
+            }
+
+            if (accountId != null && !String.isBlank(addr)) {
+                ACCOUNT_HOME_LOCATION_CACHE.put(accountId, addr);
+            }
+            return addr;
+        } catch (Exception ex) {
+            logException('Portal user relationship lookup failed', ex);
+            return null;
         }
     }
 
