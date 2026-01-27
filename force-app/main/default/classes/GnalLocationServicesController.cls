@@ -177,9 +177,10 @@ public with sharing class GnalLocationServicesController {
             Boolean hasContactCustom = userFields != null && userFields.containsKey('Contact__c');
             String contactField = hasContactId ? 'ContactId' : (hasContactCustom ? 'Contact__c' : null);
 
+            Id userId = UserInfo.getUserId();
             String soql = 'SELECT Id' +
                 (contactField != null ? (', ' + contactField) : '') +
-                ' FROM User WHERE Id = \'' + String.escapeSingleQuotes(UserInfo.getUserId()) + '\'' +
+                ' FROM User WHERE Id = :userId' +
                 ' LIMIT 1';
             User u = (User) Database.query(soql);
             if (u == null || contactField == null) return null;
