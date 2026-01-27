@@ -175,31 +175,42 @@ public with sharing class GnalLocationServicesController {
             Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
             Boolean hasContactId = userFields != null && userFields.containsKey('ContactId');
             Boolean hasContactCustom = userFields != null && userFields.containsKey('Contact__c');
+            Boolean hasAccountId = userFields != null && userFields.containsKey('AccountId');
+            Boolean hasAccountCustom = userFields != null && userFields.containsKey('Account__c');
+
             String contactField = hasContactId ? 'ContactId' : (hasContactCustom ? 'Contact__c' : null);
+            String accountField = hasAccountId ? 'AccountId' : (hasAccountCustom ? 'Account__c' : null);
 
             Id userId = UserInfo.getUserId();
-            String soql = 'SELECT Id' +
-                (contactField != null ? (', ' + contactField) : '') +
+            List<String> selectFields = new List<String>{ 'Id' };
+            if (contactField != null) selectFields.add(contactField);
+            if (accountField != null && accountField != contactField) selectFields.add(accountField);
+
+            String soql = 'SELECT ' + String.join(selectFields, ',') +
                 ' FROM User WHERE Id = :userId' +
                 ' LIMIT 1';
             User u = (User) Database.query(soql);
-            if (u == null || contactField == null) return null;
+            if (u == null) return null;
 
-            Id contactId = (Id) u.get(contactField);
-            if (contactId == null) return null;
+            Id contactId = contactField != null ? (Id) u.get(contactField) : null;
+            Id accountId = accountField != null ? (Id) u.get(accountField) : null;
 
-            Contact c = [
-                SELECT Id, AccountId
-                FROM Contact
-                WHERE Id = :contactId
-                LIMIT 1
-            ];
-            if (c == null) return null;
+            if (accountId == null && contactId != null) {
+                Contact c = [
+                    SELECT Id, AccountId
+                    FROM Contact
+                    WHERE Id = :contactId
+                    LIMIT 1
+                ];
+                accountId = c != null ? c.AccountId : null;
+            }
+
+            if (accountId == null) return null;
 
             PortalContext context = new PortalContext();
             context.userId = u.Id;
             context.contactId = contactId;
-            context.accountId = c.AccountId;
+            context.accountId = accountId;
             return context;
         } catch (Exception ex) {
             logException('Portal context lookup failed', ex);
