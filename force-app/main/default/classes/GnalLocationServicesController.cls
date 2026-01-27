@@ -171,19 +171,39 @@ public with sharing class GnalLocationServicesController {
     }
 
     private static PortalContext getPortalContext() {
-        User u = [
-            SELECT Id, ContactId, Contact.AccountId
-            FROM User
-            WHERE Id = :UserInfo.getUserId()
-            LIMIT 1
-        ];
-        if (u == null || u.ContactId == null) return null;
+        try {
+            Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
+            Boolean hasContactId = userFields != null && userFields.containsKey('ContactId');
+            Boolean hasContactCustom = userFields != null && userFields.containsKey('Contact__c');
+            String contactField = hasContactId ? 'ContactId' : (hasContactCustom ? 'Contact__c' : null);
 
-        PortalContext context = new PortalContext();
-        context.userId = u.Id;
-        context.contactId = u.ContactId;
-        context.accountId = u.Contact != null ? u.Contact.AccountId : null;
-        return context;
+            String soql = 'SELECT Id' +
+                (contactField != null ? (', ' + contactField) : '') +
+                ' FROM User WHERE Id = \'' + String.escapeSingleQuotes(UserInfo.getUserId()) + '\'' +
+                ' LIMIT 1';
+            User u = (User) Database.query(soql);
+            if (u == null || contactField == null) return null;
+
+            Id contactId = (Id) u.get(contactField);
+            if (contactId == null) return null;
+
+            Contact c = [
+                SELECT Id, AccountId
+                FROM Contact
+                WHERE Id = :contactId
+                LIMIT 1
+            ];
+            if (c == null) return null;
+
+            PortalContext context = new PortalContext();
+            context.userId = u.Id;
+            context.contactId = contactId;
+            context.accountId = c.AccountId;
+            return context;
+        } catch (Exception ex) {
+            logException('Portal context lookup failed', ex);
+            return null;
+        }
     }
 
     private static void loadHomeLocationsForAccounts(Set<Id> accountIds) {
