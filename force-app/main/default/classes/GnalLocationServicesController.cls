@@ -175,6 +175,7 @@ public with sharing class GnalLocationServicesController {
             Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
             String contactField = null;
             String contactRelationship = null;
+            String accountField = null;
 
             if (userFields != null) {
                 for (String api : userFields.keySet()) {
@@ -186,26 +187,25 @@ public with sharing class GnalLocationServicesController {
                     List<Schema.SObjectType> refs = d.getReferenceTo();
                     if (refs == null) continue;
                     for (Schema.SObjectType refType : refs) {
-                        if (refType == Contact.SObjectType) {
+                        if (refType == Contact.SObjectType && contactField == null) {
                             contactField = api;
                             contactRelationship = d.getRelationshipName();
-                            break;
+                        } else if (refType == Account.SObjectType && accountField == null) {
+                            accountField = api;
                         }
                     }
-                    if (contactField != null) break;
                 }
             }
 
-            if (String.isBlank(contactField) || String.isBlank(contactRelationship)) {
-                return null;
-            }
-
             Id userId = UserInfo.getUserId();
-            List<String> selectFields = new List<String>{
-                'Id',
-                contactField,
-                contactRelationship + '.AccountId'
-            };
+            List<String> selectFields = new List<String>{ 'Id' };
+            if (!String.isBlank(contactField)) selectFields.add(contactField);
+            if (!String.isBlank(accountField) && accountField != contactField) {
+                selectFields.add(accountField);
+            }
+            if (!String.isBlank(contactRelationship)) {
+                selectFields.add(contactRelationship + '.AccountId');
+            }
 
             String soql = 'SELECT ' + String.join(selectFields, ',') +
                 ' FROM User WHERE Id = :userId' +
@@ -213,12 +213,16 @@ public with sharing class GnalLocationServicesController {
             User u = (User) Database.query(soql);
             if (u == null) return null;
 
-            Id contactId = (Id) u.get(contactField);
-            Id accountId;
-            SObject contactObj = u.getSObject(contactRelationship);
-            if (contactObj != null) {
-                accountId = (Id) contactObj.get('AccountId');
+            Id contactId = !String.isBlank(contactField) ? (Id) u.get(contactField) : null;
+            Id accountId = !String.isBlank(accountField) ? (Id) u.get(accountField) : null;
+
+            if (accountId == null && !String.isBlank(contactRelationship)) {
+                SObject contactObj = u.getSObject(contactRelationship);
+                if (contactObj != null) {
+                    accountId = (Id) contactObj.get('AccountId');
+                }
             }
+
             if (accountId == null && contactId != null) {
                 Contact c = [
                     SELECT Id, AccountId
@@ -228,6 +232,7 @@ public with sharing class GnalLocationServicesController {
                 ];
                 accountId = c != null ? c.AccountId : null;
             }
+
             if (accountId == null) return null;
 
             PortalContext context = new PortalContext();
