@@ -18,6 +18,8 @@ public with sharing class GnalLocationServicesController {
         Schema.SObjectType.GNAL_Location_Service__c.fields.getMap();
     private static final Map<String, Schema.SObjectField> ACCOUNT_FIELD_MAP =
         Schema.SObjectType.Account.fields.getMap();
+    private static final Map<String, Schema.SObjectField> CONTACT_FIELD_MAP =
+        Schema.SObjectType.Contact.fields.getMap();
     private static final List<String> HOME_ADDRESS_SELECT_FIELDS = initHomeAddressSelectFields();
 
     private static Map<String, ParsedAddress> PARSED_ADDRESS_CACHE = new Map<String, ParsedAddress>();
@@ -58,7 +60,14 @@ public with sharing class GnalLocationServicesController {
             if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(context.accountId)) {
                 loadHomeLocationsForAccounts(new Set<Id>{ context.accountId }, true);
             }
-            return ACCOUNT_HOME_LOCATION_CACHE.get(context.accountId);
+            String addr = ACCOUNT_HOME_LOCATION_CACHE.get(context.accountId);
+            if (String.isBlank(addr) && context.contactId != null) {
+                addr = loadHomeLocationFromContact(context.contactId);
+                if (!String.isBlank(addr)) {
+                    ACCOUNT_HOME_LOCATION_CACHE.put(context.accountId, addr);
+                }
+            }
+            return addr;
         } catch (Exception ex) {
             logException('Portal default location lookup failed', ex);
             return null;
@@ -278,6 +287,18 @@ public with sharing class GnalLocationServicesController {
         }
     }
 
+    private static String loadHomeLocationFromContact(Id contactId) {
+        if (contactId == null) return null;
+        Contact c = [
+            SELECT MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry,
+                   OtherStreet, OtherCity, OtherState, OtherPostalCode, OtherCountry
+            FROM Contact
+            WHERE Id = :contactId
+            LIMIT 1
+        ];
+        return buildPortalHomeAddressFromContact(c);
+    }
+
     private static Id getLocationServicesCaseRecordTypeId() {
         if (LOCATION_SERVICES_CASE_RECORDTYPE_ID != null) {
             return LOCATION_SERVICES_CASE_RECORDTYPE_ID;
@@ -373,6 +394,52 @@ public with sharing class GnalLocationServicesController {
             'ShippingPostalCode',
             'ShippingCountry'
         );
+    }
+
+    private static String buildPortalHomeAddressFromContact(Contact c) {
+        if (c == null) return null;
+        String mailing = buildAddressFromContactFields(
+            c,
+            'MailingStreet',
+            'MailingCity',
+            'MailingState',
+            'MailingPostalCode',
+            'MailingCountry'
+        );
+        if (!String.isBlank(mailing)) return mailing;
+
+        return buildAddressFromContactFields(
+            c,
+            'OtherStreet',
+            'OtherCity',
+            'OtherState',
+            'OtherPostalCode',
+            'OtherCountry'
+        );
+    }
+
+    private static String buildAddressFromContactFields(
+        Contact c,
+        String streetApi,
+        String cityApi,
+        String stateApi,
+        String postalApi,
+        String countryApi
+    ) {
+        if (c == null) return null;
+        String street = getContactStringIfSelected(c, CONTACT_FIELD_MAP, streetApi);
+        String city = getContactStringIfSelected(c, CONTACT_FIELD_MAP, cityApi);
+        String state = getContactStringIfSelected(c, CONTACT_FIELD_MAP, stateApi);
+        String postal = getContactStringIfSelected(c, CONTACT_FIELD_MAP, postalApi);
+        String country = getContactStringIfSelected(c, CONTACT_FIELD_MAP, countryApi);
+
+        List<String> parts = new List<String>();
+        if (!String.isBlank(street)) parts.add(street);
+        if (!String.isBlank(city)) parts.add(city);
+        if (!String.isBlank(state)) parts.add(state);
+        if (!String.isBlank(postal)) parts.add(postal);
+        if (!String.isBlank(country)) parts.add(country);
+        return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
     private static String buildAddressFromStandardFields(
@@ -933,9 +1000,14 @@ public with sharing class GnalLocationServicesController {
         if (!fields.containsKey(api)) return null;
 
         Map<String, Object> populated = row.getPopulatedFieldsAsMap();
-        if (populated == null || !populated.containsKey(api)) return null;
+        Object v = (populated != null && populated.containsKey(api)) ? populated.get(api) : row.get(api);
+        return (v instanceof String) ? (String) v : null;
+    }
 
-        Object v = populated.get(api);
+    private static String getContactStringIfSelected(SObject row, Map<String, Schema.SObjectField> fields, String api) {
+        if (row == null || fields == null || String.isBlank(api)) return null;
+        if (!fields.containsKey(api)) return null;
+        Object v = row.get(api);
         return (v instanceof String) ? (String) v : null;
     }
 
