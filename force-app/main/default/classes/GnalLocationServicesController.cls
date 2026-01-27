@@ -902,6 +902,21 @@ public with sharing class GnalLocationServicesController {
             return out;
         }
 
+        // Less common: "street city", "state postal" (2 tokens) with trailing country stripped.
+        if (tokens.size() == 2) {
+            ParsedAddress sp = parseStatePostal(tokens[1]);
+            if (sp != null) {
+                ParsedAddress sc = splitStreetCity(tokens[0]);
+                out.street = sc != null ? sc.street : tokens[0];
+                out.city = sc != null ? sc.city : null;
+                out.state = sp.state;
+                out.postal = sp.postal;
+                applyCountryIfMissing(out, trailingCountry);
+                cacheParsedAddress(cacheKey, out);
+                return out;
+            }
+        }
+
         // Less common: street, city, state (no country)
         if (tokens.size() == 3 && isLikelyState(tokens[2])) {
             out.street = tokens[0];
@@ -1035,6 +1050,17 @@ public with sharing class GnalLocationServicesController {
         return out;
     }
 
+    private static ParsedAddress splitStreetCity(String value) {
+        if (String.isBlank(value)) return null;
+        String trimmed = value.trim();
+        Integer lastSpace = trimmed.lastIndexOf(' ');
+        if (lastSpace <= 0 || lastSpace >= trimmed.length() - 1) return null;
+        ParsedAddress out = new ParsedAddress();
+        out.street = trimmed.substring(0, lastSpace).trim();
+        out.city = trimmed.substring(lastSpace + 1).trim();
+        return out;
+    }
+
     private static String normalizeWhitespace(String input, Boolean breakToComma) {
         if (input == null) return null;
         List<String> out = new List<String>();
@@ -1106,6 +1132,16 @@ public with sharing class GnalLocationServicesController {
                 String base = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
                 if (base.endsWith(',')) {
                     base = base.substring(0, base.length() - 1).trim();
+                }
+                String baseLower = base.toLowerCase();
+                for (String inner : suffixes) {
+                    if (baseLower.endsWith(inner)) {
+                        base = base.substring(0, base.length() - inner.length()).trim();
+                        if (base.endsWith(',')) {
+                            base = base.substring(0, base.length() - 1).trim();
+                        }
+                        break;
+                    }
                 }
                 return base + ', United States';
             }
