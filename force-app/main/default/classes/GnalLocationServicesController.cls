@@ -6,7 +6,6 @@ public with sharing class GnalLocationServicesController {
     private static final Map<String, String> STATE_LABEL_TO_CODE = invertMapCaseInsensitive(STATE_CODE_TO_LABEL);
     private static final Map<String, String> COUNTRY_LABEL_TO_CODE = invertMapCaseInsensitive(COUNTRY_CODE_TO_LABEL);
     private static final String ZIP5_REGEX = '^[0-9]{5}$';
-    private static final Pattern ZIP5_COMPILED = Pattern.compile(ZIP5_REGEX);
 
     private static final Integer PARSED_ADDRESS_CACHE_LIMIT = 500;
     private static final Integer MAX_ADDRESS_PARSE_LENGTH = 300;
@@ -665,13 +664,8 @@ public with sharing class GnalLocationServicesController {
 
     private static String normalizeAddress(String address) {
         if (address == null) return null;
-        // Normalize line breaks to commas and collapse whitespace without regex.
-        String normalized = normalizeWhitespace(address, true);
-        // Ensure a consistent country token at the end.
-        normalized = normalizeCountrySuffix(normalized);
-        ParsedAddress parsed = parseNormalizedAddress(normalized);
-        String canonical = formatCanonicalAddress(parsed);
-        return String.isBlank(canonical) ? normalized : canonical;
+        // Collapse any repeated whitespace to a single space.
+        return address.trim().replaceAll('\\s+', ' ');
     }
 
     @TestVisible
@@ -791,7 +785,7 @@ public with sharing class GnalLocationServicesController {
     }
 
     private static Boolean isZipCode(String value) {
-        return !String.isBlank(value) && ZIP5_COMPILED.matcher(value.trim()).matches();
+        return !String.isBlank(value) && Pattern.matches(ZIP5_REGEX, value.trim());
     }
 
     private static Boolean isLikelyState(String value) {
@@ -837,28 +831,12 @@ public with sharing class GnalLocationServicesController {
         }
 
         // Normalize whitespace and strip newlines for parsing.
-        String s = normalizeWhitespace(cacheKey, false);
-
-        // Strip trailing country when it isn't comma-delimited.
-        String trailingCountry = null;
-        String lower = s.toLowerCase();
-        List<String> suffixes = new List<String>{ ', united states', ' united states', ', us', ' us', ', usa', ' usa' };
-        for (String suffix : suffixes) {
-            if (lower.endsWith(suffix)) {
-                trailingCountry = 'United States';
-                s = s.substring(0, s.length() - suffix.length()).trim();
-                if (s.endsWith(',')) {
-                    s = s.substring(0, s.length() - 1).trim();
-                }
-                break;
-            }
-        }
+        String s = cacheKey.replaceAll('[\\r\\n]+', ' ').trim().replaceAll('\\s+', ' ');
         List<String> tokens = splitTrim(s, ',');
 
         ParsedAddress out = new ParsedAddress();
         if (tokens.isEmpty()) {
             out.street = s;
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -874,7 +852,6 @@ public with sharing class GnalLocationServicesController {
             List<String> streetParts = new List<String>();
             for (Integer i = 0; i <= n - 5; i++) streetParts.add(tokens[i]);
             out.street = String.join(streetParts, ', ');
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -885,7 +862,6 @@ public with sharing class GnalLocationServicesController {
             out.city = tokens[1];
             out.state = tokens[2];
             out.postal = tokens[3];
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -900,24 +876,8 @@ public with sharing class GnalLocationServicesController {
             out.state = sp != null ? sp.state : null;
             out.postal = sp != null ? sp.postal : null;
             if (String.isBlank(out.state)) out.state = statePostal;
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
-        }
-
-        // Less common: "street city", "state postal" (2 tokens) with trailing country stripped.
-        if (tokens.size() == 2) {
-            ParsedAddress sp = parseStatePostal(tokens[1]);
-            if (sp != null) {
-                ParsedAddress sc = splitStreetCity(tokens[0]);
-                out.street = sc != null ? sc.street : tokens[0];
-                out.city = sc != null ? sc.city : null;
-                out.state = sp.state;
-                out.postal = sp.postal;
-                applyCountryIfMissing(out, trailingCountry);
-                cacheParsedAddress(cacheKey, out);
-                return out;
-            }
         }
 
         // Less common: street, city, state (no country)
@@ -925,7 +885,6 @@ public with sharing class GnalLocationServicesController {
             out.street = tokens[0];
             out.city = tokens[1];
             out.state = tokens[2];
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
@@ -935,25 +894,8 @@ public with sharing class GnalLocationServicesController {
             out.street = tokens[0];
             out.city = tokens[1];
             out.postal = tokens[2];
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
-        }
-
-        // Less common: "street city", "state postal", country (3 tokens)
-        if (tokens.size() == 3) {
-            ParsedAddress sp = parseStatePostal(tokens[1]);
-            if (sp != null) {
-                ParsedAddress sc = splitStreetCity(tokens[0]);
-                out.street = sc != null ? sc.street : tokens[0];
-                out.city = sc != null ? sc.city : null;
-                out.state = sp.state;
-                out.postal = sp.postal;
-                out.country = tokens[2];
-                applyCountryIfMissing(out, trailingCountry);
-                cacheParsedAddress(cacheKey, out);
-                return out;
-            }
         }
 
         // Less common: street, "city state postal", country (3 tokens)
@@ -968,23 +910,14 @@ public with sharing class GnalLocationServicesController {
             } else {
                 out.city = tokens[1];
             }
-            applyCountryIfMissing(out, trailingCountry);
             cacheParsedAddress(cacheKey, out);
             return out;
         }
 
         // Minimal: treat as Street-only.
         out.street = s;
-        applyCountryIfMissing(out, trailingCountry);
         cacheParsedAddress(cacheKey, out);
         return out;
-    }
-
-    private static void applyCountryIfMissing(ParsedAddress out, String country) {
-        if (out == null) return;
-        if (String.isBlank(out.country) && !String.isBlank(country)) {
-            out.country = country;
-        }
     }
 
     private static void cacheParsedAddress(String cacheKey, ParsedAddress parsed) {
@@ -1001,7 +934,7 @@ public with sharing class GnalLocationServicesController {
         if (parts.size() < 2) return null;
         String last = parts[parts.size() - 1];
         // Simple US ZIP check (5 digits)
-        if (!ZIP5_COMPILED.matcher(last).matches()) return null;
+        if (!Pattern.matches(ZIP5_REGEX, last)) return null;
 
         ParsedAddress out = new ParsedAddress();
         out.postal = last;
@@ -1018,7 +951,7 @@ public with sharing class GnalLocationServicesController {
         if (parts.size() < 3) return null;
 
         String postal = parts[parts.size() - 1];
-        if (!ZIP5_COMPILED.matcher(postal).matches()) return null;
+        if (!Pattern.matches(ZIP5_REGEX, postal)) return null;
 
         String state = parts[parts.size() - 2];
         List<String> cityParts = new List<String>();
@@ -1042,115 +975,6 @@ public with sharing class GnalLocationServicesController {
         return out;
     }
 
-    private static ParsedAddress splitStreetCity(String value) {
-        if (String.isBlank(value)) return null;
-        String trimmed = value.trim();
-        Integer lastSpace = trimmed.lastIndexOf(' ');
-        if (lastSpace <= 0 || lastSpace >= trimmed.length() - 1) return null;
-        ParsedAddress out = new ParsedAddress();
-        out.street = trimmed.substring(0, lastSpace).trim();
-        out.city = trimmed.substring(lastSpace + 1).trim();
-        return out;
-    }
-
-    private static String normalizeWhitespace(String input, Boolean breakToComma) {
-        if (input == null) return null;
-        List<String> out = new List<String>();
-        Boolean lastWasSpace = false;
-        Boolean lastWasComma = false;
-
-        for (Integer i = 0; i < input.length(); i++) {
-            String ch = input.substring(i, i + 1);
-            if (ch == '\r' || ch == '\n') {
-                if (breakToComma) {
-                    if (lastWasSpace && !out.isEmpty()) {
-                        out.remove(out.size() - 1);
-                        lastWasSpace = false;
-                    }
-                    if (!lastWasComma && !out.isEmpty()) {
-                        out.add(',');
-                        out.add(' ');
-                    }
-                    lastWasComma = true;
-                } else if (!lastWasSpace) {
-                    out.add(' ');
-                    lastWasSpace = true;
-                    lastWasComma = false;
-                }
-                continue;
-            }
-
-            if (ch == ',') {
-                if (lastWasSpace && !out.isEmpty()) {
-                    out.remove(out.size() - 1);
-                    lastWasSpace = false;
-                }
-                if (!lastWasComma) {
-                    out.add(',');
-                    out.add(' ');
-                }
-                lastWasComma = true;
-                lastWasSpace = false;
-                continue;
-            }
-
-            if (ch.trim().length() == 0) {
-                if (!lastWasSpace && !lastWasComma) {
-                    out.add(' ');
-                    lastWasSpace = true;
-                }
-                continue;
-            }
-
-            out.add(ch);
-            lastWasSpace = false;
-            lastWasComma = false;
-        }
-
-        String result = String.join(out, '').trim();
-        if (result.endsWith(',')) {
-            result = result.substring(0, result.length() - 1).trim();
-        }
-        return result;
-    }
-
-    private static String normalizeCountrySuffix(String normalized) {
-        if (String.isBlank(normalized)) return normalized;
-        String trimmed = normalized.trim();
-        String lower = trimmed.toLowerCase();
-        List<String> suffixes = new List<String>{ ', united states', ' united states', ', us', ' us', ', usa', ' usa' };
-        for (String suffix : suffixes) {
-            if (lower.endsWith(suffix)) {
-                String base = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
-                if (base.endsWith(',')) {
-                    base = base.substring(0, base.length() - 1).trim();
-                }
-                String baseLower = base.toLowerCase();
-                for (String suffixInner : suffixes) {
-                    if (baseLower.endsWith(suffixInner)) {
-                        base = base.substring(0, base.length() - suffixInner.length()).trim();
-                        if (base.endsWith(',')) {
-                            base = base.substring(0, base.length() - 1).trim();
-                        }
-                        break;
-                    }
-                }
-                return base + ', United States';
-            }
-        }
-        return trimmed;
-    }
-
-    private static String formatCanonicalAddress(ParsedAddress parsed) {
-        if (parsed == null) return null;
-        List<String> parts = new List<String>();
-        if (!String.isBlank(parsed.street)) parts.add(parsed.street);
-        if (!String.isBlank(parsed.city)) parts.add(parsed.city);
-        if (!String.isBlank(parsed.state)) parts.add(parsed.state);
-        if (!String.isBlank(parsed.postal)) parts.add(parsed.postal);
-        if (!String.isBlank(parsed.country)) parts.add(parsed.country);
-        return parts.isEmpty() ? null : String.join(parts, ', ');
-    }
 
     private static void logException(String prefix, Exception ex) {
         if (ex == null) {
