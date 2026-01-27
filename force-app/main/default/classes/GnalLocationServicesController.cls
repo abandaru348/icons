@@ -292,36 +292,92 @@ public with sharing class GnalLocationServicesController {
 
     private static String loadPortalAddressFromUserRelationship() {
         try {
-            Id userId = UserInfo.getUserId();
-            Set<String> fields = new Set<String>();
-            fields.add('Id');
-            fields.add('Contact.Id');
-            fields.add('Contact.AccountId');
-            fields.add('Contact.MailingStreet');
-            fields.add('Contact.MailingCity');
-            fields.add('Contact.MailingState');
-            fields.add('Contact.MailingPostalCode');
-            fields.add('Contact.MailingCountry');
-            fields.add('Contact.OtherStreet');
-            fields.add('Contact.OtherCity');
-            fields.add('Contact.OtherState');
-            fields.add('Contact.OtherPostalCode');
-            fields.add('Contact.OtherCountry');
-
-            for (String f : HOME_ADDRESS_SELECT_FIELDS) {
-                if (String.isBlank(f)) continue;
-                fields.add('Contact.Account.' + f);
-            }
-
-            String soql = 'SELECT ' + String.join(new List<String>(fields), ',') +
-                ' FROM User WHERE Id = :userId' +
-                ' LIMIT 1';
-            User u = (User) Database.query(soql);
+            User u = [
+                SELECT Contact.AccountId,
+                       Contact.MailingStreet,
+                       Contact.MailingCity,
+                       Contact.MailingState,
+                       Contact.MailingPostalCode,
+                       Contact.MailingCountry,
+                       Contact.OtherStreet,
+                       Contact.OtherCity,
+                       Contact.OtherState,
+                       Contact.OtherPostalCode,
+                       Contact.OtherCountry,
+                       Contact.Account.GNAL_Home_Address__Street__s,
+                       Contact.Account.GNAL_Home_Address__City__s,
+                       Contact.Account.GNAL_Home_Address__State__s,
+                       Contact.Account.GNAL_Home_Address__StateCode__s,
+                       Contact.Account.GNAL_Home_Address__PostalCode__s,
+                       Contact.Account.GNAL_Home_Address__Country__s,
+                       Contact.Account.GNAL_Home_Address__CountryCode__s,
+                       Contact.Account.PersonMailingStreet,
+                       Contact.Account.PersonMailingCity,
+                       Contact.Account.PersonMailingState,
+                       Contact.Account.PersonMailingPostalCode,
+                       Contact.Account.PersonMailingCountry,
+                       Contact.Account.BillingStreet,
+                       Contact.Account.BillingCity,
+                       Contact.Account.BillingState,
+                       Contact.Account.BillingPostalCode,
+                       Contact.Account.BillingCountry,
+                       Contact.Account.ShippingStreet,
+                       Contact.Account.ShippingCity,
+                       Contact.Account.ShippingState,
+                       Contact.Account.ShippingPostalCode,
+                       Contact.Account.ShippingCountry
+                FROM User
+                WHERE Id = :UserInfo.getUserId()
+                LIMIT 1
+            ];
             if (u == null || u.Contact == null) return null;
 
             Contact c = u.Contact;
             Account a = c.Account;
-            String addr = buildPortalHomeAddressFromAccount(a);
+            String addr = null;
+            if (a != null) {
+                addr = buildAddressFromParts(
+                    (String) a.get('GNAL_Home_Address__Street__s'),
+                    (String) a.get('GNAL_Home_Address__City__s'),
+                    coalesceStr(
+                        a.get('GNAL_Home_Address__State__s'),
+                        a.get('GNAL_Home_Address__StateCode__s')
+                    ),
+                    (String) a.get('GNAL_Home_Address__PostalCode__s'),
+                    coalesceStr(
+                        a.get('GNAL_Home_Address__Country__s'),
+                        a.get('GNAL_Home_Address__CountryCode__s')
+                    )
+                );
+
+                if (String.isBlank(addr)) {
+                    addr = buildAddressFromParts(
+                        a.PersonMailingStreet,
+                        a.PersonMailingCity,
+                        a.PersonMailingState,
+                        a.PersonMailingPostalCode,
+                        a.PersonMailingCountry
+                    );
+                }
+                if (String.isBlank(addr)) {
+                    addr = buildAddressFromParts(
+                        a.BillingStreet,
+                        a.BillingCity,
+                        a.BillingState,
+                        a.BillingPostalCode,
+                        a.BillingCountry
+                    );
+                }
+                if (String.isBlank(addr)) {
+                    addr = buildAddressFromParts(
+                        a.ShippingStreet,
+                        a.ShippingCity,
+                        a.ShippingState,
+                        a.ShippingPostalCode,
+                        a.ShippingCountry
+                    );
+                }
+            }
             if (String.isBlank(addr)) {
                 addr = buildPortalHomeAddressFromContact(c);
             }
@@ -451,6 +507,22 @@ public with sharing class GnalLocationServicesController {
             'ShippingPostalCode',
             'ShippingCountry'
         );
+    }
+
+    private static String buildAddressFromParts(
+        String street,
+        String city,
+        String state,
+        String postal,
+        String country
+    ) {
+        List<String> parts = new List<String>();
+        if (!String.isBlank(street)) parts.add(street);
+        if (!String.isBlank(city)) parts.add(city);
+        if (!String.isBlank(state)) parts.add(state);
+        if (!String.isBlank(postal)) parts.add(postal);
+        if (!String.isBlank(country)) parts.add(country);
+        return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
     private static String buildPortalHomeAddressFromContact(Contact c) {
