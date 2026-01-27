@@ -1104,7 +1104,7 @@ public with sharing class GnalLocationServicesController {
         for (String suffix : suffixes) {
             if (lower.endsWith(suffix)) {
                 String base = trimmed.substring(0, trimmed.length() - suffix.length()).trim();
-                if (base.endsWith(",")) {
+                if (base.endsWith(',')) {
                     base = base.substring(0, base.length() - 1).trim();
                 }
                 return base + ', United States';
