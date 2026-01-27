@@ -1050,17 +1050,6 @@ public with sharing class GnalLocationServicesController {
         return out;
     }
 
-    private static ParsedAddress splitStreetCity(String value) {
-        if (String.isBlank(value)) return null;
-        String trimmed = value.trim();
-        Integer lastSpace = trimmed.lastIndexOf(' ');
-        if (lastSpace <= 0 || lastSpace >= trimmed.length() - 1) return null;
-        ParsedAddress out = new ParsedAddress();
-        out.street = trimmed.substring(0, lastSpace).trim();
-        out.city = trimmed.substring(lastSpace + 1).trim();
-        return out;
-    }
-
     private static String normalizeWhitespace(String input, Boolean breakToComma) {
         if (input == null) return null;
         List<String> out = new List<String>();
@@ -1134,9 +1123,9 @@ public with sharing class GnalLocationServicesController {
                     base = base.substring(0, base.length() - 1).trim();
                 }
                 String baseLower = base.toLowerCase();
-                for (String inner : suffixes) {
-                    if (baseLower.endsWith(inner)) {
-                        base = base.substring(0, base.length() - inner.length()).trim();
+                for (String suffixInner : suffixes) {
+                    if (baseLower.endsWith(suffixInner)) {
+                        base = base.substring(0, base.length() - suffixInner.length()).trim();
                         if (base.endsWith(',')) {
                             base = base.substring(0, base.length() - 1).trim();
                         }
