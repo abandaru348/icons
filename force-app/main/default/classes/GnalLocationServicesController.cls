@@ -52,7 +52,7 @@ public with sharing class GnalLocationServicesController {
         return CASE_DEFAULT_LOCATION_CACHE.get(caseId);
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static String getDefaultCurrentLocationForPortalUser() {
         try {
             String directAddr = loadPortalAddressFromUserRelationship();
@@ -69,6 +69,9 @@ public with sharing class GnalLocationServicesController {
                 if (!String.isBlank(addr)) {
                     ACCOUNT_HOME_LOCATION_CACHE.put(context.accountId, addr);
                 }
+            }
+            if (String.isBlank(addr)) {
+                addr = loadHomeLocationFromAccountByUser(UserInfo.getUserId());
             }
             return addr;
         } catch (Exception ex) {
@@ -290,29 +293,83 @@ public with sharing class GnalLocationServicesController {
         }
     }
 
+    private static String loadHomeLocationFromAccountByUser(Id userId) {
+        if (userId == null || ACCOUNT_FIELD_MAP == null || !ACCOUNT_FIELD_MAP.containsKey('User__c')) {
+            return null;
+        }
+        String soql = 'SELECT ' + String.join(HOME_ADDRESS_SELECT_FIELDS, ',') +
+            ' FROM Account WHERE User__c = :userId' +
+            ' LIMIT 1';
+        List<Account> rows = (List<Account>) Database.query(soql);
+        if (rows.isEmpty()) return null;
+        return buildPortalHomeAddressFromAccount(rows[0]);
+    }
+
     private static String loadPortalAddressFromUserRelationship() {
         try {
-            User u = [
-                SELECT Contact.AccountId,
-                       Contact.MailingStreet,
-                       Contact.MailingCity,
-                       Contact.MailingState,
-                       Contact.MailingPostalCode,
-                       Contact.MailingCountry,
-                       Contact.OtherStreet,
-                       Contact.OtherCity,
-                       Contact.OtherState,
-                       Contact.OtherPostalCode,
-                       Contact.OtherCountry
-                FROM User
-                WHERE Id = :UserInfo.getUserId()
-                LIMIT 1
-            ];
+            Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
+            List<String> selectFields = new List<String>{ 'Id' };
+            if (userFields != null && userFields.containsKey('ContactId')) {
+                selectFields.add('ContactId');
+            }
+
+            if (CONTACT_FIELD_MAP != null) {
+                if (CONTACT_FIELD_MAP.containsKey('MailingAddress')) selectFields.add('Contact.MailingAddress');
+                if (CONTACT_FIELD_MAP.containsKey('OtherAddress')) selectFields.add('Contact.OtherAddress');
+                if (CONTACT_FIELD_MAP.containsKey('MailingStreet')) selectFields.add('Contact.MailingStreet');
+                if (CONTACT_FIELD_MAP.containsKey('MailingCity')) selectFields.add('Contact.MailingCity');
+                if (CONTACT_FIELD_MAP.containsKey('MailingState')) selectFields.add('Contact.MailingState');
+                if (CONTACT_FIELD_MAP.containsKey('MailingPostalCode')) selectFields.add('Contact.MailingPostalCode');
+                if (CONTACT_FIELD_MAP.containsKey('MailingCountry')) selectFields.add('Contact.MailingCountry');
+                if (CONTACT_FIELD_MAP.containsKey('OtherStreet')) selectFields.add('Contact.OtherStreet');
+                if (CONTACT_FIELD_MAP.containsKey('OtherCity')) selectFields.add('Contact.OtherCity');
+                if (CONTACT_FIELD_MAP.containsKey('OtherState')) selectFields.add('Contact.OtherState');
+                if (CONTACT_FIELD_MAP.containsKey('OtherPostalCode')) selectFields.add('Contact.OtherPostalCode');
+                if (CONTACT_FIELD_MAP.containsKey('OtherCountry')) selectFields.add('Contact.OtherCountry');
+                if (CONTACT_FIELD_MAP.containsKey('AccountId')) selectFields.add('Contact.AccountId');
+            }
+
+            if (ACCOUNT_FIELD_MAP != null) {
+                if (ACCOUNT_FIELD_MAP.containsKey('GNAL_Home_Address__c')) {
+                    selectFields.add('Contact.Account.GNAL_Home_Address__c');
+                }
+                if (ACCOUNT_FIELD_MAP.containsKey('PersonMailingAddress')) {
+                    selectFields.add('Contact.Account.PersonMailingAddress');
+                }
+                if (ACCOUNT_FIELD_MAP.containsKey('BillingAddress')) {
+                    selectFields.add('Contact.Account.BillingAddress');
+                }
+                if (ACCOUNT_FIELD_MAP.containsKey('ShippingAddress')) {
+                    selectFields.add('Contact.Account.ShippingAddress');
+                }
+            }
+
+            Id userId = UserInfo.getUserId();
+            String soql = 'SELECT ' + String.join(selectFields, ',') +
+                ' FROM User WHERE Id = :userId' +
+                ' LIMIT 1';
+            User u = (User) Database.query(soql);
             if (u == null || u.Contact == null) return null;
 
             Contact c = u.Contact;
             Id accountId = c.AccountId;
-            String addr = buildPortalHomeAddressFromContact(c);
+            String addr = null;
+            Object mailing = c.get('MailingAddress');
+            addr = buildAddressFromCompound(mailing);
+            if (String.isBlank(addr)) {
+                Object other = c.get('OtherAddress');
+                addr = buildAddressFromCompound(other);
+            }
+            if (String.isBlank(addr)) {
+                addr = buildPortalHomeAddressFromContact(c);
+            }
+            if (String.isBlank(addr)) {
+                SObject accountObj = c.getSObject('Account');
+                if (accountObj != null) {
+                    Account a = (Account) accountObj;
+                    addr = buildPortalHomeAddressFromAccount(a);
+                }
+            }
             if (String.isBlank(addr)) {
                 if (accountId != null) {
                     if (!ACCOUNT_HOME_LOCATION_CACHE.containsKey(accountId)) {
