@@ -307,6 +307,27 @@ public with sharing class GnalLocationServicesController {
 
     private static String loadPortalAddressFromUserRelationship() {
         try {
+            if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey('GNAL_Home_Address__c')) {
+                Id userId = UserInfo.getUserId();
+                String soql = 'SELECT Contact.Account.GNAL_Home_Address__c' +
+                    ' FROM User WHERE Id = :userId' +
+                    ' LIMIT 1';
+                User directUser = (User) Database.query(soql);
+                if (directUser != null && directUser.Contact != null) {
+                    SObject accountObj = directUser.Contact.getSObject('Account');
+                    if (accountObj != null) {
+                        Object homeObj = accountObj.get('GNAL_Home_Address__c');
+                        String directAddr = buildAddressFromCompound(homeObj);
+                        if (String.isBlank(directAddr) && homeObj != null) {
+                            directAddr = String.valueOf(homeObj);
+                        }
+                        if (!String.isBlank(directAddr)) {
+                            return directAddr;
+                        }
+                    }
+                }
+            }
+
             Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
             List<String> selectFields = new List<String>{ 'Id' };
             if (userFields != null && userFields.containsKey('ContactId')) {
