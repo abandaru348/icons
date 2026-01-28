@@ -56,16 +56,17 @@ public with sharing class GnalLocationServicesController {
             User u = [
                 SELECT AccountId,
                        Account.GNAL_Home_Address__c,
-                       Account.PersonMailingAddress,
-                       Account.BillingAddress,
-                       Account.ShippingAddress
+                       Account.BillingAddress
                 FROM User
                 WHERE Id = :UserInfo.getUserId()
                 LIMIT 1
             ];
             if (u == null || u.AccountId == null || u.Account == null) return null;
 
-            String addr = buildPortalHomeAddressFromAccount(u.Account);
+            String addr = buildAddressFromCompound(u.Account.get('GNAL_Home_Address__c'));
+            if (String.isBlank(addr)) {
+                addr = buildAddressFromCompound(u.Account.get('BillingAddress'));
+            }
             if (!String.isBlank(addr)) {
                 ACCOUNT_HOME_LOCATION_CACHE.put(u.AccountId, addr);
             }
@@ -189,25 +190,12 @@ public with sharing class GnalLocationServicesController {
                 WHERE Id = :UserInfo.getUserId()
                 LIMIT 1
             ];
-            if (u == null) return null;
-
-            Id accountId = u.AccountId;
-            if (accountId == null && u.ContactId != null) {
-                Contact c = [
-                    SELECT Id, AccountId
-                    FROM Contact
-                    WHERE Id = :u.ContactId
-                    LIMIT 1
-                ];
-                accountId = c != null ? c.AccountId : null;
-            }
-
-            if (accountId == null) return null;
+            if (u == null || u.AccountId == null) return null;
 
             PortalContext context = new PortalContext();
             context.userId = u.Id;
             context.contactId = u.ContactId;
-            context.accountId = accountId;
+            context.accountId = u.AccountId;
             return context;
         } catch (Exception ex) {
             logException('Portal context lookup failed', ex);
@@ -216,10 +204,6 @@ public with sharing class GnalLocationServicesController {
     }
 
     private static void loadHomeLocationsForAccounts(Set<Id> accountIds) {
-        loadHomeLocationsForAccounts(accountIds, false);
-    }
-
-    private static void loadHomeLocationsForAccounts(Set<Id> accountIds, Boolean includeFallback) {
         if (accountIds == null || accountIds.isEmpty()) return;
 
         Set<Id> toLoad = new Set<Id>();
@@ -237,7 +221,7 @@ public with sharing class GnalLocationServicesController {
         Set<Id> seenAccountIds = new Set<Id>();
         for (Account a : accounts) {
             seenAccountIds.add(a.Id);
-            String addr = includeFallback ? buildPortalHomeAddressFromAccount(a) : buildHomeAddressFromAccount(a);
+            String addr = buildHomeAddressFromAccount(a);
             ACCOUNT_HOME_LOCATION_CACHE.put(a.Id, addr);
         }
         for (Id accountId : toLoad) {
@@ -314,50 +298,6 @@ public with sharing class GnalLocationServicesController {
         return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
-    private static String buildPortalHomeAddressFromAccount(Account a) {
-        String home = buildHomeAddressFromAccount(a);
-        if (!String.isBlank(home)) return home;
-
-        String personMailingCompound = buildAddressFromCompound(a.get('PersonMailingAddress'));
-        if (!String.isBlank(personMailingCompound)) return personMailingCompound;
-
-        String personMailing = buildAddressFromStandardFields(
-            a,
-            'PersonMailingStreet',
-            'PersonMailingCity',
-            'PersonMailingState',
-            'PersonMailingPostalCode',
-            'PersonMailingCountry'
-        );
-        if (!String.isBlank(personMailing)) return personMailing;
-
-        String billing = buildAddressFromCompound(a.get('BillingAddress'));
-        if (!String.isBlank(billing)) return billing;
-
-        billing = buildAddressFromStandardFields(
-            a,
-            'BillingStreet',
-            'BillingCity',
-            'BillingState',
-            'BillingPostalCode',
-            'BillingCountry'
-        );
-        if (!String.isBlank(billing)) return billing;
-
-        String shipping = buildAddressFromCompound(a.get('ShippingAddress'));
-        if (!String.isBlank(shipping)) return shipping;
-
-        return buildAddressFromStandardFields(
-            a,
-            'ShippingStreet',
-            'ShippingCity',
-            'ShippingState',
-            'ShippingPostalCode',
-            'ShippingCountry'
-        );
-    }
-
-
 
     private static String buildAddressFromCompound(Object value) {
         if (!(value instanceof Address)) return null;
@@ -381,30 +321,6 @@ public with sharing class GnalLocationServicesController {
         return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
-    private static String buildAddressFromStandardFields(
-        Account a,
-        String streetApi,
-        String cityApi,
-        String stateApi,
-        String postalApi,
-        String countryApi
-    ) {
-        if (a == null) return null;
-        String street = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, streetApi);
-        String city = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, cityApi);
-        String state = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, stateApi);
-        String postal = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, postalApi);
-        String country = getAccountStringIfSelected(a, ACCOUNT_FIELD_MAP, countryApi);
-
-        List<String> parts = new List<String>();
-        if (!String.isBlank(street)) parts.add(street);
-        if (!String.isBlank(city)) parts.add(city);
-        if (!String.isBlank(state)) parts.add(state);
-        if (!String.isBlank(postal)) parts.add(postal);
-        if (!String.isBlank(country)) parts.add(country);
-        return parts.isEmpty() ? null : String.join(parts, ', ');
-    }
-
     private static List<String> initHomeAddressSelectFields() {
         List<String> selectFields = new List<String>{ 'Id' };
         if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey('GNAL_Home_Address__c')) {
@@ -415,16 +331,6 @@ public with sharing class GnalLocationServicesController {
             }
         }
 
-        List<String> portalFallback = new List<String>{
-            'PersonMailingAddress',
-            'BillingAddress',
-            'ShippingAddress'
-        };
-        for (String f : portalFallback) {
-            if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey(f)) {
-                selectFields.add(f);
-            }
-        }
         return selectFields;
     }
 
