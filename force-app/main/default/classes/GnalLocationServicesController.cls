@@ -55,17 +55,17 @@ public with sharing class GnalLocationServicesController {
         try {
             User u = [
                 SELECT AccountId,
-                       Account.GNAL_Home_Address__c,
-                       Account.BillingAddress
+                       Account.GNAL_Home_Address__c
                 FROM User
                 WHERE Id = :UserInfo.getUserId()
                 LIMIT 1
             ];
             if (u == null || u.AccountId == null || u.Account == null) return null;
 
-            String addr = buildAddressFromCompound(u.Account.get('GNAL_Home_Address__c'));
-            if (String.isBlank(addr)) {
-                addr = buildAddressFromCompound(u.Account.get('BillingAddress'));
+            Object homeObj = u.Account.get('GNAL_Home_Address__c');
+            String addr = buildAddressFromCompound(homeObj);
+            if (String.isBlank(addr) && homeObj != null) {
+                addr = String.valueOf(homeObj);
             }
             if (!String.isBlank(addr)) {
                 ACCOUNT_HOME_LOCATION_CACHE.put(u.AccountId, addr);
