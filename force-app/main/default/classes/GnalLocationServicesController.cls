@@ -41,11 +41,6 @@ public with sharing class GnalLocationServicesController {
         @AuraEnabled public String currentLocation;
     }
 
-    private class UserAccountRef {
-        String fieldApi;
-        String relationshipName;
-    }
-
     @AuraEnabled(cacheable=true)
     public static String getDefaultCurrentLocationForCase(Id caseId) {
         if (caseId == null) return null;
@@ -58,40 +53,24 @@ public with sharing class GnalLocationServicesController {
     @AuraEnabled(cacheable=false)
     public static String getDefaultCurrentLocationForPortalUser() {
         try {
-            UserAccountRef ref = getUserAccountRef();
-            if (ref == null || String.isBlank(ref.relationshipName)) return null;
+            User u = [
+                SELECT Account.Id, Account.GNAL_Home_Address__c
+                FROM User
+                WHERE Id = :UserInfo.getUserId()
+                LIMIT 1
+            ];
+            if (u == null || u.Account == null) return null;
 
-            List<String> selectFields = new List<String>{ 'Id' };
-            if (!String.isBlank(ref.fieldApi)) {
-                selectFields.add(ref.fieldApi);
+            Id accountId = u.Account.Id;
+            Object homeObj = u.Account.get('GNAL_Home_Address__c');
+            String addr = buildAddressFromCompound(homeObj);
+            if (String.isBlank(addr) && homeObj != null) {
+                addr = String.valueOf(homeObj);
             }
-            selectFields.add(ref.relationshipName + '.Id');
-            if (ACCOUNT_FIELD_MAP != null && ACCOUNT_FIELD_MAP.containsKey('GNAL_Home_Address__c')) {
-                selectFields.add(ref.relationshipName + '.GNAL_Home_Address__c');
+            if (!String.isBlank(addr) && accountId != null) {
+                ACCOUNT_HOME_LOCATION_CACHE.put(accountId, addr);
             }
-
-            Id userId = UserInfo.getUserId();
-            String soql = 'SELECT ' + String.join(selectFields, ',') +
-                ' FROM User WHERE Id = :userId' +
-                ' LIMIT 1';
-            User u = (User) Database.query(soql);
-            if (u == null) return null;
-
-            Id accountId = !String.isBlank(ref.fieldApi) ? (Id) u.get(ref.fieldApi) : null;
-            SObject accountObj = u.getSObject(ref.relationshipName);
-            if (accountObj != null) {
-                accountId = accountId != null ? accountId : (Id) accountObj.get('Id');
-                Object homeObj = accountObj.get('GNAL_Home_Address__c');
-                String addr = buildAddressFromCompound(homeObj);
-                if (String.isBlank(addr) && homeObj != null) {
-                    addr = String.valueOf(homeObj);
-                }
-                if (!String.isBlank(addr) && accountId != null) {
-                    ACCOUNT_HOME_LOCATION_CACHE.put(accountId, addr);
-                }
-                return addr;
-            }
-            return null;
+            return addr;
         } catch (Exception ex) {
             logException('Portal default location lookup failed', ex);
             return null;
@@ -205,82 +184,25 @@ public with sharing class GnalLocationServicesController {
 
     private static PortalContext getPortalContext() {
         try {
-            UserAccountRef ref = getUserAccountRef();
-            List<String> selectFields = new List<String>{ 'Id' };
-            if (ref != null && !String.isBlank(ref.fieldApi)) {
-                selectFields.add(ref.fieldApi);
-            }
-            if (ref != null && !String.isBlank(ref.relationshipName)) {
-                selectFields.add(ref.relationshipName + '.Id');
-            }
-            if (Schema.SObjectType.User.fields.getMap().containsKey('ContactId')) {
-                selectFields.add('ContactId');
-            }
+            User u = [
+                SELECT Id, ContactId, Account.Id
+                FROM User
+                WHERE Id = :UserInfo.getUserId()
+                LIMIT 1
+            ];
+            if (u == null || u.Account == null) return null;
 
-            Id userId = UserInfo.getUserId();
-            String soql = 'SELECT ' + String.join(selectFields, ',') +
-                ' FROM User WHERE Id = :userId' +
-                ' LIMIT 1';
-            User u = (User) Database.query(soql);
-            if (u == null) return null;
-
-            Id accountId = null;
-            if (ref != null && !String.isBlank(ref.fieldApi)) {
-                accountId = (Id) u.get(ref.fieldApi);
-            }
-            if (accountId == null && ref != null && !String.isBlank(ref.relationshipName)) {
-                SObject accountObj = u.getSObject(ref.relationshipName);
-                if (accountObj != null) {
-                    accountId = (Id) accountObj.get('Id');
-                }
-            }
-            if (accountId == null) return null;
+            Id accountId = u.Account.Id;
 
             PortalContext context = new PortalContext();
             context.userId = u.Id;
-            context.contactId = (Schema.SObjectType.User.fields.getMap().containsKey('ContactId'))
-                ? (Id) u.get('ContactId')
-                : null;
+            context.contactId = u.ContactId;
             context.accountId = accountId;
             return context;
         } catch (Exception ex) {
             logException('Portal context lookup failed', ex);
             return null;
         }
-    }
-
-    private static UserAccountRef getUserAccountRef() {
-        Map<String, Schema.SObjectField> userFields = Schema.SObjectType.User.fields.getMap();
-        if (userFields == null) return null;
-
-        UserAccountRef best = null;
-        for (String api : userFields.keySet()) {
-            Schema.SObjectField f = userFields.get(api);
-            Schema.DescribeFieldResult d = f != null ? f.getDescribe() : null;
-            if (d == null || d.getType() != Schema.DisplayType.Reference) continue;
-            List<Schema.SObjectType> refs = d.getReferenceTo();
-            if (refs == null) continue;
-            Boolean isAccountRef = false;
-            for (Schema.SObjectType refType : refs) {
-                if (refType == Account.SObjectType) {
-                    isAccountRef = true;
-                    break;
-                }
-            }
-            if (!isAccountRef) continue;
-
-            UserAccountRef candidate = new UserAccountRef();
-            candidate.fieldApi = api;
-            candidate.relationshipName = d.getRelationshipName();
-
-            if (api == 'AccountId') {
-                return candidate;
-            }
-            if (best == null) {
-                best = candidate;
-            }
-        }
-        return best;
     }
 
     private static void loadHomeLocationsForAccounts(Set<Id> accountIds) {
