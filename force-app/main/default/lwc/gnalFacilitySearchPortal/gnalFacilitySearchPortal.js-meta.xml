@@ -8,9 +8,10 @@
         <target>lightning__HomePage</target>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
+        <target>lightningCommunity__RecordPage</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightningCommunity__Page,lightningCommunity__Default">
+        <targetConfig targets="lightningCommunity__Page,lightningCommunity__Default,lightningCommunity__RecordPage">
             <supportedFormFactors>
                 <supportedFormFactor type="Large"/>
                 <supportedFormFactor type="Small"/>
