@@ -93,20 +93,23 @@ public with sharing class GnalLocationServicesController {
             throw new AuraHandledException('Location Services case record type is not configured.');
         }
 
-        Case c = new Case();
-        c.RecordTypeId = recordTypeId;
-        c.AccountId = context.accountId;
-        if (context.contactId != null) {
-            c.ContactId = context.contactId;
-        }
-
-        try {
-            insert c;
-        } catch (DmlException ex) {
-            if (isUnableToLockRow(ex)) {
-                throw new AuraHandledException('This record is being updated by another user. Please try again.');
+        Case c = findLatestPortalCase(context.accountId, recordTypeId);
+        if (c == null) {
+            c = new Case();
+            c.RecordTypeId = recordTypeId;
+            c.AccountId = context.accountId;
+            if (context.contactId != null) {
+                c.ContactId = context.contactId;
             }
-            throw ex;
+
+            try {
+                insert c;
+            } catch (DmlException ex) {
+                if (isUnableToLockRow(ex)) {
+                    throw new AuraHandledException('This record is being updated by another user. Please try again.');
+                }
+                throw ex;
+            }
         }
 
         LocationServiceUpsertResult ls = createOrIncrementLocationServiceIfResults(
@@ -123,6 +126,20 @@ public with sharing class GnalLocationServicesController {
             out.currentLocation = ls.currentLocation;
         }
         return out;
+    }
+
+    private static Case findLatestPortalCase(Id accountId, Id recordTypeId) {
+        if (accountId == null || recordTypeId == null) return null;
+        List<Case> rows = [
+            SELECT Id, AccountId, RecordTypeId
+            FROM Case
+            WHERE AccountId = :accountId
+            AND RecordTypeId = :recordTypeId
+            AND CreatedById = :UserInfo.getUserId()
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        return rows.isEmpty() ? null : rows[0];
     }
 
     private static void loadDefaultLocationsForCases(Set<Id> caseIds) {
