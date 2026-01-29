@@ -93,7 +93,7 @@ public with sharing class GnalLocationServicesController {
             throw new AuraHandledException('Location Services case record type is not configured.');
         }
 
-        Case c = findLatestPortalCase(context.accountId, recordTypeId);
+        Case c = findLatestPortalCase(context.accountId, recordTypeId, context.contactId);
         if (c == null) {
             c = new Case();
             c.RecordTypeId = recordTypeId;
@@ -128,17 +128,26 @@ public with sharing class GnalLocationServicesController {
         return out;
     }
 
-    private static Case findLatestPortalCase(Id accountId, Id recordTypeId) {
+    private static Case findLatestPortalCase(Id accountId, Id recordTypeId, Id contactId) {
         if (accountId == null || recordTypeId == null) return null;
-        List<Case> rows = [
-            SELECT Id, AccountId, RecordTypeId
-            FROM Case
-            WHERE AccountId = :accountId
-            AND RecordTypeId = :recordTypeId
-            AND CreatedById = :UserInfo.getUserId()
-            ORDER BY CreatedDate DESC
-            LIMIT 1
-        ];
+        List<Case> rows = (contactId != null)
+            ? [
+                SELECT Id, AccountId, RecordTypeId, ContactId
+                FROM Case
+                WHERE AccountId = :accountId
+                AND RecordTypeId = :recordTypeId
+                AND ContactId = :contactId
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ]
+            : [
+                SELECT Id, AccountId, RecordTypeId
+                FROM Case
+                WHERE AccountId = :accountId
+                AND RecordTypeId = :recordTypeId
+                ORDER BY CreatedDate DESC
+                LIMIT 1
+            ];
         return rows.isEmpty() ? null : rows[0];
     }
 
