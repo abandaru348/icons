@@ -312,8 +312,8 @@ public with sharing class GnalFacilitySearchController {
         }
 
         List<ServiceTerritory> queriedTerritories = [
-            SELECT Id, Name, IsActive, Street, City, State, PostalCode, Country, ParentTerritoryId,
-                   ParentTerritory.Id, ParentTerritory.Name,
+            SELECT Id, Name, IsActive, Address, Street, City, State, PostalCode, Country, ParentTerritoryId,
+                   ParentTerritory.Id, ParentTerritory.Name, ParentTerritory.Address,
                    ParentTerritory.Street, ParentTerritory.City, ParentTerritory.State,
                    ParentTerritory.PostalCode, ParentTerritory.Country
             FROM ServiceTerritory
@@ -1334,12 +1334,27 @@ public with sharing class GnalFacilitySearchController {
         if (territory == null) {
             return null;
         }
+        String compound = formatCompoundAddress(territory.Address);
+        if (!String.isBlank(compound)) {
+            return compound;
+        }
         List<String> parts = new List<String>();
         if (!String.isBlank(territory.Street))     parts.add(territory.Street);
         if (!String.isBlank(territory.City))       parts.add(territory.City);
         if (!String.isBlank(territory.State))      parts.add(territory.State);
         if (!String.isBlank(territory.PostalCode)) parts.add(territory.PostalCode);
         if (!String.isBlank(territory.Country))    parts.add(territory.Country);
+        return parts.isEmpty() ? null : String.join(parts, ', ');
+    }
+
+    private static String formatCompoundAddress(Address addr) {
+        if (addr == null) return null;
+        List<String> parts = new List<String>();
+        if (!String.isBlank(addr.street))     parts.add(addr.street);
+        if (!String.isBlank(addr.city))       parts.add(addr.city);
+        if (!String.isBlank(addr.state))      parts.add(addr.state);
+        if (!String.isBlank(addr.postalCode)) parts.add(addr.postalCode);
+        if (!String.isBlank(addr.country))    parts.add(addr.country);
         return parts.isEmpty() ? null : String.join(parts, ', ');
     }
 
