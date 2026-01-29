@@ -312,10 +312,8 @@ public with sharing class GnalFacilitySearchController {
         }
 
         List<ServiceTerritory> queriedTerritories = [
-            SELECT Id, Name, IsActive, Address, Street, City, State, PostalCode, Country, ParentTerritoryId,
-                   ParentTerritory.Id, ParentTerritory.Name, ParentTerritory.Address,
-                   ParentTerritory.Street, ParentTerritory.City, ParentTerritory.State,
-                   ParentTerritory.PostalCode, ParentTerritory.Country
+            SELECT Id, Name, IsActive, Address, ParentTerritoryId,
+                   ParentTerritory.Id, ParentTerritory.Name, ParentTerritory.Address
             FROM ServiceTerritory
             WHERE IsActive = true
             ORDER BY Name
