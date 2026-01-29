@@ -134,6 +134,11 @@ public with sharing class GnalFacilitySearchController {
         if (String.isBlank(originAddress)) {
             throw new AuraHandledException('Origin address is required.');
         }
+        System.debug(LoggingLevel.WARN,
+            'PortalDebug: user=' + UserInfo.getUserId() +
+            ', profile=' + UserInfo.getProfileId() +
+            ', origin=' + originAddress
+        );
 
         Double effectiveRadius = radiusMiles;
         if (effectiveRadius == null || effectiveRadius <= 0) {
@@ -141,6 +146,7 @@ public with sharing class GnalFacilitySearchController {
         }
 
         List<ServiceTerritory> territories = getDistinctTerritories();
+        System.debug(LoggingLevel.WARN, 'PortalDebug: territories=' + territories.size());
         if (territories.isEmpty()) {
             throw new AuraHandledException('No facilities found with addresses.');
         }
@@ -161,8 +167,10 @@ public with sharing class GnalFacilitySearchController {
         }
 
         if (destinationAddressSet.isEmpty()) {
+            System.debug(LoggingLevel.WARN, 'PortalDebug: destinationAddressSet=0');
             throw new AuraHandledException('No facilities found with addresses.');
         }
+        System.debug(LoggingLevel.WARN, 'PortalDebug: destinationAddressSet=' + destinationAddressSet.size());
 
         // Deterministic ordering reduces flaky result ordering.
         List<String> destinationAddresses = new List<String>(destinationAddressSet);
@@ -170,6 +178,10 @@ public with sharing class GnalFacilitySearchController {
         destinationAddresses = limitAddressList(destinationAddresses, MAX_DESTINATION_ADDRESSES_PER_SEARCH);
 
         CacheContext cacheContext = ensureCacheCoverage(originAddress, destinationAddresses);
+        System.debug(LoggingLevel.WARN,
+            'PortalDebug: originLat=' + String.valueOf(cacheContext.originLatitude) +
+            ', originLng=' + String.valueOf(cacheContext.originLongitude)
+        );
         if (cacheContext.originLatitude == null || cacheContext.originLongitude == null) {
             // Fall back to cached distances when origin coords are unavailable.
             List<GeocodeCache__c> fallback = queryCachesWithinRadiusByMilesOnly(
@@ -177,6 +189,7 @@ public with sharing class GnalFacilitySearchController {
                 destinationAddresses,
                 effectiveRadius
             );
+            System.debug(LoggingLevel.WARN, 'PortalDebug: fallbackCaches=' + fallback.size());
             if (fallback.isEmpty()) {
                 logException('Origin coordinates unavailable', null);
             }
@@ -190,6 +203,7 @@ public with sharing class GnalFacilitySearchController {
             cacheContext.originLongitude,
             effectiveRadius
         );
+        System.debug(LoggingLevel.WARN, 'PortalDebug: filteredCaches=' + filteredCaches.size());
 
         return formatCacheResults(filteredCaches, addressToName);
     }
