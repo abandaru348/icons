@@ -5,6 +5,7 @@ import Toast from 'lightning/toast';
 import findNearestFacilitiesWithRadius from '@salesforce/apex/GnalFacilitySearchController.findNearestFacilitiesWithRadius';
 import getDefaultCurrentLocationForPortalUser from '@salesforce/apex/GnalLocationServicesController.getDefaultCurrentLocationForPortalUser';
 import createPortalCaseAndLocationService from '@salesforce/apex/GnalLocationServicesController.createPortalCaseAndLocationService';
+import createOrIncrementLocationServiceIfResults from '@salesforce/apex/GnalLocationServicesController.createOrIncrementLocationServiceIfResults';
 
 export default class GnalFacilitySearchPortal extends LightningElement {
     static LIST_PAGE_SIZE = 10;
@@ -83,6 +84,13 @@ export default class GnalFacilitySearchPortal extends LightningElement {
                 const variant = hasAnyResults ? 'success' : 'info';
                 this.showToast(title, message, variant);
 
+                if (this.lastCaseId) {
+                    return createOrIncrementLocationServiceIfResults({
+                        caseId: this.lastCaseId,
+                        currentLocation: normalizedOrigin,
+                        resultCount: this.filteredResults.length
+                    }).then(() => ({ caseId: this.lastCaseId }));
+                }
                 return createPortalCaseAndLocationService({
                     currentLocation: normalizedOrigin,
                     resultCount: this.filteredResults.length
@@ -101,7 +109,6 @@ export default class GnalFacilitySearchPortal extends LightningElement {
     }
 
     handleClear() {
-        this.originAddress = '';
         this.allResults = [];
         this.filteredResults = [];
         this.pageResults = [];
@@ -109,7 +116,6 @@ export default class GnalFacilitySearchPortal extends LightningElement {
         this.mapCenter = undefined;
         this.searchHasRun = false;
         this.currentPage = 1;
-        this.selectedDistance = GnalFacilitySearchPortal.DEFAULT_SELECTED_DISTANCE_MILES;
     }
 
     handlePrevPage() {
@@ -267,6 +273,15 @@ export default class GnalFacilitySearchPortal extends LightningElement {
         this.mapCenter = firstWithCoords
             ? { location: { Latitude: firstWithCoords.location.Latitude, Longitude: firstWithCoords.location.Longitude } }
             : undefined;
+    }
+
+    handleMarkerSelect(event) {
+        const selectedValue = event?.detail?.selectedMarkerValue;
+        if (!selectedValue || !this.mapMarkers?.length) return;
+        const marker = this.mapMarkers.find((m) => m.value === selectedValue);
+        const address = marker?.address;
+        const url = this.getGoogleMapsDirectionsUrl(address);
+        if (url) window.open(url, '_blank');
     }
 
     showToast(title, message, variant) {
