@@ -1,15 +1,6 @@
 @IsTest
 private class ParentGuardianControllerTest {
     private static final String RELATIONSHIP_OBJECT = 'Contact_Relationship__c';
-    private static final List<String> REQUIRED_RELATIONSHIP_FIELDS =
-        new List<String>{
-            'Primary_Contact__c',
-            'Related_Contact__c',
-            'Account__c',
-            'Relationship_Type__c',
-            'Is_Active__c',
-            'End_Date__c'
-        };
 
     private static Id getPersonAccountRecordTypeId() {
         Schema.RecordTypeInfo recordTypeInfo =
@@ -35,20 +26,26 @@ private class ParentGuardianControllerTest {
     }
 
     private static Boolean hasRequiredRelationshipSchema() {
-        Map<String, Schema.SObjectField> fields = getRelationshipFields();
-        for (String fieldName : REQUIRED_RELATIONSHIP_FIELDS) {
-            if (!fields.containsKey(fieldName)) {
-                return false;
-            }
+        String roleField = getRoleField();
+        if (String.isBlank(getPrimaryContactField())
+                || String.isBlank(getRelatedContactField())
+                || String.isBlank(getActiveField())
+                || String.isBlank(getEndDateField())
+                || String.isBlank(roleField)) {
+            return false;
         }
-        return true;
+
+        Schema.DescribeFieldResult roleDescribe =
+            getRelationshipFields().get(roleField).getDescribe();
+        return roleDescribe.getType() != Schema.DisplayType.Reference;
     }
 
     private static String getRelationshipTypeValue() {
         Map<String, Schema.SObjectField> fields = getRelationshipFields();
-        if (fields.containsKey('Relationship_Type__c')) {
+        String roleField = getRoleField();
+        if (String.isNotBlank(roleField)) {
             Schema.DescribeFieldResult relationshipType =
-                fields.get('Relationship_Type__c').getDescribe();
+                fields.get(roleField).getDescribe();
             if (relationshipType.getType() == Schema.DisplayType.Picklist) {
                 for (Schema.PicklistEntry entry :
                         relationshipType.getPicklistValues()) {
@@ -59,6 +56,75 @@ private class ParentGuardianControllerTest {
             }
         }
         return 'Parent/Guardian';
+    }
+
+    private static String getPrimaryContactField() {
+        return firstExistingField(
+            new List<String>{
+                'Primary_Contact__c',
+                'Contact__c',
+                'PrimaryContact__c',
+                'HealthCloudGA__Contact__c'
+            }
+        );
+    }
+
+    private static String getRelatedContactField() {
+        return firstExistingField(
+            new List<String>{
+                'Related_Contact__c',
+                'RelatedContact__c',
+                'Guardian_Contact__c',
+                'HealthCloudGA__RelatedContact__c'
+            }
+        );
+    }
+
+    private static String getAccountField() {
+        return firstExistingField(
+            new List<String>{ 'Account__c', 'Patient__c', 'Minor_Account__c' }
+        );
+    }
+
+    private static String getRoleField() {
+        return firstExistingField(
+            new List<String>{
+                'Relationship_Type__c',
+                'RelationshipType__c',
+                'Role__c',
+                'HealthCloudGA__Role__c'
+            }
+        );
+    }
+
+    private static String getActiveField() {
+        return firstExistingField(
+            new List<String>{
+                'Is_Active__c',
+                'Active__c',
+                'HealthCloudGA__Active__c'
+            }
+        );
+    }
+
+    private static String getEndDateField() {
+        return firstExistingField(
+            new List<String>{
+                'End_Date__c',
+                'EndDate__c',
+                'HealthCloudGA__EndDate__c'
+            }
+        );
+    }
+
+    private static String firstExistingField(List<String> candidateNames) {
+        Map<String, Schema.SObjectField> fields = getRelationshipFields();
+        for (String candidateName : candidateNames) {
+            if (fields.containsKey(candidateName)) {
+                return candidateName;
+            }
+        }
+        return null;
     }
 
     private static Account createPersonAccount(
@@ -213,24 +279,35 @@ private class ParentGuardianControllerTest {
         ParentGuardianController.addAssociation(minor.Id, guardian.Id, role);
         Test.stopTest();
 
+        String primaryField = getPrimaryContactField();
+        String relatedField = getRelatedContactField();
+        String accountField = getAccountField();
+        String roleField = getRoleField();
+        String activeField = getActiveField();
+        String endDateField = getEndDateField();
+        Id primaryContactId = minor.PersonContactId;
+        Id relatedContactId = guardian.PersonContactId;
+        List<String> relationFields =
+            new List<String>{ 'Id', primaryField, relatedField, roleField, activeField, endDateField };
+        if (String.isNotBlank(accountField)) {
+            relationFields.add(accountField);
+        }
+
         SObject relation = Database.query(
-            'SELECT Id, Primary_Contact__c, Related_Contact__c, Account__c, ' +
-            'Relationship_Type__c, Is_Active__c, End_Date__c ' +
+            'SELECT ' + String.join(relationFields, ', ') + ' ' +
             'FROM Contact_Relationship__c ' +
-            'WHERE Primary_Contact__c = \'' +
-                String.escapeSingleQuotes(String.valueOf(minor.PersonContactId)) +
-                '\' ' +
-            'AND Related_Contact__c = \'' +
-                String.escapeSingleQuotes(String.valueOf(guardian.PersonContactId)) +
-                '\' ' +
+            'WHERE ' + primaryField + ' = :primaryContactId ' +
+            'AND ' + relatedField + ' = :relatedContactId ' +
             'LIMIT 1'
         );
-        System.assertEquals(minor.PersonContactId, relation.get('Primary_Contact__c'));
-        System.assertEquals(guardian.PersonContactId, relation.get('Related_Contact__c'));
-        System.assertEquals(minor.Id, relation.get('Account__c'));
-        System.assertEquals(role, relation.get('Relationship_Type__c'));
-        System.assertEquals(true, relation.get('Is_Active__c'));
-        System.assertEquals(null, relation.get('End_Date__c'));
+        System.assertEquals(minor.PersonContactId, relation.get(primaryField));
+        System.assertEquals(guardian.PersonContactId, relation.get(relatedField));
+        if (String.isNotBlank(accountField)) {
+            System.assertEquals(minor.Id, relation.get(accountField));
+        }
+        System.assertEquals(role, relation.get(roleField));
+        System.assertEquals(true, relation.get(activeField));
+        System.assertEquals(null, relation.get(endDateField));
 
         Map<String, Object> minorStatus =
             ParentGuardianController.getMinorStatus(minor.Id);
@@ -278,15 +355,14 @@ private class ParentGuardianControllerTest {
 
         ParentGuardianController.removeAssociation((Id) relation.get('Id'));
 
+        Id relationId = (Id) relation.get('Id');
         SObject removedRelation = Database.query(
-            'SELECT Is_Active__c, End_Date__c ' +
+            'SELECT ' + activeField + ', ' + endDateField + ' ' +
             'FROM Contact_Relationship__c ' +
-            'WHERE Id = \'' +
-                String.escapeSingleQuotes(String.valueOf(relation.get('Id'))) +
-                '\''
+            'WHERE Id = :relationId'
         );
-        System.assertEquals(false, removedRelation.get('Is_Active__c'));
-        System.assertEquals(Date.today(), removedRelation.get('End_Date__c'));
+        System.assertEquals(false, removedRelation.get(activeField));
+        System.assertEquals(Date.today(), removedRelation.get(endDateField));
 
         Map<String, Object> associationsAfterRemoval =
             ParentGuardianController.getAssociations(minor.Id);
@@ -401,22 +477,32 @@ private class ParentGuardianControllerTest {
         System.assertEquals('Riverside', newGuardian.BillingCity);
         System.assertEquals('99999', newGuardian.BillingPostalCode);
 
+        String primaryField = getPrimaryContactField();
+        String relatedField = getRelatedContactField();
+        String accountField = getAccountField();
+        String roleField = getRoleField();
+        String activeField = getActiveField();
+        Id primaryContactId = minor.PersonContactId;
+        Id relatedContactId = newGuardian.PersonContactId;
+        List<String> relationFields =
+            new List<String>{ primaryField, relatedField, roleField, activeField };
+        if (String.isNotBlank(accountField)) {
+            relationFields.add(accountField);
+        }
+
         SObject relation = Database.query(
-            'SELECT Primary_Contact__c, Related_Contact__c, Account__c, ' +
-            'Relationship_Type__c, Is_Active__c ' +
+            'SELECT ' + String.join(relationFields, ', ') + ' ' +
             'FROM Contact_Relationship__c ' +
-            'WHERE Primary_Contact__c = \'' +
-                String.escapeSingleQuotes(String.valueOf(minor.PersonContactId)) +
-                '\' ' +
-            'AND Related_Contact__c = \'' +
-                String.escapeSingleQuotes(String.valueOf(newGuardian.PersonContactId)) +
-                '\' ' +
+            'WHERE ' + primaryField + ' = :primaryContactId ' +
+            'AND ' + relatedField + ' = :relatedContactId ' +
             'LIMIT 1'
         );
-        System.assertEquals(minor.PersonContactId, relation.get('Primary_Contact__c'));
-        System.assertEquals(newGuardian.PersonContactId, relation.get('Related_Contact__c'));
-        System.assertEquals(minor.Id, relation.get('Account__c'));
-        System.assertEquals(role, relation.get('Relationship_Type__c'));
-        System.assertEquals(true, relation.get('Is_Active__c'));
+        System.assertEquals(minor.PersonContactId, relation.get(primaryField));
+        System.assertEquals(newGuardian.PersonContactId, relation.get(relatedField));
+        if (String.isNotBlank(accountField)) {
+            System.assertEquals(minor.Id, relation.get(accountField));
+        }
+        System.assertEquals(role, relation.get(roleField));
+        System.assertEquals(true, relation.get(activeField));
     }
 }
