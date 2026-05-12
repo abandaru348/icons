@@ -1,8 +1,10 @@
 @IsTest
 private class ParentGuardianControllerTest {
     private static Id getPersonAccountRecordTypeId() {
+        Schema.DescribeSObjectResult accountDescribe =
+            Schema.SObjectType.Account.getDescribe();
         Schema.RecordTypeInfo recordTypeInfo =
-            Schema.SObjectType.Account
+            accountDescribe
                 .getRecordTypeInfosByDeveloperName()
                 .get('PersonAccount');
 
@@ -10,6 +12,13 @@ private class ParentGuardianControllerTest {
             null,
             recordTypeInfo,
             'ParentGuardianController requires a PersonAccount record type.'
+        );
+
+        System.assert(
+            recordTypeInfo.isAvailable(),
+            'The user running this test must have access to the Account '
+            + 'PersonAccount record type. In Setup, add the PersonAccount '
+            + 'record type to the QA user profile or permission set.'
         );
         return recordTypeInfo.getRecordTypeId();
     }
