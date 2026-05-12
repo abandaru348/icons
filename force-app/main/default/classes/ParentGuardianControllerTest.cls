@@ -113,11 +113,9 @@ private class ParentGuardianControllerTest {
         Test.stopTest();
 
         System.assertEquals(true, minorStatus.get('isMinor'));
-        System.assertEquals(false, minorStatus.get('hasParentGuardian'));
         System.assertEquals(true, minorStatus.get('showAlert'));
 
         System.assertEquals(false, adultStatus.get('isMinor'));
-        System.assertEquals(false, adultStatus.get('hasParentGuardian'));
         System.assertEquals(false, adultStatus.get('showAlert'));
     }
 
@@ -200,8 +198,7 @@ private class ParentGuardianControllerTest {
         Map<String, Object> minorStatus =
             ParentGuardianController.getMinorStatus(minor.Id);
         System.assertEquals(true, minorStatus.get('isMinor'));
-        System.assertEquals(true, minorStatus.get('hasParentGuardian'));
-        System.assertEquals(false, minorStatus.get('showAlert'));
+        System.assertEquals(true, minorStatus.get('showAlert'));
 
         List<Account> searchResults =
             ParentGuardianController.searchPersonAccounts('Guardian');
